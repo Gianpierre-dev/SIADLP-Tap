@@ -190,9 +190,8 @@ flowchart TD
     <pre class="mermaid">
 flowchart LR
     A["Precio Base SKU\n(ej: S/ 5.00)"] --> D
-    B["Tarifa Ruta\n(ej: S/ 0.80)"] --> D
-    C["Factor Tipo Cliente\nMayorista: 0.95\nMinorista: 1.00"] --> D
-    D["PRECIO UNITARIO\n= Base + (Tarifa × Factor)"]
+    B["Tarifa Ruta por Ubigeo\n(ej: S/ 0.80)"] --> D
+    D["PRECIO UNITARIO\n= Base + Tarifa Ruta"]
     D --> E["× Cantidad"]
     E --> F["TOTAL LÍNEA"]
     F --> G["Σ Líneas = TOTAL PEDIDO"]
@@ -203,12 +202,11 @@ flowchart LR
 </div>
 
 <div class="formula">
-    <strong>Fórmula:</strong> precioUnitario = precioBaseSKU + (tarifaRuta × factorTipoCliente)<br><br>
+    <strong>Fórmula:</strong> precioUnitario = precioBaseSKU + tarifaRuta<br><br>
     <strong>Ejemplo:</strong><br>
     Papa Amarilla 1kg Ziplock = S/ 5.00 (base)<br>
-    Ruta Norte SJL = S/ 0.80 (flete)<br>
-    Tipo: Mayorista = 0.95 (factor)<br><br>
-    <strong>Precio = 5.00 + (0.80 × 0.95) = S/ 5.76 por kg</strong>
+    Ruta Norte SJL = S/ 0.80 (flete)<br><br>
+    <strong>Precio = 5.00 + 0.80 = S/ 5.80 por kg</strong>
 </div>
 
 <!-- ============================================ -->
