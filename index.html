@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIADLP - Flujos del Sistema</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            padding: 2rem;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
+        h1 span { color: #60a5fa; }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 3rem;
+            font-size: 0.95rem;
+        }
+        h2 {
+            font-size: 1.5rem;
+            margin: 3rem 0 0.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #60a5fa;
+            color: #60a5fa;
+        }
+        h3 {
+            font-size: 1.1rem;
+            margin: 2rem 0 0.5rem;
+            color: #a5b4fc;
+        }
+        p, li {
+            line-height: 1.7;
+            color: #ccc;
+        }
+        .diagram-container {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+        }
+        .mermaid {
+            display: flex;
+            justify-content: center;
+        }
+        .note {
+            background: #1a1a2e;
+            border-left: 4px solid #60a5fa;
+            padding: 1rem 1.5rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.9rem;
+        }
+        .formula {
+            background: #1a2e1a;
+            border-left: 4px solid #4ade80;
+            padding: 1rem 1.5rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+            font-family: 'Cascadia Code', 'Fira Code', monospace;
+            font-size: 0.9rem;
+        }
+        ul { padding-left: 1.5rem; margin: 0.5rem 0; }
+        code {
+            background: #222;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            color: #f9a8d4;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr; }
+        }
+        .card {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+        .card h4 {
+            color: #fbbf24;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+
+<h1>SIADLP <span>Flujos del Sistema</span></h1>
+<p class="subtitle">Sistema de Información para la Administración y Distribución de Papa Procesada &mdash; La Cosecha S.A.C.</p>
+
+<!-- ============================================ -->
+<h2>1. Flujo de Negocio &mdash; Ciclo Operativo Diario</h2>
+<p>Así opera La Cosecha todos los días, de principio a fin:</p>
+
+<div class="diagram-container">
+    <pre class="mermaid">
+flowchart TD
+    subgraph DIA_ANTERIOR["DIA ANTERIOR (tarde)"]
+        A1[/"Pollerías envían pedidos\n(WhatsApp, teléfono)"/]
+        A2["Vendedor registra pedidos\nen el sistema"]
+        A3["Sistema calcula precios\nautomáticamente"]
+        A4["Jefe de Producción consulta\npedidos confirmados para mañana"]
+        A5["Sistema genera estimación\nde producción (MP necesaria)"]
+    end
+
+    subgraph MADRUGADA["MADRUGADA (3:00 AM - 7:00 AM)"]
+        B1["Jefe de Compras verifica\nstock de materia prima"]
+        B2{"¿Stock\nsuficiente?"}
+        B3["Registra compra\na proveedor"]
+        B4["Recibe MP y confirma\n→ Stock MP se actualiza"]
+        B5["Producción inicia:\npelado, cortado, embolsado"]
+        B6["Registra resultado:\ncantidad real obtenida"]
+        B7["Sistema calcula:\nrendimiento, merma, costo real"]
+        B8["Stock PT se actualiza\nautomáticamente"]
+    end
+
+    subgraph MANANA["MAÑANA (7:00 AM - 12:00 PM)"]
+        C1["Despachador agrupa\npedidos por ruta"]
+        C2["Asigna vehículo + chofer\npor cada ruta"]
+        C3["Sistema genera\nhoja de ruta (PDF)"]
+        C4["Registra N° GRE"]
+        C5["Confirma despacho\n→ Stock PT se descuenta"]
+        C6["Choferes salen\na repartir"]
+    end
+
+    subgraph CAMPO["EN CAMPO (reparto)"]
+        D1["Chofer llega a pollería"]
+        D2["Entrega productos"]
+        D3{"¿Entrega\nexitosa?"}
+        D4["Registra entrega\n+ cobro + comprobante"]
+        D5["Registra novedad\n(rechazo, ausente, etc.)"]
+        D6["Siguiente parada"]
+    end
+
+    subgraph CIERRE["CIERRE DEL DIA"]
+        E1["Chofer completa ruta"]
+        E2["Sistema actualiza\nestados de pedidos"]
+        E3["Gerente revisa dashboard:\nventas, cobros, novedades"]
+    end
+
+    A1 --> A2 --> A3 --> A4 --> A5
+    A5 --> B1
+    B1 --> B2
+    B2 -->|No| B3 --> B4
+    B2 -->|Sí| B5
+    B4 --> B5
+    B5 --> B6 --> B7 --> B8
+    B8 --> C1
+    C1 --> C2 --> C3 --> C4 --> C5 --> C6
+    C6 --> D1 --> D2 --> D3
+    D3 -->|Sí| D4 --> D6
+    D3 -->|No| D5 --> D6
+    D6 -.->|Siguiente pollería| D1
+    D6 -->|Ruta completa| E1
+    E1 --> E2 --> E3
+
+    style DIA_ANTERIOR fill:#1e1b4b,stroke:#6366f1,color:#fff
+    style MADRUGADA fill:#172554,stroke:#3b82f6,color:#fff
+    style MANANA fill:#14532d,stroke:#22c55e,color:#fff
+    style CAMPO fill:#713f12,stroke:#eab308,color:#fff
+    style CIERRE fill:#450a0a,stroke:#ef4444,color:#fff
+    </pre>
+</div>
+
+<div class="note">
+    <strong>Clave:</strong> Todo el día gira alrededor de los PEDIDOS. Los pedidos de mañana determinan cuánto producir,
+    cuánto comprar de materia prima y cómo armar las rutas de despacho. Sin pedidos registrados, la empresa trabaja "a ciegas".
+</div>
+
+<!-- ============================================ -->
+<h2>2. Flujo de Precios &mdash; Cálculo Automático</h2>
+
+<div class="diagram-container">
+    <pre class="mermaid">
+flowchart LR
+    A["Precio Base SKU\n(ej: S/ 5.00)"] --> D
+    B["Tarifa Ruta\n(ej: S/ 0.80)"] --> D
+    C["Factor Tipo Cliente\nMayorista: 0.95\nMinorista: 1.00"] --> D
+    D["PRECIO UNITARIO\n= Base + (Tarifa × Factor)"]
+    D --> E["× Cantidad"]
+    E --> F["TOTAL LÍNEA"]
+    F --> G["Σ Líneas = TOTAL PEDIDO"]
+
+    style D fill:#4338ca,stroke:#818cf8,color:#fff
+    style G fill:#15803d,stroke:#4ade80,color:#fff
+    </pre>
+</div>
+
+<div class="formula">
+    <strong>Fórmula:</strong> precioUnitario = precioBaseSKU + (tarifaRuta × factorTipoCliente)<br><br>
+    <strong>Ejemplo:</strong><br>
+    Papa Amarilla 1kg Ziplock = S/ 5.00 (base)<br>
+    Ruta Norte SJL = S/ 0.80 (flete)<br>
+    Tipo: Mayorista = 0.95 (factor)<br><br>
+    <strong>Precio = 5.00 + (0.80 × 0.95) = S/ 5.76 por kg</strong>
+</div>
+
+<!-- ============================================ -->
+<h2>3. Flujo de Producción &mdash; Transformación MP → PT</h2>
+
+<div class="diagram-container">
+    <pre class="mermaid">
+flowchart LR
+    subgraph INPUT["ENTRADA (Materia Prima)"]
+        A["100 kg\nPapa Amarilla entera\nCosto: S/ 2.50/kg\nTotal: S/ 250.00"]
+    end
+
+    subgraph PROCESO["PROCESO"]
+        B["Pelado"]
+        C["Cortado"]
+        D["Embolsado\n(Ziplock 1kg)"]
+    end
+
+    subgraph OUTPUT["SALIDA"]
+        E["72 kg\nPapa Amarilla\ncortada en bolsas"]
+        F["28 kg\nMERMA\n(cáscara, ojos, etc.)"]
+    end
+
+    subgraph CALCULOS["CÁLCULOS AUTOMÁTICOS"]
+        G["Rendimiento = 72%\n(72/100 × 100)"]
+        H["Merma = 28%\n(28 kg perdidos)"]
+        I["Costo Real = S/ 3.47/kg\n(250.00 / 72)"]
+    end
+
+    A --> B --> C --> D
+    D --> E
+    D --> F
+    E --> G
+    F --> H
+    E --> I
+
+    style INPUT fill:#713f12,stroke:#eab308,color:#fff
+    style PROCESO fill:#1e3a5f,stroke:#60a5fa,color:#fff
+    style OUTPUT fill:#14532d,stroke:#22c55e,color:#fff
+    style CALCULOS fill:#4c1d95,stroke:#a78bfa,color:#fff
+    </pre>
+</div>
+
+<div class="formula">
+    <strong>Rendimiento %</strong> = (Producto Terminado / Materia Prima) × 100<br>
+    <strong>Merma</strong> = Materia Prima - Producto Terminado<br>
+    <strong>Costo Real/kg</strong> = Costo Total MP / kg de Producto Terminado
+</div>
+
+<!-- ============================================ -->
+<h2>4. Flujo de Inventario Dual</h2>
+
+<div class="diagram-container">
+    <pre class="mermaid">
+flowchart TD
+    subgraph MP["INVENTARIO MATERIA PRIMA"]
+        MP1[("Stock MP\n(papa entera)")]
+    end
+
+    subgraph PT["INVENTARIO PRODUCTO TERMINADO"]
+        PT1[("Stock PT\n(papa procesada por SKU)")]
+    end
+
+    COMPRA["Compra confirmada"] -->|"+kg MP"| MP1
+    MP1 -->|"-kg MP"| PRODUCCION["Producción inicia"]
+    PRODUCCION -->|"+kg PT"| PT1
+    PT1 -->|"-kg PT"| DESPACHO["Despacho confirmado"]
+
+    AJUSTE_MP["Ajuste manual\n(con motivo)"] -.->|"±kg"| MP1
+    AJUSTE_PT["Ajuste manual\n(con motivo)"] -.->|"±kg"| PT1
+
+    ALERTA_MP{"Stock MP\n≤ mínimo?"} -.->|"⚠ Alerta"| DASHBOARD["Dashboard"]
+    ALERTA_PT{"Stock PT\n≤ mínimo?"} -.->|"⚠ Alerta"| DASHBOARD
+
+    MP1 -.-> ALERTA_MP
+    PT1 -.-> ALERTA_PT
+
+    style MP fill:#78350f,stroke:#f59e0b,color:#fff
+    style PT fill:#14532d,stroke:#22c55e,color:#fff
+    style COMPRA fill:#1e40af,stroke:#60a5fa,color:#fff
+    style PRODUCCION fill:#4c1d95,stroke:#a78bfa,color:#fff
+    style DESPACHO fill:#9a3412,stroke:#fb923c,color:#fff
+    </pre>
+</div>
+
+<div class="note">
+    <strong>Regla clave:</strong> Los movimientos de inventario son AUTOMÁTICOS. Ningún usuario mueve stock manualmente
+    (excepto ajustes con motivo). El stock se actualiza solo cuando se confirma una compra, se ejecuta producción o se despacha.
+</div>
+
+<!-- ============================================ -->
+<h2>5. Ciclo de Vida del Pedido</h2>
+
+<div class="diagram-container">
+    <pre class="mermaid">
+stateDiagram-v2
+    [*] --> REGISTERED: Vendedor registra pedido
+    REGISTERED --> DISPATCHED: Despachador confirma despacho
+    REGISTERED --> CANCELLED: Vendedor cancela (con motivo)
+    DISPATCHED --> ON_ROUTE: Chofer sale a repartir
+    ON_ROUTE --> DELIVERED: Chofer confirma entrega
+    ON_ROUTE --> ISSUE: Chofer reporta novedad
+    DELIVERED --> COLLECTED: Chofer registra cobro
+    ISSUE --> REGISTERED: Se reprograma
+    COLLECTED --> [*]
+    CANCELLED --> [*]
+
+    note right of REGISTERED
+        Precio calculado automáticamente
+        Stock PT aún no se descuenta
+    end note
+
+    note right of DISPATCHED
+        Stock PT se descuenta
+        Se genera hoja de ruta
+    end note
+
+    note right of COLLECTED
+        Se registra:
+        - Monto cobrado
+        - Método de pago
+        - N° comprobante
+    end note
+    </pre>
+</div>
+
+<!-- ============================================ -->
+<h2>6. Flujo de Despacho Detallado</h2>
+
+<div class="diagram-container">
+    <pre class="mermaid">
+flowchart TD
+    A["Pedidos en estado REGISTERED\npara fecha de hoy"] --> B["Sistema agrupa\npor RUTA"]
+
+    B --> R1["Ruta Norte - SJL\n8 pedidos | 450 kg"]
+    B --> R2["Ruta Sur - Chorrillos\n5 pedidos | 280 kg"]
+    B --> R3["Ruta Centro - Cercado\n6 pedidos | 320 kg"]
+
+    R1 --> V1["Vehículo: ABC-123\nCapacidad: 500 kg\nChofer: Juan Pérez"]
+    R2 --> V2["Vehículo: DEF-456\nCapacidad: 400 kg\nChofer: Carlos López"]
+    R3 --> V3["Vehículo: GHI-789\nCapacidad: 400 kg\nChofer: Miguel Torres"]
+
+    V1 --> GRE["Se registra N° GRE\npor cada despacho"]
+    V2 --> GRE
+    V3 --> GRE
+
+    GRE --> HR["Se genera HOJA DE RUTA\n(PDF imprimible)"]
+    HR --> CONF["Despachador CONFIRMA\n→ Pedidos pasan a DISPATCHED\n→ Stock PT se descuenta"]
+    CONF --> SALE["Choferes salen a repartir"]
+
+    SALE --> ENT1["Chofer llega a pollería"]
+    ENT1 --> ENT2{"¿Entrega OK?"}
+    ENT2 -->|Sí| ENT3["Marca DELIVERED\n+ registra cobro"]
+    ENT2 -->|No| ENT4["Registra NOVEDAD\n(rechazo, ausente, etc.)"]
+    ENT3 --> SIG["Siguiente parada"]
+    ENT4 --> SIG
+    SIG -->|Más paradas| ENT1
+    SIG -->|Ruta completa| FIN["Despacho COMPLETED"]
+
+    style A fill:#1e3a5f,stroke:#60a5fa,color:#fff
+    style CONF fill:#b91c1c,stroke:#fca5a5,color:#fff
+    style FIN fill:#15803d,stroke:#4ade80,color:#fff
+    </pre>
+</div>
+
+<!-- ============================================ -->
+<h2>7. Flujo Técnico &mdash; Arquitectura del Sistema</h2>
+
+<div class="diagram-container">
+    <pre class="mermaid">
+flowchart TB
+    subgraph CLIENT["CLIENTE (Browser)"]
+        WEB["Next.js App\n(App Router + React)"]
+        MOBILE["Web Responsive\n(Choferes en móvil)"]
+    end
+
+    subgraph API["BACKEND (NestJS)"]
+        GUARD["Auth Guard\n+ RBAC Guard"]
+        MODULES["Módulos NestJS"]
+
+        subgraph MOD["Módulos"]
+            AUTH["Auth\nModule"]
+            USERS["Users\nModule"]
+            ROLES["Roles\nModule"]
+            CATALOGS["Catalogs\nModule"]
+            ORDERS["Orders\nModule"]
+            PURCHASES["Purchases\nModule"]
+            PRODUCTION["Production\nModule"]
+            INVENTORY["Inventory\nModule"]
+            DISPATCH["Dispatch\nModule"]
+            REPORTS["Reports\nModule"]
+        end
+    end
+
+    subgraph DATA["DATOS"]
+        PRISMA["Prisma ORM"]
+        DB[("PostgreSQL\n20+ tablas")]
+    end
+
+    subgraph INFRA["INFRAESTRUCTURA"]
+        RAILWAY["Railway.app\n(Cloud Deploy)"]
+    end
+
+    WEB -->|"HTTP + JWT"| GUARD
+    MOBILE -->|"HTTP + JWT"| GUARD
+    GUARD --> MODULES
+    MODULES --> MOD
+    MOD --> PRISMA
+    PRISMA --> DB
+    API --> RAILWAY
+    CLIENT --> RAILWAY
+
+    style CLIENT fill:#1e1b4b,stroke:#6366f1,color:#fff
+    style API fill:#172554,stroke:#3b82f6,color:#fff
+    style DATA fill:#14532d,stroke:#22c55e,color:#fff
+    style INFRA fill:#78350f,stroke:#f59e0b,color:#fff
+    </pre>
+</div>
+
+<!-- ============================================ -->
+<h2>8. Flujo Técnico &mdash; Request Lifecycle</h2>
+
+<div class="diagram-container">
+    <pre class="mermaid">
+sequenceDiagram
+    participant U as Usuario (Browser)
+    participant N as Next.js (Frontend)
+    participant A as NestJS (API)
+    participant G as Auth Guard
+    participant R as RBAC Guard
+    participant S as Service
+    participant P as Prisma
+    participant DB as PostgreSQL
+
+    U->>N: Click "Nueva Venta"
+    N->>A: POST /api/orders (JWT en header)
+    A->>G: Valida JWT
+    G-->>A: ✓ Token válido, userId extraído
+    A->>R: Verifica permiso "orders.create"
+    R->>P: Busca roles y permisos del user
+    P->>DB: SELECT roles, permissions
+    DB-->>P: Roles + permisos
+    P-->>R: Permisos efectivos
+    R-->>A: ✓ Permiso concedido
+
+    A->>S: OrdersService.create(dto)
+    S->>P: Buscar cliente (ruta, tipo)
+    P->>DB: SELECT client, route
+    DB-->>P: Cliente con ruta y tipo
+    S->>S: Calcular precios por línea
+    Note over S: precio = base + (tarifa × factor)
+    S->>P: Crear Order + OrderLines
+    P->>DB: INSERT order, order_lines
+    DB-->>P: Order creado
+    S->>P: Crear OrderStatusLog (REGISTERED)
+    P->>DB: INSERT status_log
+    DB-->>P: Log creado
+    P-->>S: Order completo
+    S-->>A: OrderResponseDto
+    A-->>N: 201 Created + order data
+    N-->>U: Muestra pedido creado ✓
+    </pre>
+</div>
+
+<!-- ============================================ -->
+<h2>9. Flujo Técnico &mdash; Impacto en Inventario</h2>
+
+<div class="diagram-container">
+    <pre class="mermaid">
+sequenceDiagram
+    participant U as Jefe Producción
+    participant A as API
+    participant PS as ProductionService
+    participant IS as InventoryService
+    participant DB as PostgreSQL
+
+    U->>A: POST /api/production/:id/complete
+    A->>PS: complete(productionId, resultDto)
+
+    PS->>DB: Obtener orden de producción + inputs
+    DB-->>PS: Orden con MP utilizada
+
+    Note over PS: Registrar outputs reales
+
+    PS->>IS: registrarSalidaMP(items, cantidades)
+    IS->>DB: INSERT movement (PRODUCTION_OUT)
+    IS->>DB: UPDATE inventory_item SET stock = stock - qty
+    DB-->>IS: ✓ Stock MP actualizado
+
+    PS->>IS: registrarEntradaPT(productos, cantidades)
+    IS->>DB: INSERT movement (PRODUCTION_IN)
+    IS->>DB: UPDATE inventory_item SET stock = stock + qty
+    DB-->>IS: ✓ Stock PT actualizado
+
+    Note over PS: Calcular métricas
+    PS->>PS: rendimiento = output / input × 100
+    PS->>PS: merma = input - output
+    PS->>PS: costoReal = costoMP / outputQty
+
+    PS->>DB: UPDATE production_order SET status = COMPLETED
+    DB-->>PS: ✓
+
+    PS->>IS: verificarAlertas()
+    IS->>DB: SELECT items WHERE stock <= minStock
+    DB-->>IS: Items con stock bajo
+
+    PS-->>A: ProductionResultDto
+    A-->>U: 200 OK + métricas de producción
+    </pre>
+</div>
+
+<!-- ============================================ -->
+<h2>10. Mapa de Dependencias entre Módulos</h2>
+
+<div class="diagram-container">
+    <pre class="mermaid">
+flowchart LR
+    AUTH["EP-01\nAuth + RBAC"] --> ORDERS
+    AUTH --> CATALOGS
+    CATALOGS["EP-02\nCatálogos"] --> ORDERS["EP-03\nPedidos"]
+    CATALOGS --> PURCHASES["EP-04\nCompras"]
+    CATALOGS --> DISPATCH
+
+    PURCHASES --> INVENTORY
+    PURCHASES --> PRODUCTION["EP-05\nProducción"]
+
+    PRODUCTION --> INVENTORY["EP-06\nInventario"]
+
+    ORDERS --> DISPATCH["EP-07\nDespacho"]
+    INVENTORY --> DISPATCH
+
+    style AUTH fill:#dc2626,stroke:#fca5a5,color:#fff
+    style CATALOGS fill:#2563eb,stroke:#93c5fd,color:#fff
+    style ORDERS fill:#7c3aed,stroke:#c4b5fd,color:#fff
+    style PURCHASES fill:#0891b2,stroke:#67e8f9,color:#fff
+    style PRODUCTION fill:#ca8a04,stroke:#fde047,color:#fff
+    style INVENTORY fill:#16a34a,stroke:#86efac,color:#fff
+    style DISPATCH fill:#ea580c,stroke:#fdba74,color:#fff
+    </pre>
+</div>
+
+<div class="note">
+    <strong>Orden de desarrollo obligatorio:</strong><br>
+    Sprint 1: Auth + Catálogos (sin esto no funciona NADA)<br>
+    Sprint 2: Pedidos (depende de catálogos)<br>
+    Sprint 3: Compras + Producción (depende de catálogos + inventario)<br>
+    Sprint 4: Inventario (depende de compras y producción)<br>
+    Sprint 5: Despacho (depende de pedidos + inventario)
+</div>
+
+<!-- ============================================ -->
+<h2>11. Resumen de Módulos y Responsables</h2>
+
+<div class="grid-2">
+    <div class="card">
+        <h4>EP-01: Auth + RBAC (Sprint 1)</h4>
+        <ul>
+            <li>Login con JWT</li>
+            <li>CRUD usuarios</li>
+            <li>CRUD roles con permisos</li>
+            <li>Guards de autenticación y autorización</li>
+            <li>Log de accesos</li>
+        </ul>
+        <p><strong>10 HU | Prioridad: CRÍTICA</strong></p>
+    </div>
+    <div class="card">
+        <h4>EP-02: Catálogos (Sprint 1)</h4>
+        <ul>
+            <li>Productos (SKU)</li>
+            <li>Clientes (pollerías)</li>
+            <li>Proveedores</li>
+            <li>Rutas + tarifas</li>
+            <li>Vehículos y choferes</li>
+            <li>Precios con historial</li>
+        </ul>
+        <p><strong>7 HU | Prioridad: CRÍTICA</strong></p>
+    </div>
+    <div class="card">
+        <h4>EP-03: Pedidos (Sprint 2)</h4>
+        <ul>
+            <li>Registrar pedido con cálculo automático</li>
+            <li>Listar por fecha de entrega</li>
+            <li>Trazabilidad de estados</li>
+            <li>Modificar / cancelar</li>
+            <li>Resumen consolidado por SKU</li>
+        </ul>
+        <p><strong>7 HU | Prioridad: ALTA</strong></p>
+    </div>
+    <div class="card">
+        <h4>EP-04: Compras (Sprint 3)</h4>
+        <ul>
+            <li>Registrar compra de MP</li>
+            <li>Confirmar recepción</li>
+            <li>Impacto automático en inventario MP</li>
+            <li>Historial por proveedor</li>
+            <li>Resumen de costos</li>
+        </ul>
+        <p><strong>7 HU | Prioridad: ALTA</strong></p>
+    </div>
+    <div class="card">
+        <h4>EP-05: Producción (Sprint 3)</h4>
+        <ul>
+            <li>Crear orden de producción</li>
+            <li>Registrar resultado real</li>
+            <li>Cálculo: rendimiento, merma, costo real</li>
+            <li>Estimación de producción</li>
+            <li>Movimientos automáticos en inventario</li>
+        </ul>
+        <p><strong>7 HU | Prioridad: ALTA</strong></p>
+    </div>
+    <div class="card">
+        <h4>EP-06: Inventario Dual (Sprint 4)</h4>
+        <ul>
+            <li>Stock MP + Stock PT independientes</li>
+            <li>Movimientos automáticos por transacciones</li>
+            <li>Alertas de stock mínimo</li>
+            <li>Ajustes manuales con motivo</li>
+            <li>Kardex por ítem</li>
+        </ul>
+        <p><strong>7 HU | Prioridad: MEDIA-ALTA</strong></p>
+    </div>
+    <div class="card">
+        <h4>EP-07: Despacho (Sprint 5)</h4>
+        <ul>
+            <li>Agrupar pedidos por ruta</li>
+            <li>Asignar vehículo + chofer</li>
+            <li>Generar hoja de ruta (PDF)</li>
+            <li>Registro de entregas y cobros</li>
+            <li>Novedades en campo</li>
+        </ul>
+        <p><strong>7 HU | Prioridad: ALTA</strong></p>
+    </div>
+    <div class="card">
+        <h4>Transversal: Dashboard + Reportes</h4>
+        <ul>
+            <li>KPIs del día (ventas, cobros, producción)</li>
+            <li>Alertas de stock bajo</li>
+            <li>Reportes por período</li>
+            <li>Exportación de datos</li>
+        </ul>
+        <p><strong>Integrado en Sprint 5</strong></p>
+    </div>
+</div>
+
+<script>
+    mermaid.initialize({
+        startOnLoad: true,
+        theme: 'dark',
+        themeVariables: {
+            darkMode: true,
+            background: '#111',
+            primaryColor: '#3b82f6',
+            primaryTextColor: '#fff',
+            primaryBorderColor: '#60a5fa',
+            lineColor: '#6b7280',
+            secondaryColor: '#4c1d95',
+            tertiaryColor: '#14532d',
+            fontFamily: 'Segoe UI, system-ui, sans-serif',
+            fontSize: '14px'
+        },
+        flowchart: {
+            htmlLabels: true,
+            curve: 'basis'
+        },
+        sequence: {
+            actorMargin: 50,
+            messageMargin: 40
+        }
+    });
+</script>
+
+</body>
+</html>
