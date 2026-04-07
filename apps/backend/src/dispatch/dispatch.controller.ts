@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { DispatchService } from './dispatch.service';
 import { CreateLoadSheetDto } from './dto/create-load-sheet.dto';
+import { ConfirmDispatchDto } from './dto/confirm-dispatch.dto';
 import { RequirePermissions } from '../auth/decorators/permissions.decorator';
 
 interface AuthenticatedRequest {
@@ -46,5 +47,21 @@ export class DispatchController {
   @RequirePermissions('despacho.leer')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.dispatchService.findOne(id);
+  }
+
+  @Get(':id/route-sheet')
+  @RequirePermissions('despacho.leer')
+  getRouteSheet(@Param('id', ParseIntPipe) id: number) {
+    return this.dispatchService.getRouteSheet(id);
+  }
+
+  @Post(':id/confirm')
+  @RequirePermissions('despacho.editar')
+  confirmDispatch(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: ConfirmDispatchDto,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    return this.dispatchService.confirmDispatch(id, dto, req.user.id);
   }
 }
