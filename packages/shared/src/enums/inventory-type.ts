@@ -1,0 +1,4 @@
+export enum InventoryType {
+  MATERIA_PRIMA = 'MATERIA_PRIMA',
+  PRODUCTO_TERMINADO = 'PRODUCTO_TERMINADO',
+}
