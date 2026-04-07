@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 
 export interface LoginResponse {
@@ -65,5 +66,30 @@ export class AuthService {
         permisos,
       },
     };
+  }
+
+  async changePassword(userId: number, dto: ChangePasswordDto): Promise<{ message: string }> {
+    const usuario = await this.prisma.usuario.findUnique({
+      where: { id: userId },
+    });
+
+    if (!usuario) {
+      throw new UnauthorizedException('Usuario no encontrado');
+    }
+
+    const contrasenaValida = await bcrypt.compare(dto.contrasenaActual, usuario.contrasena);
+
+    if (!contrasenaValida) {
+      throw new UnauthorizedException('La contraseña actual es incorrecta');
+    }
+
+    const contrasenaHash = await bcrypt.hash(dto.contrasenaNueva, 10);
+
+    await this.prisma.usuario.update({
+      where: { id: userId },
+      data: { contrasena: contrasenaHash },
+    });
+
+    return { message: 'Contraseña actualizada correctamente' };
   }
 }
