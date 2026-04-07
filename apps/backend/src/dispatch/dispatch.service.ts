@@ -14,6 +14,38 @@ import {
 } from '@siadlp/shared';
 import { CreateLoadSheetDto } from './dto/create-load-sheet.dto';
 import { ConfirmDispatchDto } from './dto/confirm-dispatch.dto';
+import { RegisterDeliveryDto } from './dto/register-delivery.dto';
+import { RegisterCollectionDto } from './dto/register-collection.dto';
+
+interface DeliveryStatusEntry {
+  pedidoId: number;
+  cliente: { razonSocial: string };
+  entrega: {
+    id: number;
+    estado: string;
+    montoCobrado: number | null;
+    metodoPago: string | null;
+    numeroComprobante: string | null;
+    observacion: string | null;
+    fechaEntrega: Date | null;
+  } | null;
+  totalPedido: number;
+}
+
+interface DailyCollectionSummary {
+  porChofer: Array<{
+    chofer: { nombre: string; apellido: string };
+    totalCobrado: number;
+    cantidadEntregas: number;
+  }>;
+  porRuta: Array<{
+    ruta: { nombre: string; zona: string };
+    totalCobrado: number;
+    cantidadEntregas: number;
+  }>;
+  totalGeneral: number;
+  totalEntregas: number;
+}
 
 interface RouteGroup {
   ruta: { id: number; nombre: string; zona: string };
@@ -466,6 +498,298 @@ export class DispatchService {
       paradas,
       totalKg: hoja.totalKg.toNumber(),
       totalMonto: hoja.totalMonto.toNumber(),
+    };
+  }
+
+  async registerDelivery(
+    pedidoId: number,
+    dto: RegisterDeliveryDto,
+    userId: number,
+  ) {
+    return this.prisma.$transaction(async (tx) => {
+      const entrega = await tx.entrega.findUnique({
+        where: { pedidoId },
+      });
+
+      if (!entrega) {
+        throw new NotFoundException(
+          `Entrega para pedido ${pedidoId} no encontrada`,
+        );
+      }
+
+      if (entrega.estado !== DeliveryStatus.PENDIENTE) {
+        throw new BadRequestException(
+          `La entrega ya fue registrada. Estado actual: ${entrega.estado}`,
+        );
+      }
+
+      // Determine new order status
+      let newOrderStatus: string;
+      if (
+        dto.estado === 'ENTREGADO' &&
+        dto.montoCobrado !== undefined &&
+        dto.montoCobrado > 0
+      ) {
+        newOrderStatus = OrderStatus.COLLECTED;
+      } else if (dto.estado === 'ENTREGADO') {
+        newOrderStatus = OrderStatus.DELIVERED;
+      } else {
+        newOrderStatus = OrderStatus.ISSUE;
+      }
+
+      // Determine new delivery status
+      const newDeliveryStatus =
+        newOrderStatus === OrderStatus.COLLECTED
+          ? DeliveryStatus.COBRADO
+          : dto.estado === 'ENTREGADO'
+            ? DeliveryStatus.ENTREGADO
+            : DeliveryStatus.NOVEDAD;
+
+      // Update entrega
+      const updatedEntrega = await tx.entrega.update({
+        where: { pedidoId },
+        data: {
+          estado: newDeliveryStatus,
+          montoCobrado: dto.montoCobrado,
+          metodoPago: dto.metodoPago,
+          numeroComprobante: dto.numeroComprobante,
+          observacion: dto.observacion,
+          fechaEntrega: new Date(),
+          registradoPorId: userId,
+        },
+        include: {
+          pedido: {
+            include: {
+              cliente: { select: { id: true, razonSocial: true } },
+            },
+          },
+        },
+      });
+
+      // Get current pedido estado for log
+      const pedido = await tx.pedido.findUniqueOrThrow({
+        where: { id: pedidoId },
+        select: { estado: true },
+      });
+
+      // Update pedido estado
+      await tx.pedido.update({
+        where: { id: pedidoId },
+        data: { estado: newOrderStatus },
+      });
+
+      // Create log
+      await tx.estadoPedidoLog.create({
+        data: {
+          pedidoId,
+          estadoAnterior: pedido.estado,
+          estadoNuevo: newOrderStatus,
+          motivo: `Entrega registrada por chofer. Estado: ${dto.estado}`,
+          usuarioId: userId,
+        },
+      });
+
+      return updatedEntrega;
+    });
+  }
+
+  async getDeliveryStatus(hojaCargaId: number): Promise<DeliveryStatusEntry[]> {
+    const hoja = await this.prisma.hojaCarga.findUnique({
+      where: { id: hojaCargaId },
+      include: {
+        pedidos: {
+          include: {
+            cliente: { select: { razonSocial: true } },
+            entrega: {
+              select: {
+                id: true,
+                estado: true,
+                montoCobrado: true,
+                metodoPago: true,
+                numeroComprobante: true,
+                observacion: true,
+                fechaEntrega: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!hoja) {
+      throw new NotFoundException(
+        `Hoja de carga con id ${hojaCargaId} no encontrada`,
+      );
+    }
+
+    return hoja.pedidos.map((pedido) => ({
+      pedidoId: pedido.id,
+      cliente: { razonSocial: pedido.cliente.razonSocial },
+      entrega: pedido.entrega
+        ? {
+            id: pedido.entrega.id,
+            estado: pedido.entrega.estado,
+            montoCobrado: pedido.entrega.montoCobrado?.toNumber() ?? null,
+            metodoPago: pedido.entrega.metodoPago,
+            numeroComprobante: pedido.entrega.numeroComprobante,
+            observacion: pedido.entrega.observacion,
+            fechaEntrega: pedido.entrega.fechaEntrega,
+          }
+        : null,
+      totalPedido: pedido.total.toNumber(),
+    }));
+  }
+
+  async registerCollection(
+    pedidoId: number,
+    dto: RegisterCollectionDto,
+    userId: number,
+  ) {
+    return this.prisma.$transaction(async (tx) => {
+      const pedido = await tx.pedido.findUnique({
+        where: { id: pedidoId },
+        select: { id: true, estado: true },
+      });
+
+      if (!pedido) {
+        throw new NotFoundException(`Pedido ${pedidoId} no encontrado`);
+      }
+
+      if (pedido.estado !== OrderStatus.DELIVERED) {
+        throw new BadRequestException(
+          `Solo se puede cobrar un pedido en estado DELIVERED. Estado actual: ${pedido.estado}`,
+        );
+      }
+
+      const entrega = await tx.entrega.findUnique({
+        where: { pedidoId },
+      });
+
+      if (!entrega) {
+        throw new NotFoundException(
+          `Entrega para pedido ${pedidoId} no encontrada`,
+        );
+      }
+
+      // Update entrega
+      const updatedEntrega = await tx.entrega.update({
+        where: { pedidoId },
+        data: {
+          montoCobrado: dto.montoCobrado,
+          metodoPago: dto.metodoPago,
+          numeroComprobante: dto.numeroComprobante,
+          estado: DeliveryStatus.COBRADO,
+        },
+        include: {
+          pedido: {
+            include: {
+              cliente: { select: { id: true, razonSocial: true } },
+            },
+          },
+        },
+      });
+
+      // Update pedido
+      await tx.pedido.update({
+        where: { id: pedidoId },
+        data: { estado: OrderStatus.COLLECTED },
+      });
+
+      // Create log
+      await tx.estadoPedidoLog.create({
+        data: {
+          pedidoId,
+          estadoAnterior: OrderStatus.DELIVERED,
+          estadoNuevo: OrderStatus.COLLECTED,
+          motivo: 'Cobro registrado por separado',
+          usuarioId: userId,
+        },
+      });
+
+      return updatedEntrega;
+    });
+  }
+
+  async getDailyCollectionSummary(
+    fecha: string,
+  ): Promise<DailyCollectionSummary> {
+    const day = new Date(fecha);
+    const nextDay = new Date(day);
+    nextDay.setDate(nextDay.getDate() + 1);
+
+    const entregas = await this.prisma.entrega.findMany({
+      where: {
+        estado: DeliveryStatus.COBRADO,
+        fechaEntrega: { gte: day, lt: nextDay },
+      },
+      include: {
+        pedido: {
+          include: {
+            hojaCarga: {
+              include: {
+                chofer: { select: { nombre: true, apellido: true } },
+                ruta: { select: { nombre: true, zona: true } },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const choferMap = new Map<
+      string,
+      { chofer: { nombre: string; apellido: string }; totalCobrado: number; cantidadEntregas: number }
+    >();
+
+    const rutaMap = new Map<
+      string,
+      { ruta: { nombre: string; zona: string }; totalCobrado: number; cantidadEntregas: number }
+    >();
+
+    let totalGeneral = 0;
+
+    for (const entrega of entregas) {
+      const monto = entrega.montoCobrado?.toNumber() ?? 0;
+      const hojaCarga = entrega.pedido.hojaCarga;
+
+      if (!hojaCarga) continue;
+
+      totalGeneral += monto;
+
+      // Group by chofer
+      const choferKey = `${hojaCarga.chofer.nombre}_${hojaCarga.chofer.apellido}`;
+      const existingChofer = choferMap.get(choferKey);
+      if (existingChofer) {
+        existingChofer.totalCobrado += monto;
+        existingChofer.cantidadEntregas += 1;
+      } else {
+        choferMap.set(choferKey, {
+          chofer: { nombre: hojaCarga.chofer.nombre, apellido: hojaCarga.chofer.apellido },
+          totalCobrado: monto,
+          cantidadEntregas: 1,
+        });
+      }
+
+      // Group by ruta
+      const rutaKey = hojaCarga.ruta.nombre;
+      const existingRuta = rutaMap.get(rutaKey);
+      if (existingRuta) {
+        existingRuta.totalCobrado += monto;
+        existingRuta.cantidadEntregas += 1;
+      } else {
+        rutaMap.set(rutaKey, {
+          ruta: { nombre: hojaCarga.ruta.nombre, zona: hojaCarga.ruta.zona },
+          totalCobrado: monto,
+          cantidadEntregas: 1,
+        });
+      }
+    }
+
+    return {
+      porChofer: Array.from(choferMap.values()),
+      porRuta: Array.from(rutaMap.values()),
+      totalGeneral,
+      totalEntregas: entregas.length,
     };
   }
 }

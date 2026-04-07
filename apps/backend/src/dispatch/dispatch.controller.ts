@@ -11,6 +11,8 @@ import {
 import { DispatchService } from './dispatch.service';
 import { CreateLoadSheetDto } from './dto/create-load-sheet.dto';
 import { ConfirmDispatchDto } from './dto/confirm-dispatch.dto';
+import { RegisterDeliveryDto } from './dto/register-delivery.dto';
+import { RegisterCollectionDto } from './dto/register-collection.dto';
 import { RequirePermissions } from '../auth/decorators/permissions.decorator';
 
 interface AuthenticatedRequest {
@@ -26,6 +28,12 @@ export class DispatchController {
   @RequirePermissions('despacho.leer')
   getOrdersGroupedByRoute(@Param('fecha') fecha: string) {
     return this.dispatchService.getOrdersGroupedByRoute(fecha);
+  }
+
+  @Get('collection-summary/:fecha')
+  @RequirePermissions('despacho.leer')
+  getCollectionSummary(@Param('fecha') fecha: string) {
+    return this.dispatchService.getDailyCollectionSummary(fecha);
   }
 
   @Get()
@@ -63,5 +71,31 @@ export class DispatchController {
     @Request() req: AuthenticatedRequest,
   ) {
     return this.dispatchService.confirmDispatch(id, dto, req.user.id);
+  }
+
+  @Get(':id/delivery-status')
+  @RequirePermissions('despacho.leer')
+  getDeliveryStatus(@Param('id', ParseIntPipe) id: number) {
+    return this.dispatchService.getDeliveryStatus(id);
+  }
+
+  @Post('delivery/:pedidoId')
+  @RequirePermissions('despacho.registrar_entrega')
+  registerDelivery(
+    @Param('pedidoId', ParseIntPipe) pedidoId: number,
+    @Body() dto: RegisterDeliveryDto,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    return this.dispatchService.registerDelivery(pedidoId, dto, req.user.id);
+  }
+
+  @Post('collection/:pedidoId')
+  @RequirePermissions('despacho.registrar_entrega')
+  registerCollection(
+    @Param('pedidoId', ParseIntPipe) pedidoId: number,
+    @Body() dto: RegisterCollectionDto,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    return this.dispatchService.registerCollection(pedidoId, dto, req.user.id);
   }
 }
