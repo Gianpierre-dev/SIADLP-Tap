@@ -4,11 +4,12 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { RolesModule } from './roles/roles.module';
+import { CatalogsModule } from './catalogs/catalogs.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from './auth/guards/permissions.guard';
 
 @Module({
-  imports: [PrismaModule, AuthModule, UsersModule, RolesModule],
+  imports: [PrismaModule, AuthModule, UsersModule, RolesModule, CatalogsModule],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: PermissionsGuard },
