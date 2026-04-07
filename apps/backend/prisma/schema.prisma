@@ -18,10 +18,11 @@ model Usuario {
 
   rol Rol @relation(fields: [rolId], references: [id], onDelete: Restrict)
 
-  pedidosCreadoPor       Pedido[]               @relation("PedidoCreadoPor")
-  estadoPedidoLogs       EstadoPedidoLog[]
-  ordenesCompraCreadoPor OrdenCompra[]           @relation("OcCreadoPor")
-  movimientosInventario  MovimientoInventario[]
+  pedidosCreadoPor           Pedido[]               @relation("PedidoCreadoPor")
+  estadoPedidoLogs           EstadoPedidoLog[]
+  ordenesCompraCreadoPor     OrdenCompra[]          @relation("OcCreadoPor")
+  movimientosInventario      MovimientoInventario[]
+  ordenesProduccionCreadoPor OrdenProduccion[]      @relation("ProduccionCreadoPor")
 
   @@map("usuarios")
 }
@@ -111,7 +112,8 @@ model Producto {
   fechaCreacion      DateTime @default(now()) @map("fecha_creacion")
   fechaActualizacion DateTime @updatedAt @map("fecha_actualizacion")
 
-  detallesPedido DetallePedido[]
+  detallesPedido      DetallePedido[]
+  productosProduccion ProductoProduccion[]
 
   @@map("productos")
 }
@@ -245,7 +247,8 @@ model ItemInventario {
   activo       Boolean  @default(true)
   fechaCreacion DateTime @default(now()) @map("fecha_creacion")
 
-  movimientos MovimientoInventario[]
+  movimientos      MovimientoInventario[]
+  insumosProduccion InsumoProduccion[]
 
   @@unique([tipo, nombre])
   @@map("items_inventario")
@@ -265,4 +268,46 @@ model MovimientoInventario {
   usuario        Usuario        @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
 
   @@map("movimientos_inventario")
+}
+
+model OrdenProduccion {
+  id                 Int      @id @default(autoincrement())
+  fecha              DateTime @db.Date
+  estado             String   @default("PENDIENTE")
+  observacion        String?
+  creadoPorId        Int      @map("creado_por_id")
+  fechaCreacion      DateTime @default(now()) @map("fecha_creacion")
+  fechaActualizacion DateTime @updatedAt @map("fecha_actualizacion")
+
+  creadoPor Usuario              @relation("ProduccionCreadoPor", fields: [creadoPorId], references: [id], onDelete: Restrict)
+  insumos   InsumoProduccion[]
+  productos ProductoProduccion[]
+
+  @@map("ordenes_produccion")
+}
+
+model InsumoProduccion {
+  id                Int     @id @default(autoincrement())
+  ordenProduccionId Int     @map("orden_produccion_id")
+  itemInventarioId  Int     @map("item_inventario_id")
+  cantidad          Decimal @db.Decimal(10, 2)
+  costoUnitario     Decimal @map("costo_unitario") @db.Decimal(10, 2)
+  costoTotal        Decimal @map("costo_total") @db.Decimal(10, 2)
+
+  ordenProduccion OrdenProduccion @relation(fields: [ordenProduccionId], references: [id], onDelete: Cascade)
+  itemInventario  ItemInventario  @relation(fields: [itemInventarioId], references: [id], onDelete: Restrict)
+
+  @@map("insumos_produccion")
+}
+
+model ProductoProduccion {
+  id                Int     @id @default(autoincrement())
+  ordenProduccionId Int     @map("orden_produccion_id")
+  productoId        Int     @map("producto_id")
+  cantidad          Decimal @db.Decimal(10, 2)
+
+  ordenProduccion OrdenProduccion @relation(fields: [ordenProduccionId], references: [id], onDelete: Cascade)
+  producto        Producto        @relation(fields: [productoId], references: [id], onDelete: Restrict)
+
+  @@map("productos_produccion")
 }
