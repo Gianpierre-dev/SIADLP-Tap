@@ -2,5 +2,7 @@ node_modules/
 dist/
 .next/
 .superpowers/
+docs/superpowers/
+docs/Grupo_16_*
 *.env.local
 .turbo/

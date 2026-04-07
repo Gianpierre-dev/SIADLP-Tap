@@ -102,11 +102,11 @@
 <body>
 
 <h1>SIADLP <span>Flujos del Sistema</span></h1>
-<p class="subtitle">Sistema de Información para la Administración y Distribución de Papa Procesada &mdash; La Cosecha S.A.C.</p>
+<p class="subtitle">Sistema de Informaci&oacute;n para la Administraci&oacute;n y Distribuci&oacute;n de Papa Procesada &mdash; La Cosecha S.A.C.</p>
 
 <!-- ============================================ -->
 <h2>1. Flujo de Negocio &mdash; Ciclo Operativo Diario</h2>
-<p>Así opera La Cosecha todos los días, de principio a fin:</p>
+<p>As&iacute; opera La Cosecha todos los d&iacute;as, de principio a fin:</p>
 
 <div class="diagram-container">
     <pre class="mermaid">
@@ -115,15 +115,16 @@ flowchart TD
         A1[/"Pollerías envían pedidos\n(WhatsApp, teléfono)"/]
         A2["Vendedor registra pedidos\nen el sistema"]
         A3["Sistema calcula precios\nautomáticamente"]
-        A4["Jefe de Producción consulta\npedidos confirmados para mañana"]
-        A5["Sistema genera estimación\nde producción (MP necesaria)"]
+        A4["Vendedor CONFIRMA\npedidos válidos"]
+        A5["Jefe de Producción consulta\npedidos confirmados para mañana"]
+        A6["Sistema genera estimación\nde producción (MP necesaria)"]
     end
 
     subgraph MADRUGADA["MADRUGADA (3:00 AM - 7:00 AM)"]
         B1["Jefe de Compras verifica\nstock de materia prima"]
         B2{"¿Stock\nsuficiente?"}
-        B3["Registra compra\na proveedor"]
-        B4["Recibe MP y confirma\n→ Stock MP se actualiza"]
+        B3["Registra orden de compra\na proveedor"]
+        B4["Recibe MP y confirma recepción\n→ Stock MP se actualiza"]
         B5["Producción inicia:\npelado, cortado, embolsado"]
         B6["Registra resultado:\ncantidad real obtenida"]
         B7["Sistema calcula:\nrendimiento, merma, costo real"]
@@ -131,7 +132,7 @@ flowchart TD
     end
 
     subgraph MANANA["MAÑANA (7:00 AM - 12:00 PM)"]
-        C1["Despachador agrupa\npedidos por ruta"]
+        C1["Despachador agrupa\npedidos confirmados por ruta"]
         C2["Asigna vehículo + chofer\npor cada ruta"]
         C3["Sistema genera\nhoja de ruta (PDF)"]
         C4["Registra N° GRE"]
@@ -154,8 +155,8 @@ flowchart TD
         E3["Gerente revisa dashboard:\nventas, cobros, novedades"]
     end
 
-    A1 --> A2 --> A3 --> A4 --> A5
-    A5 --> B1
+    A1 --> A2 --> A3 --> A4 --> A5 --> A6
+    A6 --> B1
     B1 --> B2
     B2 -->|No| B3 --> B4
     B2 -->|Sí| B5
@@ -179,20 +180,19 @@ flowchart TD
 </div>
 
 <div class="note">
-    <strong>Clave:</strong> Todo el día gira alrededor de los PEDIDOS. Los pedidos de mañana determinan cuánto producir,
-    cuánto comprar de materia prima y cómo armar las rutas de despacho. Sin pedidos registrados, la empresa trabaja "a ciegas".
+    <strong>Clave:</strong> Todo el d&iacute;a gira alrededor de los PEDIDOS. Los pedidos de ma&ntilde;ana determinan cu&aacute;nto producir,
+    cu&aacute;nto comprar de materia prima y c&oacute;mo armar las rutas de despacho. Sin pedidos registrados, la empresa trabaja "a ciegas".
 </div>
 
 <!-- ============================================ -->
-<h2>2. Flujo de Precios &mdash; Cálculo Automático</h2>
+<h2>2. Flujo de Precios &mdash; C&aacute;lculo Autom&aacute;tico</h2>
 
 <div class="diagram-container">
     <pre class="mermaid">
 flowchart LR
     A["Precio Base SKU\n(ej: S/ 5.00)"] --> D
-    B["Tarifa Ruta\n(ej: S/ 0.80)"] --> D
-    C["Factor Tipo Cliente\nMayorista: 0.95\nMinorista: 1.00"] --> D
-    D["PRECIO UNITARIO\n= Base + (Tarifa × Factor)"]
+    B["Tarifa Ruta por Ubigeo\n(ej: S/ 0.80)"] --> D
+    D["PRECIO UNITARIO\n= Base + Tarifa Ruta"]
     D --> E["× Cantidad"]
     E --> F["TOTAL LÍNEA"]
     F --> G["Σ Líneas = TOTAL PEDIDO"]
@@ -203,16 +203,54 @@ flowchart LR
 </div>
 
 <div class="formula">
-    <strong>Fórmula:</strong> precioUnitario = precioBaseSKU + (tarifaRuta × factorTipoCliente)<br><br>
+    <strong>F&oacute;rmula:</strong> precioUnitario = precioBaseSKU + tarifaRuta<br><br>
     <strong>Ejemplo:</strong><br>
     Papa Amarilla 1kg Ziplock = S/ 5.00 (base)<br>
-    Ruta Norte SJL = S/ 0.80 (flete)<br>
-    Tipo: Mayorista = 0.95 (factor)<br><br>
-    <strong>Precio = 5.00 + (0.80 × 0.95) = S/ 5.76 por kg</strong>
+    Ruta Norte SJL = S/ 0.80 (flete por ubicaci&oacute;n)<br><br>
+    <strong>Precio = 5.00 + 0.80 = S/ 5.80 por kg</strong>
+</div>
+
+<div class="note">
+    <strong>Justificaci&oacute;n:</strong> La tarifa de ruta refleja el costo log&iacute;stico real de distribuci&oacute;n a cada zona de Lima.
+    El precio base del SKU es uniforme para todos los clientes; la variaci&oacute;n est&aacute; en la ruta de entrega.
 </div>
 
 <!-- ============================================ -->
-<h2>3. Flujo de Producción &mdash; Transformación MP → PT</h2>
+<h2>3. Flujo de Compras &mdash; Abastecimiento de Materia Prima</h2>
+
+<div class="diagram-container">
+    <pre class="mermaid">
+flowchart TD
+    A["Jefe de Compras identifica\nnecesidad de materia prima"] --> B{"¿Stock MP\nsuficiente?"}
+    B -->|Sí| Z["No se requiere compra"]
+    B -->|No| C["Crea Orden de Compra\n(proveedor + ítems + cantidades)"]
+    C --> D["OC en estado EMITIDA"]
+    D --> E["Proveedor confirma\ndisponibilidad"]
+    E --> F["OC pasa a CONFIRMADA"]
+    F --> G["Proveedor despacha\nmateria prima"]
+    G --> H["OC pasa a EN CAMINO"]
+    H --> I["Almacenero recibe MP\nen planta"]
+    I --> J{"¿Cantidad recibida\n= cantidad solicitada?"}
+    J -->|Sí| K["Confirma recepción completa"]
+    J -->|No| L["Registra cantidad\nefectivamente recibida"]
+    K --> M["OC pasa a RECIBIDA"]
+    L --> M
+    M --> N["Sistema actualiza\nStock MP automáticamente\n(+kg recibidos)"]
+    N --> O["Stock MP disponible\npara producción"]
+
+    style C fill:#1e40af,stroke:#60a5fa,color:#fff
+    style M fill:#15803d,stroke:#4ade80,color:#fff
+    style N fill:#4c1d95,stroke:#a78bfa,color:#fff
+    </pre>
+</div>
+
+<div class="note">
+    <strong>Regla clave:</strong> El stock de materia prima SOLO se incrementa cuando el almacenero confirma la recepci&oacute;n
+    de la orden de compra, no cuando se emite. Esto garantiza que el inventario refleje lo que f&iacute;sicamente est&aacute; en planta.
+</div>
+
+<!-- ============================================ -->
+<h2>4. Flujo de Producci&oacute;n &mdash; Transformaci&oacute;n MP &rarr; PT</h2>
 
 <div class="diagram-container">
     <pre class="mermaid">
@@ -253,13 +291,13 @@ flowchart LR
 </div>
 
 <div class="formula">
-    <strong>Rendimiento %</strong> = (Producto Terminado / Materia Prima) × 100<br>
+    <strong>Rendimiento %</strong> = (Producto Terminado / Materia Prima) &times; 100<br>
     <strong>Merma</strong> = Materia Prima - Producto Terminado<br>
     <strong>Costo Real/kg</strong> = Costo Total MP / kg de Producto Terminado
 </div>
 
 <!-- ============================================ -->
-<h2>4. Flujo de Inventario Dual</h2>
+<h2>5. Flujo de Inventario Dual</h2>
 
 <div class="diagram-container">
     <pre class="mermaid">
@@ -272,7 +310,7 @@ flowchart TD
         PT1[("Stock PT\n(papa procesada por SKU)")]
     end
 
-    COMPRA["Compra confirmada"] -->|"+kg MP"| MP1
+    COMPRA["Compra confirmada\n(recepción de OC)"] -->|"+kg MP"| MP1
     MP1 -->|"-kg MP"| PRODUCCION["Producción inicia"]
     PRODUCCION -->|"+kg PT"| PT1
     PT1 -->|"-kg PT"| DESPACHO["Despacho confirmado"]
@@ -295,29 +333,36 @@ flowchart TD
 </div>
 
 <div class="note">
-    <strong>Regla clave:</strong> Los movimientos de inventario son AUTOMÁTICOS. Ningún usuario mueve stock manualmente
-    (excepto ajustes con motivo). El stock se actualiza solo cuando se confirma una compra, se ejecuta producción o se despacha.
+    <strong>Regla clave:</strong> Los movimientos de inventario son AUTOM&Aacute;TICOS. Ning&uacute;n usuario mueve stock manualmente
+    (excepto ajustes con motivo). El stock se actualiza solo cuando se confirma una compra, se ejecuta producci&oacute;n o se despacha.
 </div>
 
 <!-- ============================================ -->
-<h2>5. Ciclo de Vida del Pedido</h2>
+<h2>6. Ciclo de Vida del Pedido</h2>
 
 <div class="diagram-container">
     <pre class="mermaid">
 stateDiagram-v2
     [*] --> REGISTERED: Vendedor registra pedido
-    REGISTERED --> DISPATCHED: Despachador confirma despacho
+    REGISTERED --> CONFIRMED: Vendedor confirma pedido
     REGISTERED --> CANCELLED: Vendedor cancela (con motivo)
+    CONFIRMED --> DISPATCHED: Despachador confirma despacho
     DISPATCHED --> ON_ROUTE: Chofer sale a repartir
     ON_ROUTE --> DELIVERED: Chofer confirma entrega
     ON_ROUTE --> ISSUE: Chofer reporta novedad
     DELIVERED --> COLLECTED: Chofer registra cobro
-    ISSUE --> REGISTERED: Se reprograma
+    ISSUE --> CONFIRMED: Se reprograma
     COLLECTED --> [*]
     CANCELLED --> [*]
 
     note right of REGISTERED
         Precio calculado automáticamente
+        Pedido puede editarse o cancelarse
+    end note
+
+    note right of CONFIRMED
+        Pedido firme para producción
+        Visible en planificación diaria
         Stock PT aún no se descuenta
     end note
 
@@ -336,12 +381,12 @@ stateDiagram-v2
 </div>
 
 <!-- ============================================ -->
-<h2>6. Flujo de Despacho Detallado</h2>
+<h2>7. Flujo de Despacho Detallado</h2>
 
 <div class="diagram-container">
     <pre class="mermaid">
 flowchart TD
-    A["Pedidos en estado REGISTERED\npara fecha de hoy"] --> B["Sistema agrupa\npor RUTA"]
+    A["Pedidos en estado CONFIRMED\npara fecha de hoy"] --> B["Sistema agrupa\npor RUTA"]
 
     B --> R1["Ruta Norte - SJL\n8 pedidos | 450 kg"]
     B --> R2["Ruta Sur - Chorrillos\n5 pedidos | 280 kg"]
@@ -356,17 +401,17 @@ flowchart TD
     V3 --> GRE
 
     GRE --> HR["Se genera HOJA DE RUTA\n(PDF imprimible)"]
-    HR --> CONF["Despachador CONFIRMA\n→ Pedidos pasan a DISPATCHED\n→ Stock PT se descuenta"]
-    CONF --> SALE["Choferes salen a repartir"]
+    HR --> CONF["Despachador CONFIRMA DESPACHO\n→ Pedidos pasan a DISPATCHED\n→ Stock PT se descuenta"]
+    CONF --> SALE["Choferes salen a repartir\n→ Pedidos pasan a ON_ROUTE"]
 
     SALE --> ENT1["Chofer llega a pollería"]
     ENT1 --> ENT2{"¿Entrega OK?"}
-    ENT2 -->|Sí| ENT3["Marca DELIVERED\n+ registra cobro"]
-    ENT2 -->|No| ENT4["Registra NOVEDAD\n(rechazo, ausente, etc.)"]
+    ENT2 -->|Sí| ENT3["Marca DELIVERED\n+ registra cobro → COLLECTED"]
+    ENT2 -->|No| ENT4["Registra NOVEDAD\n(rechazo, ausente, etc.) → ISSUE"]
     ENT3 --> SIG["Siguiente parada"]
     ENT4 --> SIG
     SIG -->|Más paradas| ENT1
-    SIG -->|Ruta completa| FIN["Despacho COMPLETED"]
+    SIG -->|Ruta completa| FIN["Chofer completa ruta\n→ Consolidado de cobros"]
 
     style A fill:#1e3a5f,stroke:#60a5fa,color:#fff
     style CONF fill:#b91c1c,stroke:#fca5a5,color:#fff
@@ -375,7 +420,66 @@ flowchart TD
 </div>
 
 <!-- ============================================ -->
-<h2>7. Flujo Técnico &mdash; Arquitectura del Sistema</h2>
+<h2>8. Dashboard Ejecutivo &mdash; KPIs y Fuentes de Datos</h2>
+
+<div class="diagram-container">
+    <pre class="mermaid">
+flowchart TD
+    subgraph FUENTES["FUENTES DE DATOS"]
+        ORD["Módulo Pedidos"]
+        PUR["Módulo Compras"]
+        PROD["Módulo Producción"]
+        INV["Módulo Inventario"]
+        DISP["Módulo Despacho"]
+    end
+
+    subgraph DASHBOARD["DASHBOARD EJECUTIVO"]
+        KPI1["Pedidos del día\n(total, confirmados,\ndespachados, entregados)"]
+        KPI2["Producción del día\n(kg producidos,\nrendimiento %, merma %)"]
+        KPI3["Stock actual\n(MP y PT con alertas\nde stock mínimo)"]
+        KPI4["Cobros del día\n(total cobrado por ruta,\npor chofer, pendientes)"]
+        KPI5["Compras del día\n(OC emitidas, recibidas,\ngasto en MP)"]
+    end
+
+    subgraph REPORTES["REPORTES EXPORTABLES"]
+        REP1["Reporte de Ventas\n(por período, cliente, ruta)"]
+        REP2["Reporte de Producción\n(rendimiento por lote,\nmerma acumulada)"]
+        REP3["Reporte de Inventario\n(kardex, movimientos,\nvaloración)"]
+        REP4["Reporte de Despacho\n(entregas, novedades,\ncobros)"]
+    end
+
+    subgraph AUDITORIA["AUDITORÍA"]
+        LOG["Log de actividad\n(quién hizo qué y cuándo)"]
+    end
+
+    ORD --> KPI1
+    PROD --> KPI2
+    INV --> KPI3
+    DISP --> KPI4
+    PUR --> KPI5
+
+    KPI1 --> REP1
+    KPI2 --> REP2
+    KPI3 --> REP3
+    KPI4 --> REP4
+
+    FUENTES --> LOG
+
+    style FUENTES fill:#1e1b4b,stroke:#6366f1,color:#fff
+    style DASHBOARD fill:#172554,stroke:#3b82f6,color:#fff
+    style REPORTES fill:#14532d,stroke:#22c55e,color:#fff
+    style AUDITORIA fill:#450a0a,stroke:#ef4444,color:#fff
+    </pre>
+</div>
+
+<div class="note">
+    <strong>Sprint 5:</strong> El dashboard consolida datos de TODOS los m&oacute;dulos anteriores en una vista ejecutiva.
+    Los reportes se exportan en formato Excel o PDF para compartir con contabilidad externa.
+    El log de auditor&iacute;a registra toda acci&oacute;n del sistema para trazabilidad.
+</div>
+
+<!-- ============================================ -->
+<h2>9. Flujo T&eacute;cnico &mdash; Arquitectura del Sistema</h2>
 
 <div class="diagram-container">
     <pre class="mermaid">
@@ -429,7 +533,7 @@ flowchart TB
 </div>
 
 <!-- ============================================ -->
-<h2>8. Flujo Técnico &mdash; Request Lifecycle</h2>
+<h2>10. Flujo T&eacute;cnico &mdash; Request Lifecycle</h2>
 
 <div class="diagram-container">
     <pre class="mermaid">
@@ -443,7 +547,7 @@ sequenceDiagram
     participant P as Prisma
     participant DB as PostgreSQL
 
-    U->>N: Click "Nueva Venta"
+    U->>N: Click "Nuevo Pedido"
     N->>A: POST /api/orders (JWT en header)
     A->>G: Valida JWT
     G-->>A: ✓ Token válido, userId extraído
@@ -455,11 +559,11 @@ sequenceDiagram
     R-->>A: ✓ Permiso concedido
 
     A->>S: OrdersService.create(dto)
-    S->>P: Buscar cliente (ruta, tipo)
+    S->>P: Buscar cliente (ruta asociada)
     P->>DB: SELECT client, route
-    DB-->>P: Cliente con ruta y tipo
+    DB-->>P: Cliente con ruta
     S->>S: Calcular precios por línea
-    Note over S: precio = base + (tarifa × factor)
+    Note over S: precio = precioBase + tarifaRuta
     S->>P: Crear Order + OrderLines
     P->>DB: INSERT order, order_lines
     DB-->>P: Order creado
@@ -474,7 +578,7 @@ sequenceDiagram
 </div>
 
 <!-- ============================================ -->
-<h2>9. Flujo Técnico &mdash; Impacto en Inventario</h2>
+<h2>11. Flujo T&eacute;cnico &mdash; Impacto en Inventario</h2>
 
 <div class="diagram-container">
     <pre class="mermaid">
@@ -521,7 +625,7 @@ sequenceDiagram
 </div>
 
 <!-- ============================================ -->
-<h2>10. Mapa de Dependencias entre Módulos</h2>
+<h2>12. Mapa de Dependencias entre M&oacute;dulos</h2>
 
 <div class="diagram-container">
     <pre class="mermaid">
@@ -551,16 +655,16 @@ flowchart LR
 </div>
 
 <div class="note">
-    <strong>Orden de desarrollo obligatorio:</strong><br>
-    Sprint 1: Auth + Catálogos (sin esto no funciona NADA)<br>
-    Sprint 2: Pedidos (depende de catálogos)<br>
-    Sprint 3: Compras + Producción (depende de catálogos + inventario)<br>
-    Sprint 4: Inventario (depende de compras y producción)<br>
-    Sprint 5: Despacho (depende de pedidos + inventario)
+    <strong>Sprint Planning (alineado con Product Backlog):</strong><br>
+    Sprint 1: Auth + Cat&aacute;logos &mdash; HU-01 a HU-13 (3 semanas)<br>
+    Sprint 2: Pedidos + Compras &mdash; HU-14 a HU-26 (3 semanas)<br>
+    Sprint 3: Producci&oacute;n + Inventario Dual &mdash; HU-27 a HU-39 (3 semanas)<br>
+    Sprint 4: Despacho y Distribuci&oacute;n &mdash; HU-40 a HU-49 (3 semanas)<br>
+    Sprint 5: Dashboard, Reportes y Auditor&iacute;a &mdash; HU-50 a HU-52 (2 semanas)
 </div>
 
 <!-- ============================================ -->
-<h2>11. Resumen de Módulos y Responsables</h2>
+<h2>13. Resumen de M&oacute;dulos</h2>
 
 <div class="grid-2">
     <div class="card">
@@ -568,88 +672,86 @@ flowchart LR
         <ul>
             <li>Login con JWT</li>
             <li>CRUD usuarios</li>
-            <li>CRUD roles con permisos</li>
-            <li>Guards de autenticación y autorización</li>
-            <li>Log de accesos</li>
+            <li>CRUD roles con permisos granulares</li>
+            <li>Guards de autenticaci&oacute;n y autorizaci&oacute;n</li>
+            <li>Cambio de contrase&ntilde;a</li>
         </ul>
-        <p><strong>10 HU | Prioridad: CRÍTICA</strong></p>
+        <p><strong>6 HU (HU-01 a HU-06) | Prioridad: CR&Iacute;TICA</strong></p>
     </div>
     <div class="card">
-        <h4>EP-02: Catálogos (Sprint 1)</h4>
+        <h4>EP-02: Cat&aacute;logos y Maestros (Sprint 1)</h4>
         <ul>
-            <li>Productos (SKU)</li>
-            <li>Clientes (pollerías)</li>
-            <li>Proveedores</li>
-            <li>Rutas + tarifas</li>
-            <li>Vehículos y choferes</li>
-            <li>Precios con historial</li>
+            <li>Clientes (poller&iacute;as con ubigeo y tipo)</li>
+            <li>Proveedores de materia prima</li>
+            <li>Productos / SKUs con precio base</li>
+            <li>Rutas de distribuci&oacute;n con tarifa</li>
+            <li>Veh&iacute;culos y choferes</li>
         </ul>
-        <p><strong>7 HU | Prioridad: CRÍTICA</strong></p>
+        <p><strong>7 HU (HU-07 a HU-13) | Prioridad: CR&Iacute;TICA</strong></p>
     </div>
     <div class="card">
-        <h4>EP-03: Pedidos (Sprint 2)</h4>
+        <h4>EP-03: Gesti&oacute;n de Pedidos (Sprint 2)</h4>
         <ul>
-            <li>Registrar pedido con cálculo automático</li>
-            <li>Listar por fecha de entrega</li>
-            <li>Trazabilidad de estados</li>
-            <li>Modificar / cancelar</li>
-            <li>Resumen consolidado por SKU</li>
+            <li>Registrar pedido con c&aacute;lculo autom&aacute;tico de precios</li>
+            <li>Confirmar / cancelar pedidos</li>
+            <li>Listado con filtros por estado, cliente, ruta</li>
+            <li>Historial completo de pedidos</li>
+            <li>Consolidado por SKU para producci&oacute;n</li>
         </ul>
-        <p><strong>7 HU | Prioridad: ALTA</strong></p>
+        <p><strong>8 HU (HU-14 a HU-21) | Prioridad: ALTA</strong></p>
     </div>
     <div class="card">
-        <h4>EP-04: Compras (Sprint 3)</h4>
+        <h4>EP-04: Gesti&oacute;n de Compras (Sprint 2)</h4>
         <ul>
-            <li>Registrar compra de MP</li>
-            <li>Confirmar recepción</li>
-            <li>Impacto automático en inventario MP</li>
-            <li>Historial por proveedor</li>
-            <li>Resumen de costos</li>
+            <li>Crear orden de compra a proveedor</li>
+            <li>Seguimiento de estados (Emitida &rarr; Confirmada &rarr; Recibida)</li>
+            <li>Registrar recepci&oacute;n con cantidades reales</li>
+            <li>Impacto autom&aacute;tico en stock de MP</li>
+            <li>Historial por proveedor y fecha</li>
         </ul>
-        <p><strong>7 HU | Prioridad: ALTA</strong></p>
+        <p><strong>5 HU (HU-22 a HU-26) | Prioridad: ALTA</strong></p>
     </div>
     <div class="card">
-        <h4>EP-05: Producción (Sprint 3)</h4>
+        <h4>EP-05: Gesti&oacute;n de Producci&oacute;n (Sprint 3)</h4>
         <ul>
-            <li>Crear orden de producción</li>
-            <li>Registrar resultado real</li>
-            <li>Cálculo: rendimiento, merma, costo real</li>
-            <li>Estimación de producción</li>
-            <li>Movimientos automáticos en inventario</li>
+            <li>Programa de producci&oacute;n diaria basado en pedidos</li>
+            <li>Registro de lotes con MP utilizada y PT obtenido</li>
+            <li>C&aacute;lculo autom&aacute;tico: rendimiento, merma, costo real</li>
+            <li>Movimientos autom&aacute;ticos en inventario (salida MP, entrada PT)</li>
+            <li>Historial de lotes con indicadores</li>
         </ul>
-        <p><strong>7 HU | Prioridad: ALTA</strong></p>
+        <p><strong>6 HU (HU-27 a HU-32) | Prioridad: ALTA</strong></p>
     </div>
     <div class="card">
-        <h4>EP-06: Inventario Dual (Sprint 4)</h4>
+        <h4>EP-06: Control de Inventario Dual (Sprint 3)</h4>
         <ul>
             <li>Stock MP + Stock PT independientes</li>
-            <li>Movimientos automáticos por transacciones</li>
-            <li>Alertas de stock mínimo</li>
-            <li>Ajustes manuales con motivo</li>
-            <li>Kardex por ítem</li>
+            <li>Kardex de movimientos por &iacute;tem con origen</li>
+            <li>Alertas de stock m&iacute;nimo configurables</li>
+            <li>Ajustes manuales con justificaci&oacute;n obligatoria</li>
+            <li>Movimientos autom&aacute;ticos por compra, producci&oacute;n y despacho</li>
         </ul>
-        <p><strong>7 HU | Prioridad: MEDIA-ALTA</strong></p>
+        <p><strong>7 HU (HU-33 a HU-39) | Prioridad: ALTA</strong></p>
     </div>
     <div class="card">
-        <h4>EP-07: Despacho (Sprint 5)</h4>
+        <h4>EP-07: Despacho y Distribuci&oacute;n (Sprint 4)</h4>
         <ul>
-            <li>Agrupar pedidos por ruta</li>
-            <li>Asignar vehículo + chofer</li>
-            <li>Generar hoja de ruta (PDF)</li>
-            <li>Registro de entregas y cobros</li>
-            <li>Novedades en campo</li>
+            <li>Agrupar pedidos confirmados por ruta</li>
+            <li>Asignar veh&iacute;culo + chofer por hoja de carga</li>
+            <li>Generar hoja de ruta (PDF) y registrar GRE</li>
+            <li>Registro de entregas y cobros en campo (m&oacute;vil)</li>
+            <li>Novedades, devoluciones y consolidado de cobros</li>
         </ul>
-        <p><strong>7 HU | Prioridad: ALTA</strong></p>
+        <p><strong>10 HU (HU-40 a HU-49) | Prioridad: ALTA</strong></p>
     </div>
     <div class="card">
-        <h4>Transversal: Dashboard + Reportes</h4>
+        <h4>Transversal: Dashboard, Reportes y Auditor&iacute;a (Sprint 5)</h4>
         <ul>
-            <li>KPIs del día (ventas, cobros, producción)</li>
-            <li>Alertas de stock bajo</li>
-            <li>Reportes por período</li>
-            <li>Exportación de datos</li>
+            <li>Dashboard ejecutivo con KPIs del d&iacute;a</li>
+            <li>Reportes exportables (Excel / PDF)</li>
+            <li>Log de auditor&iacute;a (qui&eacute;n hizo qu&eacute; y cu&aacute;ndo)</li>
         </ul>
-        <p><strong>Integrado en Sprint 5</strong></p>
+        <p><strong>3 HU (HU-50 a HU-52) | Prioridad: MEDIA</strong></p>
     </div>
 </div>
 
