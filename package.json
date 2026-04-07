@@ -1,0 +1,15 @@
+{
+  "name": "siadlp",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --parallel -r run dev",
+    "dev:backend": "pnpm --filter backend dev",
+    "dev:frontend": "pnpm --filter frontend dev",
+    "build": "pnpm -r run build",
+    "lint": "pnpm -r run lint",
+    "test": "pnpm --filter backend test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
