@@ -2,6 +2,8 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { MovementType, InventoryType } from '@siadlp/shared';
+import { AdjustInventoryDto } from './dto/adjust-inventory.dto';
+import { UpdateMinStockDto } from './dto/update-min-stock.dto';
 
 @Injectable()
 export class InventoryService {
@@ -106,5 +108,92 @@ export class InventoryService {
     }
 
     return item.id;
+  }
+
+  async getStockMp() {
+    return this.prisma.itemInventario.findMany({
+      where: { tipo: InventoryType.MATERIA_PRIMA, activo: true },
+      orderBy: { nombre: 'asc' },
+    });
+  }
+
+  async getStockPt() {
+    return this.prisma.itemInventario.findMany({
+      where: { tipo: InventoryType.PRODUCTO_TERMINADO, activo: true },
+      orderBy: { nombre: 'asc' },
+    });
+  }
+
+  async getKardex(itemId: number, filters?: { desde?: string; hasta?: string }) {
+    const where: Record<string, unknown> = { itemInventarioId: itemId };
+
+    if (filters?.desde || filters?.hasta) {
+      const fechaFilter: Record<string, Date> = {};
+      if (filters.desde) fechaFilter.gte = new Date(filters.desde);
+      if (filters.hasta) fechaFilter.lte = new Date(filters.hasta);
+      where.fechaCreacion = fechaFilter;
+    }
+
+    return this.prisma.movimientoInventario.findMany({
+      where,
+      include: { usuario: { select: { id: true, nombre: true } } },
+      orderBy: { fechaCreacion: 'desc' },
+    });
+  }
+
+  async getAlerts() {
+    const items = await this.prisma.itemInventario.findMany({
+      where: { activo: true },
+    });
+
+    return items.filter(
+      (item) => item.stockMinimo.toNumber() > 0 && item.stockActual.toNumber() <= item.stockMinimo.toNumber(),
+    );
+  }
+
+  async adjustStock(itemId: number, dto: AdjustInventoryDto, userId: number) {
+    return this.prisma.$transaction(async (tx) => {
+      const item = await tx.itemInventario.findUnique({ where: { id: itemId } });
+      if (!item) throw new NotFoundException('Item no encontrado');
+
+      const tipo = dto.cantidad >= 0 ? MovementType.AJUSTE_POSITIVO : MovementType.AJUSTE_NEGATIVO;
+      const cantidadAbsoluta = Math.abs(dto.cantidad);
+      const nuevoStock =
+        dto.cantidad >= 0
+          ? item.stockActual.toNumber() + cantidadAbsoluta
+          : item.stockActual.toNumber() - cantidadAbsoluta;
+
+      if (nuevoStock < 0) {
+        throw new BadRequestException('El ajuste dejaría el stock en negativo');
+      }
+
+      await tx.itemInventario.update({
+        where: { id: itemId },
+        data: { stockActual: nuevoStock },
+      });
+
+      await tx.movimientoInventario.create({
+        data: {
+          itemInventarioId: itemId,
+          tipo,
+          cantidad: cantidadAbsoluta,
+          stockResultante: nuevoStock,
+          referencia: `AJUSTE: ${dto.motivo}`,
+          usuarioId: userId,
+        },
+      });
+
+      return tx.itemInventario.findUnique({ where: { id: itemId } });
+    });
+  }
+
+  async updateMinStock(itemId: number, dto: UpdateMinStockDto) {
+    const item = await this.prisma.itemInventario.findUnique({ where: { id: itemId } });
+    if (!item) throw new NotFoundException('Item no encontrado');
+
+    return this.prisma.itemInventario.update({
+      where: { id: itemId },
+      data: { stockMinimo: dto.stockMinimo },
+    });
   }
 }
