@@ -16,6 +16,16 @@ interface AuthenticatedRequest {
   user: { id: number; correo: string; rolId: number };
 }
 
+interface ProductionMetrics {
+  totalMpKg: number;
+  totalPtKg: number;
+  rendimiento: number;
+  mermaKg: number;
+  mermaPct: number;
+  costoTotalMp: number;
+  costoRealPorKg: number;
+}
+
 @Controller('production')
 export class ProductionController {
   constructor(private readonly productionService: ProductionService) {}
@@ -46,7 +56,7 @@ export class ProductionController {
 
   @Get(':id')
   @RequirePermissions('produccion.leer')
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  findOne(@Param('id', ParseIntPipe) id: number): Promise<unknown> {
     return this.productionService.findOne(id);
   }
 
@@ -56,7 +66,7 @@ export class ProductionController {
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: CompleteProductionDto,
     @Request() req: AuthenticatedRequest,
-  ) {
+  ): Promise<unknown> {
     return this.productionService.complete(id, dto, req.user.id);
   }
 }
