@@ -71,4 +71,4 @@ SELECT 1, id FROM permisos;
 -- Usuario administrador inicial
 -- Contraseña: Admin123!
 INSERT INTO usuarios (correo, contrasena, nombre, rol_id, fecha_creacion, fecha_actualizacion) VALUES
-  ('admin@lacosecha.com', '$2b$10$ZjlY0y6BdIll2WYbBzPY6OXV0LmNajbncrW5K/gatrfuzZEydO2h6', 'Administrador', 1, NOW(), NOW());
+  ('admin@lacosecha.com', '$2b$10$xw2dl4PkGEVy35aWzzqdaO1Ds3BTLNQB6ewlnusG6C9XgC7aNgY3W', 'Administrador', 1, NOW(), NOW());
