@@ -1,0 +1,6 @@
+export enum DispatchStatus {
+  PREPARANDO = 'PREPARANDO',
+  DESPACHADO = 'DESPACHADO',
+  EN_RUTA = 'EN_RUTA',
+  COMPLETADO = 'COMPLETADO',
+}

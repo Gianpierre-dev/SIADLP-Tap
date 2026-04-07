@@ -1,0 +1,6 @@
+export enum DeliveryStatus {
+  PENDIENTE = 'PENDIENTE',
+  ENTREGADO = 'ENTREGADO',
+  COBRADO = 'COBRADO',
+  NOVEDAD = 'NOVEDAD',
+}

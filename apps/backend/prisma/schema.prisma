@@ -23,6 +23,8 @@ model Usuario {
   ordenesCompraCreadoPor     OrdenCompra[]          @relation("OcCreadoPor")
   movimientosInventario      MovimientoInventario[]
   ordenesProduccionCreadoPor OrdenProduccion[]      @relation("ProduccionCreadoPor")
+  hojasCargaCreadoPor        HojaCarga[]            @relation("HojaCargaCreadoPor")
+  entregas                   Entrega[]
 
   @@map("usuarios")
 }
@@ -127,7 +129,8 @@ model Ruta {
   activa        Boolean  @default(true)
   fechaCreacion DateTime @default(now()) @map("fecha_creacion")
 
-  clientes Cliente[]
+  clientes   Cliente[]
+  hojasCarga HojaCarga[]
 
   @@map("rutas")
 }
@@ -141,6 +144,8 @@ model Vehiculo {
   activo        Boolean  @default(true)
   fechaCreacion DateTime @default(now()) @map("fecha_creacion")
 
+  hojasCarga HojaCarga[]
+
   @@map("vehiculos")
 }
 
@@ -153,6 +158,8 @@ model Chofer {
   telefono      String?
   activo        Boolean  @default(true)
   fechaCreacion DateTime @default(now()) @map("fecha_creacion")
+
+  hojasCarga HojaCarga[]
 
   @@map("choferes")
 }
@@ -168,10 +175,14 @@ model Pedido {
   fechaCreacion      DateTime @default(now()) @map("fecha_creacion")
   fechaActualizacion DateTime @updatedAt @map("fecha_actualizacion")
 
+  hojaCargaId        Int?       @map("hoja_carga_id")
+
   cliente    Cliente           @relation(fields: [clienteId], references: [id], onDelete: Restrict)
   creadoPor  Usuario           @relation("PedidoCreadoPor", fields: [creadoPorId], references: [id], onDelete: Restrict)
+  hojaCarga  HojaCarga?        @relation(fields: [hojaCargaId], references: [id], onDelete: SetNull)
   detalles   DetallePedido[]
   estadoLogs EstadoPedidoLog[]
+  entrega    Entrega?
 
   @@map("pedidos")
 }
@@ -310,4 +321,45 @@ model ProductoProduccion {
   producto        Producto        @relation(fields: [productoId], references: [id], onDelete: Restrict)
 
   @@map("productos_produccion")
+}
+
+model HojaCarga {
+  id                 Int      @id @default(autoincrement())
+  fecha              DateTime @db.Date
+  rutaId             Int      @map("ruta_id")
+  vehiculoId         Int      @map("vehiculo_id")
+  choferId           Int      @map("chofer_id")
+  estado             String   @default("PREPARANDO")
+  numeroGre          String?  @map("numero_gre")
+  totalKg            Decimal  @default(0) @map("total_kg") @db.Decimal(10, 2)
+  totalMonto         Decimal  @default(0) @map("total_monto") @db.Decimal(10, 2)
+  creadoPorId        Int      @map("creado_por_id")
+  fechaCreacion      DateTime @default(now()) @map("fecha_creacion")
+  fechaActualizacion DateTime @updatedAt @map("fecha_actualizacion")
+
+  ruta      Ruta      @relation(fields: [rutaId], references: [id], onDelete: Restrict)
+  vehiculo  Vehiculo  @relation(fields: [vehiculoId], references: [id], onDelete: Restrict)
+  chofer    Chofer    @relation(fields: [choferId], references: [id], onDelete: Restrict)
+  creadoPor Usuario   @relation("HojaCargaCreadoPor", fields: [creadoPorId], references: [id], onDelete: Restrict)
+  pedidos   Pedido[]
+
+  @@map("hojas_carga")
+}
+
+model Entrega {
+  id                Int       @id @default(autoincrement())
+  pedidoId          Int       @unique @map("pedido_id")
+  estado            String    @default("PENDIENTE")
+  montoCobrado      Decimal?  @map("monto_cobrado") @db.Decimal(10, 2)
+  metodoPago        String?   @map("metodo_pago")
+  numeroComprobante String?   @map("numero_comprobante")
+  observacion       String?
+  registradoPorId   Int       @map("registrado_por_id")
+  fechaEntrega      DateTime? @map("fecha_entrega")
+  fechaCreacion     DateTime  @default(now()) @map("fecha_creacion")
+
+  pedido        Pedido  @relation(fields: [pedidoId], references: [id], onDelete: Restrict)
+  registradoPor Usuario @relation(fields: [registradoPorId], references: [id], onDelete: Restrict)
+
+  @@map("entregas")
 }
