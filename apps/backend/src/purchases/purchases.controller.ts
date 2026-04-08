@@ -50,11 +50,14 @@ export class PurchasesController {
   findAll(
     @Query('estado') estado?: string,
     @Query('proveedorId') proveedorId?: string,
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
   ) {
-    return this.purchasesService.findAll({
-      estado,
-      proveedorId: proveedorId ? Number(proveedorId) : undefined,
-    });
+    return this.purchasesService.findAll(
+      { estado, proveedorId: proveedorId ? Number(proveedorId) : undefined },
+      page ? Number(page) : undefined,
+      pageSize ? Number(pageSize) : undefined,
+    );
   }
 
   @Get(':id')

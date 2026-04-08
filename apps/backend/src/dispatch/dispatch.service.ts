@@ -3,6 +3,7 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { InventoryService } from '../inventory/inventory.service';
 import {
@@ -119,11 +120,7 @@ export class DispatchService {
       });
 
       if (pedidos.length !== dto.pedidoIds.length) {
-        const foundIds = new Set(pedidos.map((p) => p.id));
-        const missing = dto.pedidoIds.filter((id) => !foundIds.has(id));
-        throw new NotFoundException(
-          `Pedidos no encontrados: ${missing.join(', ')}`,
-        );
+        throw new NotFoundException('Uno o más pedidos no fueron encontrados');
       }
 
       const notConfirmed = pedidos.filter(
@@ -190,7 +187,7 @@ export class DispatchService {
     });
   }
 
-  async findAll(fecha?: string) {
+  async findAll(fecha?: string, page = 1, pageSize = 20) {
     const where: Record<string, unknown> = {};
 
     if (fecha) {
@@ -200,16 +197,23 @@ export class DispatchService {
       where['fecha'] = { gte: day, lt: nextDay };
     }
 
-    return this.prisma.hojaCarga.findMany({
-      where,
-      include: {
-        ruta: { select: { id: true, nombre: true, zona: true } },
-        vehiculo: { select: { id: true, placa: true, marca: true } },
-        chofer: { select: { id: true, nombre: true, apellido: true } },
-        _count: { select: { pedidos: true } },
-      },
-      orderBy: { fecha: 'desc' },
-    });
+    const skip = (page - 1) * pageSize;
+    const [data, total] = await Promise.all([
+      this.prisma.hojaCarga.findMany({
+        where,
+        include: {
+          ruta: { select: { id: true, nombre: true, zona: true } },
+          vehiculo: { select: { id: true, placa: true, marca: true } },
+          chofer: { select: { id: true, nombre: true, apellido: true } },
+          _count: { select: { pedidos: true } },
+        },
+        orderBy: { fecha: 'desc' },
+        skip,
+        take: pageSize,
+      }),
+      this.prisma.hojaCarga.count({ where }),
+    ]);
+    return { data, total, page, pageSize };
   }
 
   async findOne(id: number) {
@@ -246,7 +250,7 @@ export class DispatchService {
     });
 
     if (!hoja) {
-      throw new NotFoundException(`Hoja de carga con id ${id} no encontrada`);
+      throw new NotFoundException('Hoja de carga no encontrada');
     }
 
     return hoja;
@@ -272,7 +276,7 @@ export class DispatchService {
       });
 
       if (!hoja) {
-        throw new NotFoundException(`Hoja de carga con id ${id} no encontrada`);
+        throw new NotFoundException('Hoja de carga no encontrada');
       }
 
       if (hoja.estado !== DispatchStatus.PREPARANDO) {
@@ -316,7 +320,10 @@ export class DispatchService {
           const ptItem = await tx.itemInventario.findFirst({
             where: {
               tipo: InventoryType.PRODUCTO_TERMINADO,
-              nombre: detalle.producto.nombre,
+              OR: [
+                { productoId: detalle.productoId },
+                { nombre: detalle.producto.nombre },
+              ],
             },
           });
 
@@ -337,11 +344,11 @@ export class DispatchService {
         }
       }
 
-      // Update hoja to EN_RUTA and set GRE if provided
+      // Update hoja to DESPACHADO and set GRE if provided
       await tx.hojaCarga.update({
         where: { id },
         data: {
-          estado: DispatchStatus.EN_RUTA,
+          estado: DispatchStatus.DESPACHADO,
           ...(dto.numeroGre ? { numeroGre: dto.numeroGre } : {}),
         },
       });
@@ -362,6 +369,33 @@ export class DispatchService {
           chofer: { select: { id: true, nombre: true, apellido: true } },
         },
       });
+    });
+  }
+
+  async startRoute(id: number) {
+    const hoja = await this.prisma.hojaCarga.findUnique({
+      where: { id },
+    });
+
+    if (!hoja) {
+      throw new NotFoundException('Hoja de carga no encontrada');
+    }
+
+    if (hoja.estado !== DispatchStatus.DESPACHADO) {
+      throw new BadRequestException(
+        `Solo se puede iniciar ruta en estado DESPACHADO. Estado actual: ${hoja.estado}`,
+      );
+    }
+
+    return this.prisma.hojaCarga.update({
+      where: { id },
+      data: { estado: DispatchStatus.EN_RUTA },
+      include: {
+        ruta: { select: { id: true, nombre: true, zona: true } },
+        vehiculo: { select: { id: true, placa: true } },
+        chofer: { select: { id: true, nombre: true, apellido: true } },
+        _count: { select: { pedidos: true } },
+      },
     });
   }
 
@@ -402,7 +436,7 @@ export class DispatchService {
     });
 
     if (!hoja) {
-      throw new NotFoundException(`Hoja de carga con id ${id} no encontrada`);
+      throw new NotFoundException('Hoja de carga no encontrada');
     }
 
     const paradas: Parada[] = hoja.pedidos.map((pedido, index) => ({
@@ -462,9 +496,7 @@ export class DispatchService {
       });
 
       if (!entrega) {
-        throw new NotFoundException(
-          `Entrega para pedido ${pedidoId} no encontrada`,
-        );
+        throw new NotFoundException('Entrega no encontrada');
       }
 
       if (entrega.estado !== DeliveryStatus.PENDIENTE) {
@@ -550,6 +582,8 @@ export class DispatchService {
         },
       });
 
+      await this.checkAndCompleteHoja(tx, pedidoId);
+
       return updatedEntrega;
     });
   }
@@ -578,9 +612,7 @@ export class DispatchService {
     });
 
     if (!hoja) {
-      throw new NotFoundException(
-        `Hoja de carga con id ${hojaCargaId} no encontrada`,
-      );
+      throw new NotFoundException('Hoja de carga no encontrada');
     }
 
     return hoja.pedidos.map((pedido) => ({
@@ -613,7 +645,7 @@ export class DispatchService {
       });
 
       if (!pedido) {
-        throw new NotFoundException(`Pedido ${pedidoId} no encontrado`);
+        throw new NotFoundException('Pedido no encontrado');
       }
 
       if (pedido.estado !== OrderStatus.DELIVERED) {
@@ -627,9 +659,7 @@ export class DispatchService {
       });
 
       if (!entrega) {
-        throw new NotFoundException(
-          `Entrega para pedido ${pedidoId} no encontrada`,
-        );
+        throw new NotFoundException('Entrega no encontrada');
       }
 
       // Update entrega
@@ -666,6 +696,8 @@ export class DispatchService {
           usuarioId: userId,
         },
       });
+
+      await this.checkAndCompleteHoja(tx, pedidoId);
 
       return updatedEntrega;
     });
@@ -763,5 +795,31 @@ export class DispatchService {
       totalGeneral,
       totalEntregas: entregas.length,
     };
+  }
+
+  private async checkAndCompleteHoja(
+    tx: Prisma.TransactionClient,
+    pedidoId: number,
+  ): Promise<void> {
+    const pedido = await tx.pedido.findUnique({
+      where: { id: pedidoId },
+      select: { hojaCargaId: true },
+    });
+
+    if (!pedido?.hojaCargaId) return;
+
+    const pendingCount = await tx.entrega.count({
+      where: {
+        pedido: { hojaCargaId: pedido.hojaCargaId },
+        estado: 'PENDIENTE',
+      },
+    });
+
+    if (pendingCount === 0) {
+      await tx.hojaCarga.update({
+        where: { id: pedido.hojaCargaId },
+        data: { estado: 'COMPLETADO' },
+      });
+    }
   }
 }

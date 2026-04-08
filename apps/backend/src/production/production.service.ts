@@ -65,9 +65,7 @@ export class ProductionService {
       });
 
       if (!orden) {
-        throw new NotFoundException(
-          `Orden de producción con id ${id} no encontrada`,
-        );
+        throw new NotFoundException('Orden de producción no encontrada');
       }
 
       if (orden.estado !== ProductionStatus.PENDIENTE) {
@@ -113,15 +111,14 @@ export class ProductionService {
         });
 
         if (!producto) {
-          throw new NotFoundException(
-            `Producto con id ${output.productoId} no encontrado`,
-          );
+          throw new NotFoundException('Producto no encontrado');
         }
 
         const ptItemId = await this.inventoryService.findOrCreatePtItem(
           tx,
           producto.nombre,
           producto.unidadMedida,
+          output.productoId,
         );
 
         await this.inventoryService.registerMovement(
@@ -219,9 +216,7 @@ export class ProductionService {
     });
 
     if (!orden) {
-      throw new NotFoundException(
-        `Orden de producción con id ${id} no encontrada`,
-      );
+      throw new NotFoundException('Orden de producción no encontrada');
     }
 
     if (orden.estado === ProductionStatus.COMPLETADA) {
