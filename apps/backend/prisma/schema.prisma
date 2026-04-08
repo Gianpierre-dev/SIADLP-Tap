@@ -84,6 +84,7 @@ model Cliente {
 
   pedidos Pedido[]
 
+  @@index([rutaId])
   @@map("clientes")
 }
 
@@ -185,6 +186,11 @@ model Pedido {
   estadoLogs EstadoPedidoLog[]
   entrega    Entrega?
 
+  @@index([clienteId])
+  @@index([estado])
+  @@index([fechaEntrega])
+  @@index([hojaCargaId])
+  @@index([fechaCreacion])
   @@map("pedidos")
 }
 
@@ -199,6 +205,8 @@ model DetallePedido {
   pedido   Pedido   @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
   producto Producto @relation(fields: [productoId], references: [id], onDelete: Restrict)
 
+  @@index([pedidoId])
+  @@index([productoId])
   @@map("detalle_pedidos")
 }
 
@@ -214,6 +222,8 @@ model EstadoPedidoLog {
   pedido  Pedido  @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
   usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
 
+  @@index([pedidoId])
+  @@index([usuarioId])
   @@map("estado_pedido_logs")
 }
 
@@ -231,6 +241,9 @@ model OrdenCompra {
   creadoPor Usuario              @relation("OcCreadoPor", fields: [creadoPorId], references: [id], onDelete: Restrict)
   detalles  DetalleOrdenCompra[]
 
+  @@index([proveedorId])
+  @@index([estado])
+  @@index([fechaCreacion])
   @@map("ordenes_compra")
 }
 
@@ -246,6 +259,7 @@ model DetalleOrdenCompra {
 
   ordenCompra OrdenCompra @relation(fields: [ordenCompraId], references: [id], onDelete: Cascade)
 
+  @@index([ordenCompraId])
   @@map("detalle_ordenes_compra")
 }
 
@@ -279,6 +293,8 @@ model MovimientoInventario {
   itemInventario ItemInventario @relation(fields: [itemInventarioId], references: [id], onDelete: Restrict)
   usuario        Usuario        @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
 
+  @@index([itemInventarioId])
+  @@index([fechaCreacion])
   @@map("movimientos_inventario")
 }
 
@@ -295,6 +311,8 @@ model OrdenProduccion {
   insumos   InsumoProduccion[]
   productos ProductoProduccion[]
 
+  @@index([fecha])
+  @@index([estado])
   @@map("ordenes_produccion")
 }
 
@@ -344,6 +362,9 @@ model HojaCarga {
   creadoPor Usuario   @relation("HojaCargaCreadoPor", fields: [creadoPorId], references: [id], onDelete: Restrict)
   pedidos   Pedido[]
 
+  @@index([fecha])
+  @@index([estado])
+  @@index([rutaId])
   @@map("hojas_carga")
 }
 
@@ -362,6 +383,8 @@ model Entrega {
   pedido        Pedido  @relation(fields: [pedidoId], references: [id], onDelete: Restrict)
   registradoPor Usuario @relation(fields: [registradoPorId], references: [id], onDelete: Restrict)
 
+  @@index([estado])
+  @@index([fechaEntrega])
   @@map("entregas")
 }
 
@@ -377,5 +400,8 @@ model RegistroAuditoria {
 
   usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
 
+  @@index([usuarioId])
+  @@index([modulo])
+  @@index([fechaCreacion])
   @@map("registro_auditoria")
 }

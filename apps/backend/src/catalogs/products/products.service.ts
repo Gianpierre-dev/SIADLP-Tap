@@ -17,9 +17,7 @@ export class ProductsService {
     });
 
     if (existing) {
-      throw new ConflictException(
-        `El SKU ${dto.codigoSku} ya está registrado`,
-      );
+      throw new ConflictException(`El SKU ${dto.codigoSku} ya está registrado`);
     }
 
     return this.prisma.producto.create({ data: dto });

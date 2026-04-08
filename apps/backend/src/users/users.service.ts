@@ -2,6 +2,8 @@ import {
   Injectable,
   ConflictException,
   NotFoundException,
+  BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
@@ -30,7 +32,7 @@ export class UsersService {
       throw new ConflictException(`El correo ${dto.correo} ya está registrado`);
     }
 
-    const contrasenaHash = await bcrypt.hash(dto.contrasena, 10);
+    const contrasenaHash = await bcrypt.hash(dto.contrasena, 12);
 
     return this.prisma.usuario.create({
       data: {
@@ -64,8 +66,23 @@ export class UsersService {
     return usuario;
   }
 
-  async update(id: number, dto: UpdateUserDto) {
+  async update(id: number, dto: UpdateUserDto, currentUserId: number) {
     await this.findOne(id);
+
+    if (dto.rolId !== undefined && id === currentUserId) {
+      throw new ForbiddenException('No puede cambiar su propio rol');
+    }
+
+    if (dto.rolId !== undefined) {
+      const rol = await this.prisma.rol.findUnique({
+        where: { id: dto.rolId },
+      });
+      if (!rol || !rol.activo) {
+        throw new BadRequestException(
+          `Rol con id ${dto.rolId} no existe o está inactivo`,
+        );
+      }
+    }
 
     if (dto.correo) {
       const existing = await this.prisma.usuario.findFirst({
@@ -79,7 +96,12 @@ export class UsersService {
 
     return this.prisma.usuario.update({
       where: { id },
-      data: dto,
+      data: {
+        ...(dto.correo && { correo: dto.correo }),
+        ...(dto.nombre && { nombre: dto.nombre }),
+        ...(dto.rolId !== undefined && { rolId: dto.rolId }),
+        ...(dto.activo !== undefined && { activo: dto.activo }),
+      },
       select: USER_SELECT,
     });
   }

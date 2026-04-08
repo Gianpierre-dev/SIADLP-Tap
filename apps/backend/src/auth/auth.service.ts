@@ -41,7 +41,10 @@ export class AuthService {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
-    const contrasenaValida = await bcrypt.compare(dto.contrasena, usuario.contrasena);
+    const contrasenaValida = await bcrypt.compare(
+      dto.contrasena,
+      usuario.contrasena,
+    );
 
     if (!contrasenaValida) {
       throw new UnauthorizedException('Credenciales inválidas');
@@ -68,7 +71,10 @@ export class AuthService {
     };
   }
 
-  async changePassword(userId: number, dto: ChangePasswordDto): Promise<{ message: string }> {
+  async changePassword(
+    userId: number,
+    dto: ChangePasswordDto,
+  ): Promise<{ message: string }> {
     const usuario = await this.prisma.usuario.findUnique({
       where: { id: userId },
     });
@@ -77,13 +83,16 @@ export class AuthService {
       throw new UnauthorizedException('Usuario no encontrado');
     }
 
-    const contrasenaValida = await bcrypt.compare(dto.contrasenaActual, usuario.contrasena);
+    const contrasenaValida = await bcrypt.compare(
+      dto.contrasenaActual,
+      usuario.contrasena,
+    );
 
     if (!contrasenaValida) {
       throw new UnauthorizedException('La contraseña actual es incorrecta');
     }
 
-    const contrasenaHash = await bcrypt.hash(dto.contrasenaNueva, 10);
+    const contrasenaHash = await bcrypt.hash(dto.contrasenaNueva, 12);
 
     await this.prisma.usuario.update({
       where: { id: userId },

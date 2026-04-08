@@ -98,6 +98,7 @@ export class PurchasesService {
     return oc;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async changeStatus(id: number, dto: ChangeOcStatusDto, userId: number) {
     const oc = await this.prisma.ordenCompra.findUnique({ where: { id } });
 
@@ -147,6 +148,16 @@ export class PurchasesService {
     }
 
     return this.prisma.$transaction(async (tx) => {
+      const ocDetalleIds = new Set(oc.detalles.map((d) => d.id));
+      const invalidIds = dto.lineas.filter(
+        (l) => !ocDetalleIds.has(l.detalleId),
+      );
+      if (invalidIds.length > 0) {
+        throw new BadRequestException(
+          `Los siguientes detalles no pertenecen a esta OC: ${invalidIds.map((l) => l.detalleId).join(', ')}`,
+        );
+      }
+
       for (const linea of dto.lineas) {
         await tx.detalleOrdenCompra.update({
           where: { id: linea.detalleId },

@@ -46,7 +46,9 @@ export class ProductionService {
         include: {
           insumos: {
             include: {
-              itemInventario: { select: { id: true, nombre: true, unidadMedida: true } },
+              itemInventario: {
+                select: { id: true, nombre: true, unidadMedida: true },
+              },
             },
           },
           creadoPor: { select: { id: true, nombre: true } },
@@ -63,7 +65,9 @@ export class ProductionService {
       });
 
       if (!orden) {
-        throw new NotFoundException(`Orden de producción con id ${id} no encontrada`);
+        throw new NotFoundException(
+          `Orden de producción con id ${id} no encontrada`,
+        );
       }
 
       if (orden.estado !== ProductionStatus.PENDIENTE) {
@@ -109,7 +113,9 @@ export class ProductionService {
         });
 
         if (!producto) {
-          throw new NotFoundException(`Producto con id ${output.productoId} no encontrado`);
+          throw new NotFoundException(
+            `Producto con id ${output.productoId} no encontrado`,
+          );
         }
 
         const ptItemId = await this.inventoryService.findOrCreatePtItem(
@@ -158,12 +164,16 @@ export class ProductionService {
         include: {
           insumos: {
             include: {
-              itemInventario: { select: { id: true, nombre: true, unidadMedida: true } },
+              itemInventario: {
+                select: { id: true, nombre: true, unidadMedida: true },
+              },
             },
           },
           productos: {
             include: {
-              producto: { select: { id: true, nombre: true, unidadMedida: true } },
+              producto: {
+                select: { id: true, nombre: true, unidadMedida: true },
+              },
             },
           },
           creadoPor: { select: { id: true, nombre: true } },
@@ -192,12 +202,16 @@ export class ProductionService {
       include: {
         insumos: {
           include: {
-            itemInventario: { select: { id: true, nombre: true, unidadMedida: true } },
+            itemInventario: {
+              select: { id: true, nombre: true, unidadMedida: true },
+            },
           },
         },
         productos: {
           include: {
-            producto: { select: { id: true, nombre: true, unidadMedida: true } },
+            producto: {
+              select: { id: true, nombre: true, unidadMedida: true },
+            },
           },
         },
         creadoPor: { select: { id: true, nombre: true } },
@@ -205,7 +219,9 @@ export class ProductionService {
     });
 
     if (!orden) {
-      throw new NotFoundException(`Orden de producción con id ${id} no encontrada`);
+      throw new NotFoundException(
+        `Orden de producción con id ${id} no encontrada`,
+      );
     }
 
     if (orden.estado === ProductionStatus.COMPLETADA) {
@@ -260,12 +276,20 @@ export class ProductionService {
     const totalBatches = ordenes.length;
 
     const totalPtKg = ordenes.reduce((acc, orden) => {
-      return acc + orden.productos.reduce((sum, p) => sum + p.cantidad.toNumber(), 0);
+      return (
+        acc + orden.productos.reduce((sum, p) => sum + p.cantidad.toNumber(), 0)
+      );
     }, 0);
 
     const rendimientos = ordenes.map((orden) => {
-      const mpKg = orden.insumos.reduce((sum, i) => sum + i.cantidad.toNumber(), 0);
-      const ptKg = orden.productos.reduce((sum, p) => sum + p.cantidad.toNumber(), 0);
+      const mpKg = orden.insumos.reduce(
+        (sum, i) => sum + i.cantidad.toNumber(),
+        0,
+      );
+      const ptKg = orden.productos.reduce(
+        (sum, p) => sum + p.cantidad.toNumber(),
+        0,
+      );
       return mpKg > 0 ? (ptKg / mpKg) * 100 : 0;
     });
 
@@ -275,8 +299,14 @@ export class ProductionService {
         : 0;
 
     const totalMermaKg = ordenes.reduce((acc, orden) => {
-      const mpKg = orden.insumos.reduce((sum, i) => sum + i.cantidad.toNumber(), 0);
-      const ptKg = orden.productos.reduce((sum, p) => sum + p.cantidad.toNumber(), 0);
+      const mpKg = orden.insumos.reduce(
+        (sum, i) => sum + i.cantidad.toNumber(),
+        0,
+      );
+      const ptKg = orden.productos.reduce(
+        (sum, p) => sum + p.cantidad.toNumber(),
+        0,
+      );
       return acc + (mpKg - ptKg);
     }, 0);
 

@@ -7,6 +7,7 @@ import {
   Body,
   Param,
   ParseIntPipe,
+  Request,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -37,8 +38,12 @@ export class UsersController {
 
   @Patch(':id')
   @RequirePermissions('usuarios.editar')
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateUserDto) {
-    return this.usersService.update(id, dto);
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateUserDto,
+    @Request() req: { user: { id: number } },
+  ) {
+    return this.usersService.update(id, dto, req.user.id);
   }
 
   @Delete(':id')

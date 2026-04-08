@@ -45,34 +45,32 @@ export class OrdersService {
 
     const tarifaRuta = cliente.ruta?.tarifa.toNumber() ?? 0;
 
-    const lineas: Array<{
-      productoId: number;
-      cantidad: number;
-      precioUnitario: number;
-      subtotal: number;
-    }> = [];
+    // Batch fetch all products at once (avoid N+1)
+    const productoIds = dto.detalles.map((d) => d.productoId);
+    const productos = await this.prisma.producto.findMany({
+      where: { id: { in: productoIds } },
+    });
 
-    for (const line of dto.detalles) {
-      const producto = await this.prisma.producto.findUnique({
-        where: { id: line.productoId },
-      });
+    const productosMap = new Map(productos.map((p) => [p.id, p]));
 
-      if (!producto) {
-        throw new NotFoundException(
-          `Producto con id ${line.productoId} no encontrado`,
-        );
-      }
+    const missingIds = productoIds.filter((id) => !productosMap.has(id));
+    if (missingIds.length > 0) {
+      throw new NotFoundException(
+        `Productos no encontrados: ${missingIds.join(', ')}`,
+      );
+    }
 
+    const lineas = dto.detalles.map((line) => {
+      const producto = productosMap.get(line.productoId)!;
       const precioUnitario = producto.precioBase.toNumber() + tarifaRuta;
       const subtotal = precioUnitario * line.cantidad;
-
-      lineas.push({
+      return {
         productoId: line.productoId,
         cantidad: line.cantidad,
         precioUnitario,
         subtotal,
-      });
-    }
+      };
+    });
 
     const total = lineas.reduce((acc, l) => acc + l.subtotal, 0);
 

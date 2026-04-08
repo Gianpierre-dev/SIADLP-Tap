@@ -1,7 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import * as ExcelJS from 'exceljs';
 import { PrismaService } from '../prisma/prisma.service';
-import { InventoryType, DeliveryStatus, ProductionStatus } from '@siadlp/shared';
+import {
+  InventoryType,
+  DeliveryStatus,
+  ProductionStatus,
+} from '@siadlp/shared';
 
 export interface DashboardData {
   pedidos: {
@@ -38,50 +42,21 @@ export class ReportsService {
     const nextDay = new Date(day);
     nextDay.setDate(nextDay.getDate() + 1);
 
-    // Pedidos creados en el día, agrupados por estado
-    const pedidosGrouped = await this.prisma.pedido.groupBy({
-      by: ['estado'],
-      where: {
-        fechaCreacion: { gte: day, lt: nextDay },
-      },
-      _count: { id: true },
-    });
-
-    const porEstado: Record<string, number> = {};
-    let totalPedidos = 0;
-    for (const group of pedidosGrouped) {
-      porEstado[group.estado] = group._count.id;
-      totalPedidos += group._count.id;
-    }
-
-    // Producción: órdenes completadas en el día
-    const ordenesProduccion = await this.prisma.ordenProduccion.findMany({
-      where: {
-        fecha: { gte: day, lt: nextDay },
-        estado: ProductionStatus.COMPLETADA,
-      },
-      include: {
-        productos: { select: { cantidad: true } },
-      },
-    });
-
-    let kgProducidos = 0;
-    let rendimientoTotal = 0;
-
-    for (const orden of ordenesProduccion) {
-      const kgOrden = orden.productos.reduce(
-        (acc, p) => acc + p.cantidad.toNumber(),
-        0,
-      );
-      kgProducidos += kgOrden;
-    }
-
-    // Rendimiento: calculamos como kgProducidos / lotes (simplificado)
-    // Si hay datos de insumos, la lógica real sería (output/input)*100
-    const lotesDelDia = ordenesProduccion.length;
-    if (lotesDelDia > 0) {
-      // Obtener insumos para calcular rendimiento real
-      const ordenesConInsumos = await this.prisma.ordenProduccion.findMany({
+    // Run all independent queries in parallel
+    const [
+      pedidosGrouped,
+      ordenesProduccion,
+      itemsConStockMinimo,
+      hojasDelDia,
+      entregasDelDia,
+      cobrosDelDia,
+    ] = await Promise.all([
+      this.prisma.pedido.groupBy({
+        by: ['estado'],
+        where: { fechaCreacion: { gte: day, lt: nextDay } },
+        _count: { id: true },
+      }),
+      this.prisma.ordenProduccion.findMany({
         where: {
           fecha: { gte: day, lt: nextDay },
           estado: ProductionStatus.COMPLETADA,
@@ -90,39 +65,66 @@ export class ReportsService {
           productos: { select: { cantidad: true } },
           insumos: { select: { cantidad: true } },
         },
-      });
+      }),
+      this.prisma.itemInventario.findMany({
+        where: { activo: true, stockMinimo: { gt: 0 } },
+        select: { tipo: true, stockActual: true, stockMinimo: true },
+      }),
+      this.prisma.hojaCarga.count({
+        where: { fecha: { gte: day, lt: nextDay } },
+      }),
+      this.prisma.entrega.groupBy({
+        by: ['estado'],
+        where: {
+          pedido: {
+            hojaCarga: { fecha: { gte: day, lt: nextDay } },
+          },
+        },
+        _count: { id: true },
+      }),
+      this.prisma.entrega.aggregate({
+        where: {
+          estado: DeliveryStatus.COBRADO,
+          fechaEntrega: { gte: day, lt: nextDay },
+        },
+        _sum: { montoCobrado: true },
+        _count: { id: true },
+      }),
+    ]);
 
-      for (const orden of ordenesConInsumos) {
-        const kgSalida = orden.productos.reduce(
-          (acc, p) => acc + p.cantidad.toNumber(),
-          0,
-        );
-        const kgEntrada = orden.insumos.reduce(
-          (acc, i) => acc + i.cantidad.toNumber(),
-          0,
-        );
-        if (kgEntrada > 0) {
-          rendimientoTotal += (kgSalida / kgEntrada) * 100;
-        }
+    // Process pedidos
+    const porEstado: Record<string, number> = {};
+    let totalPedidos = 0;
+    for (const group of pedidosGrouped) {
+      porEstado[group.estado] = group._count.id;
+      totalPedidos += group._count.id;
+    }
+
+    // Process producción
+    let kgProducidos = 0;
+    let rendimientoTotal = 0;
+    const lotesDelDia = ordenesProduccion.length;
+
+    for (const orden of ordenesProduccion) {
+      const kgSalida = orden.productos.reduce(
+        (acc, p) => acc + p.cantidad.toNumber(),
+        0,
+      );
+      kgProducidos += kgSalida;
+
+      const kgEntrada = orden.insumos.reduce(
+        (acc, i) => acc + i.cantidad.toNumber(),
+        0,
+      );
+      if (kgEntrada > 0) {
+        rendimientoTotal += (kgSalida / kgEntrada) * 100;
       }
     }
 
-    const rendimientoPromedio = lotesDelDia > 0 ? rendimientoTotal / lotesDelDia : 0;
+    const rendimientoPromedio =
+      lotesDelDia > 0 ? rendimientoTotal / lotesDelDia : 0;
 
-    // Inventario: alertas (stockActual <= stockMinimo y stockMinimo > 0)
-    // Prisma no soporta comparación campo-a-campo directa, filtramos en código
-    const itemsConStockMinimo = await this.prisma.itemInventario.findMany({
-      where: {
-        activo: true,
-        stockMinimo: { gt: 0 },
-      },
-      select: {
-        tipo: true,
-        stockActual: true,
-        stockMinimo: true,
-      },
-    });
-
+    // Process inventario alerts
     let alertasMp = 0;
     let alertasPt = 0;
 
@@ -136,26 +138,7 @@ export class ReportsService {
       }
     }
 
-    // Hojas de carga del día
-    const hojasDelDia = await this.prisma.hojaCarga.count({
-      where: {
-        fecha: { gte: day, lt: nextDay },
-      },
-    });
-
-    // Entregas del día (asociadas a hojas del día)
-    const entregasDelDia = await this.prisma.entrega.groupBy({
-      by: ['estado'],
-      where: {
-        pedido: {
-          hojaCarga: {
-            fecha: { gte: day, lt: nextDay },
-          },
-        },
-      },
-      _count: { id: true },
-    });
-
+    // Process entregas
     let entregasCompletadas = 0;
     let entregasPendientes = 0;
     let entregasConNovedad = 0;
@@ -172,16 +155,6 @@ export class ReportsService {
         entregasConNovedad += group._count.id;
       }
     }
-
-    // Cobros del día
-    const cobrosDelDia = await this.prisma.entrega.aggregate({
-      where: {
-        estado: DeliveryStatus.COBRADO,
-        fechaEntrega: { gte: day, lt: nextDay },
-      },
-      _sum: { montoCobrado: true },
-      _count: { id: true },
-    });
 
     return {
       pedidos: {
@@ -497,7 +470,8 @@ export class ReportsService {
           estadoEntrega: pedido.entrega?.estado ?? 'SIN ENTREGA',
           montoCobrado: pedido.entrega?.montoCobrado?.toNumber() ?? 0,
           metodoPago: pedido.entrega?.metodoPago ?? '',
-          fechaEntrega: pedido.entrega?.fechaEntrega?.toISOString().split('T')[0] ?? '',
+          fechaEntrega:
+            pedido.entrega?.fechaEntrega?.toISOString().split('T')[0] ?? '',
         });
       }
     }

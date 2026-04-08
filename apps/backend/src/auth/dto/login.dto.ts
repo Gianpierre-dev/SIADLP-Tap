@@ -5,6 +5,6 @@ export class LoginDto {
   correo: string;
 
   @IsString()
-  @MinLength(6)
+  @MinLength(8)
   contrasena: string;
 }

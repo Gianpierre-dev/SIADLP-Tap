@@ -24,10 +24,7 @@ export class OrdersController {
 
   @Post()
   @RequirePermissions('pedidos.crear')
-  create(
-    @Body() dto: CreateOrderDto,
-    @Request() req: AuthenticatedRequest,
-  ) {
+  create(@Body() dto: CreateOrderDto, @Request() req: AuthenticatedRequest) {
     return this.ordersService.create(dto, req.user.id);
   }
 

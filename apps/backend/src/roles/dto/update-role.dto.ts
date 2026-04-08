@@ -1,4 +1,11 @@
-import { IsString, MinLength, IsOptional, IsArray, IsInt, IsBoolean } from 'class-validator';
+import {
+  IsString,
+  MinLength,
+  IsOptional,
+  IsArray,
+  IsInt,
+  IsBoolean,
+} from 'class-validator';
 
 export class UpdateRoleDto {
   @IsOptional()

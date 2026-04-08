@@ -4,6 +4,7 @@ import {
   IsOptional,
   IsString,
   IsArray,
+  ArrayMinSize,
   ValidateNested,
   IsInt,
   IsPositive,
@@ -36,6 +37,7 @@ export class CreateProductionDto {
   observacion?: string;
 
   @IsArray()
+  @ArrayMinSize(1, { message: 'Debe incluir al menos un insumo' })
   @ValidateNested({ each: true })
   @Type(() => ProductionInputDto)
   insumos: ProductionInputDto[];

@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer';
 import {
   IsArray,
+  ArrayMinSize,
   ValidateNested,
   IsInt,
   IsPositive,
@@ -21,6 +22,7 @@ export class ProductionOutputDto {
 
 export class CompleteProductionDto {
   @IsArray()
+  @ArrayMinSize(1, { message: 'Debe incluir al menos un producto' })
   @ValidateNested({ each: true })
   @Type(() => ProductionOutputDto)
   productos: ProductionOutputDto[];

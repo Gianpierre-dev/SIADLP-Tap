@@ -9,8 +9,17 @@ import { PERMISSIONS_KEY } from '../decorators/permissions.decorator';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { PrismaService } from '../../prisma/prisma.service';
 
+const CACHE_TTL_MS = 5 * 60 * 1_000;
+
+interface PermissionCacheEntry {
+  permissions: string[];
+  expiresAt: number;
+}
+
 @Injectable()
 export class PermissionsGuard implements CanActivate {
+  private readonly cache = new Map<number, PermissionCacheEntry>();
+
   constructor(
     private readonly reflector: Reflector,
     private readonly prisma: PrismaService,
@@ -38,14 +47,7 @@ export class PermissionsGuard implements CanActivate {
 
     if (!user) throw new ForbiddenException('No autenticado');
 
-    const rolPermisos = await this.prisma.rolPermiso.findMany({
-      where: { rolId: user.rolId },
-      include: { permiso: true },
-    });
-
-    const userPermissions = rolPermisos.map(
-      (rp) => `${rp.permiso.modulo}.${rp.permiso.accion}`,
-    );
+    const userPermissions = await this.getPermissionsForRole(user.rolId);
 
     const hasPermission = requiredPermissions.every((perm) =>
       userPermissions.includes(perm),
@@ -56,5 +58,30 @@ export class PermissionsGuard implements CanActivate {
     }
 
     return true;
+  }
+
+  private async getPermissionsForRole(rolId: number): Promise<string[]> {
+    const cached = this.cache.get(rolId);
+    if (cached && cached.expiresAt > Date.now()) return cached.permissions;
+
+    const rolPermisos = await this.prisma.rolPermiso.findMany({
+      where: { rolId },
+      include: { permiso: true },
+    });
+
+    const permissions = rolPermisos.map(
+      (rp) => `${rp.permiso.modulo}.${rp.permiso.accion}`,
+    );
+
+    this.cache.set(rolId, {
+      permissions,
+      expiresAt: Date.now() + CACHE_TTL_MS,
+    });
+
+    return permissions;
+  }
+
+  invalidateRole(rolId: number): void {
+    this.cache.delete(rolId);
   }
 }
