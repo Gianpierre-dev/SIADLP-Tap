@@ -199,7 +199,7 @@ export default function ClientesPage() {
       />
       <DataTable columns={columns} data={items} loading={loading} />
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="@sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>{editingId ? 'Editar' : 'Nuevo'} Cliente</DialogTitle>
           </DialogHeader>
