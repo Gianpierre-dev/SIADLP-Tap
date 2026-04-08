@@ -12,6 +12,9 @@ const geistSans = Geist({
 export const metadata: Metadata = {
   title: 'SIADLP — La Cosecha S.A.C.',
   description: 'Sistema Integral de Administración, Distribución y Logística de Papa',
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 
 export default function RootLayout({

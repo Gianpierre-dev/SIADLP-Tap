@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LogInIcon, Loader2Icon } from 'lucide-react';
+import Image from 'next/image';
 
 interface LoginResponse {
   accessToken: string;
@@ -46,9 +47,16 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/40 px-4">
       <Card className="w-full max-w-sm">
-        <CardHeader className="text-center">
+        <CardHeader className="text-center items-center">
+          <Image
+            src="/LogoLaCosecha.png"
+            alt="La Cosecha S.A.C."
+            width={120}
+            height={120}
+            priority
+          />
           <CardTitle className="text-2xl font-bold">SIADLP</CardTitle>
-          <CardDescription>La Cosecha S.A.C.</CardDescription>
+          <CardDescription>Sistema Integral — La Cosecha S.A.C.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">

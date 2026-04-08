@@ -34,6 +34,7 @@ import {
   LogOutIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import Image from 'next/image';
 
 interface NavItem {
   label: string;
@@ -105,9 +106,18 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader className="border-b px-4 py-3">
-        <div className="flex flex-col">
-          <span className="text-lg font-bold tracking-tight">SIADLP</span>
-          <span className="text-xs text-muted-foreground">La Cosecha S.A.C.</span>
+        <div className="flex items-center gap-3">
+          <Image
+            src="/LogoLaCosecha.png"
+            alt="La Cosecha"
+            width={40}
+            height={40}
+            className="rounded-md"
+          />
+          <div className="flex flex-col">
+            <span className="text-lg font-bold tracking-tight">La Cosecha</span>
+            <span className="text-xs text-muted-foreground">SIADLP</span>
+          </div>
         </div>
       </SidebarHeader>
       <SidebarContent>
