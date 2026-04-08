@@ -1113,7 +1113,7 @@ export default function DespachoPage() {
       key: 'pedidos',
       label: 'Pedidos',
       className: 'w-20 text-center',
-      render: (row) => row._count.pedidos,
+      render: (row) => row._count?.pedidos ?? 0,
     },
     {
       key: 'totalMonto',

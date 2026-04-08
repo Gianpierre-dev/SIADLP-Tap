@@ -34,6 +34,16 @@ import {
 // Types
 // ---------------------------------------------------------------------------
 
+interface ProductionListItem {
+  id: number;
+  fecha: string;
+  estado: string;
+  observacion: string | null;
+  fechaCreacion: string;
+  creadoPor: { nombre: string };
+  _count: { insumos: number; productos: number };
+}
+
 interface ProductionOrder {
   id: number;
   fecha: string;
@@ -124,7 +134,7 @@ const EMPTY_PRODUCTO: ProductoLine = { productoId: 0, cantidad: 0 };
 // ---------------------------------------------------------------------------
 
 export default function ProduccionPage() {
-  const [orders, setOrders] = useState<ProductionOrder[]>([]);
+  const [orders, setOrders] = useState<ProductionListItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Catalog data
@@ -152,7 +162,7 @@ export default function ProduccionPage() {
 
   const fetchOrders = () => {
     setLoading(true);
-    apiGet<ProductionOrder[]>('/production')
+    apiGet<ProductionListItem[]>('/production')
       .then(setOrders)
       .catch(() => toast.error('Error al cargar las órdenes de producción'))
       .finally(() => setLoading(false));
@@ -217,7 +227,7 @@ export default function ProduccionPage() {
   // Detail dialog handlers
   // ---------------------------------------------------------------------------
 
-  const openDetail = (order: ProductionOrder) => {
+  const openDetail = (order: { id: number }) => {
     setDetailOrder(null);
     setCompleteMode(false);
     setProductoLines([{ ...EMPTY_PRODUCTO }]);
@@ -266,7 +276,7 @@ export default function ProduccionPage() {
   // Table columns
   // ---------------------------------------------------------------------------
 
-  const columns: Column<ProductionOrder>[] = [
+  const columns: Column<ProductionListItem>[] = [
     { key: 'id', label: 'ID', className: 'w-16' },
     {
       key: 'fecha',
