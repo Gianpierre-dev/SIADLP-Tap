@@ -236,13 +236,29 @@ export class DispatchService {
         },
         pedidos: {
           include: {
-            cliente: { select: { id: true, razonSocial: true } },
+            cliente: {
+              select: {
+                id: true,
+                razonSocial: true,
+                direccion: true,
+                telefono: true,
+              },
+            },
             detalles: {
               include: {
                 producto: { select: { id: true, nombre: true } },
               },
             },
-            entrega: { select: { id: true, estado: true } },
+            entrega: {
+              select: {
+                id: true,
+                estado: true,
+                montoCobrado: true,
+                metodoPago: true,
+                observacion: true,
+                fechaEntrega: true,
+              },
+            },
           },
         },
         creadoPor: { select: { id: true, nombre: true } },
@@ -320,10 +336,7 @@ export class DispatchService {
           const ptItem = await tx.itemInventario.findFirst({
             where: {
               tipo: InventoryType.PRODUCTO_TERMINADO,
-              OR: [
-                { productoId: detalle.productoId },
-                { nombre: detalle.producto.nombre },
-              ],
+              productoId: detalle.productoId,
             },
           });
 

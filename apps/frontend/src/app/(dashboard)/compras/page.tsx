@@ -8,7 +8,6 @@ import { DataTable, Column } from '@/components/data-table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
   DialogContent,
@@ -149,7 +148,7 @@ export default function ComprasPage() {
   useEffect(() => {
     apiGet<Supplier[]>('/catalogs/suppliers')
       .then((data) => setSuppliers(data.filter((s) => s.activo)))
-      .catch(() => {});
+      .catch(() => toast.error('Error al cargar proveedores'));
   }, []);
 
   // ── Create OC ───────────────────────────────────────────────────────────────
@@ -187,6 +186,14 @@ export default function ComprasPage() {
     }
     if (lines.some((l) => !l.descripcion.trim())) {
       toast.error('Completá la descripción de todas las líneas');
+      return;
+    }
+    if (lines.some((l) => l.cantidad <= 0)) {
+      toast.error('La cantidad de cada línea debe ser mayor a 0');
+      return;
+    }
+    if (lines.some((l) => l.precioUnitario <= 0)) {
+      toast.error('El precio unitario de cada línea debe ser mayor a 0');
       return;
     }
     setSaving(true);

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { apiGet } from '@/lib/api';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -90,7 +91,7 @@ export default function DashboardPage() {
     const today = new Date().toISOString().split('T')[0];
     apiGet<DashboardData>(`/reports/dashboard?fecha=${today}`)
       .then(setData)
-      .catch(() => {})
+      .catch(() => toast.error('Error al cargar el dashboard'))
       .finally(() => setLoading(false));
   }, []);
 

@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateRoleDto } from './dto/create-role.dto';
@@ -20,6 +21,15 @@ export class RolesService {
       throw new ConflictException(
         `Ya existe un rol con el nombre "${dto.nombre}"`,
       );
+    }
+
+    if (dto.permisoIds.length > 0) {
+      const existingCount = await this.prisma.permiso.count({
+        where: { id: { in: dto.permisoIds } },
+      });
+      if (existingCount !== dto.permisoIds.length) {
+        throw new BadRequestException('Uno o más permisos no existen');
+      }
     }
 
     return this.prisma.rol.create({
@@ -83,6 +93,15 @@ export class RolesService {
     await this.findOne(id);
 
     const { permisoIds, ...rolData } = dto;
+
+    if (permisoIds !== undefined && permisoIds.length > 0) {
+      const existingCount = await this.prisma.permiso.count({
+        where: { id: { in: permisoIds } },
+      });
+      if (existingCount !== permisoIds.length) {
+        throw new BadRequestException('Uno o más permisos no existen');
+      }
+    }
 
     return this.prisma.$transaction(async (tx) => {
       if (permisoIds !== undefined) {

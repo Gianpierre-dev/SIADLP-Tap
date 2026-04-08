@@ -27,6 +27,7 @@ model Usuario {
   entregas                   Entrega[]
   registrosAuditoria         RegistroAuditoria[]
 
+  @@index([rolId])
   @@map("usuarios")
 }
 
@@ -330,6 +331,9 @@ model InsumoProduccion {
   ordenProduccion OrdenProduccion @relation(fields: [ordenProduccionId], references: [id], onDelete: Cascade)
   itemInventario  ItemInventario  @relation(fields: [itemInventarioId], references: [id], onDelete: Restrict)
 
+  @@unique([ordenProduccionId, itemInventarioId])
+  @@index([ordenProduccionId])
+  @@index([itemInventarioId])
   @@map("insumos_produccion")
 }
 
@@ -342,6 +346,9 @@ model ProductoProduccion {
   ordenProduccion OrdenProduccion @relation(fields: [ordenProduccionId], references: [id], onDelete: Cascade)
   producto        Producto        @relation(fields: [productoId], references: [id], onDelete: Restrict)
 
+  @@unique([ordenProduccionId, productoId])
+  @@index([ordenProduccionId])
+  @@index([productoId])
   @@map("productos_produccion")
 }
 
@@ -368,6 +375,8 @@ model HojaCarga {
   @@index([fecha])
   @@index([estado])
   @@index([rutaId])
+  @@index([vehiculoId])
+  @@index([choferId])
   @@map("hojas_carga")
 }
 

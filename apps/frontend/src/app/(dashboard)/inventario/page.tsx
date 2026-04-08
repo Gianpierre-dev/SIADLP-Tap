@@ -58,10 +58,6 @@ function isLowStock(item: InventoryItem): boolean {
   return min > 0 && Number(item.stockActual) <= min;
 }
 
-function formatDate(iso: string): string {
-  return iso.slice(0, 10);
-}
-
 function formatDateTime(iso: string): string {
   return iso.slice(0, 16).replace('T', ' ');
 }
@@ -103,6 +99,7 @@ function KardexDialog({ item, open, onClose }: KardexDialogProps) {
   }, [item, desde, hasta]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (open && item) fetchKardex();
   }, [open, item, fetchKardex]);
 
@@ -401,6 +398,7 @@ export default function InventarioPage() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchAll();
   }, [fetchAll]);
 

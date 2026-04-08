@@ -118,6 +118,12 @@ export class OrdersService {
     const currentStatus = pedido.estado as OrderStatus;
     const newStatus = dto.nuevoEstado as OrderStatus;
 
+    if (newStatus === OrderStatus.DISPATCHED) {
+      throw new BadRequestException(
+        'La transición a DISPATCHED solo se realiza mediante el módulo de despacho',
+      );
+    }
+
     if (!canTransition(currentStatus, newStatus)) {
       throw new BadRequestException(
         `No se puede transicionar de ${currentStatus} a ${newStatus}`,
