@@ -25,6 +25,7 @@ model Usuario {
   ordenesProduccionCreadoPor OrdenProduccion[]      @relation("ProduccionCreadoPor")
   hojasCargaCreadoPor        HojaCarga[]            @relation("HojaCargaCreadoPor")
   entregas                   Entrega[]
+  registrosAuditoria         RegistroAuditoria[]
 
   @@map("usuarios")
 }
@@ -362,4 +363,19 @@ model Entrega {
   registradoPor Usuario @relation(fields: [registradoPorId], references: [id], onDelete: Restrict)
 
   @@map("entregas")
+}
+
+model RegistroAuditoria {
+  id            Int      @id @default(autoincrement())
+  usuarioId     Int      @map("usuario_id")
+  accion        String
+  modulo        String
+  entidadId     Int?     @map("entidad_id")
+  detalle       String?
+  ip            String?
+  fechaCreacion DateTime @default(now()) @map("fecha_creacion")
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+
+  @@map("registro_auditoria")
 }
