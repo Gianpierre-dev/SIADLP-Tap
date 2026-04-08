@@ -87,7 +87,7 @@ export default function ReportesPage() {
         description="Exportación de reportes en formato Excel"
       />
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 @md:grid-cols-2">
         {/* Pedidos */}
         <Card>
           <CardHeader>

@@ -216,7 +216,7 @@ export default function UsuariosPage() {
       <DataTable columns={columns} data={items} loading={loading} />
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="@sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{mode === 'create' ? 'Nuevo' : 'Editar'} Usuario</DialogTitle>
           </DialogHeader>

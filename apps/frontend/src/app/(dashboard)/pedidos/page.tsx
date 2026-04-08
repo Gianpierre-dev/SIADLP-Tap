@@ -388,7 +388,7 @@ export default function PedidosPage() {
 
       {/* ── Create Dialog ─────────────────────────────────────────────────── */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="sm:max-w-2xl">
+        <DialogContent className="@sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>Nuevo Pedido</DialogTitle>
           </DialogHeader>
@@ -507,7 +507,7 @@ export default function PedidosPage() {
 
       {/* ── Detail Dialog ─────────────────────────────────────────────────── */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="@sm:max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {selectedOrder
@@ -650,7 +650,7 @@ export default function PedidosPage() {
 
       {/* ── Cancel Motivo Dialog ──────────────────────────────────────────── */}
       <Dialog open={cancelOpen} onOpenChange={setCancelOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="@sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Cancelar pedido</DialogTitle>
           </DialogHeader>
