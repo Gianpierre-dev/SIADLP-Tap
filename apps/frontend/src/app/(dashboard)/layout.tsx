@@ -20,7 +20,7 @@ export default function DashboardLayout({
               La Cosecha S.A.C.
             </span>
           </header>
-          <main className="flex-1 p-6">{children}</main>
+          <main className="flex-1 p-6 @container">{children}</main>
         </SidebarInset>
       </SidebarProvider>
     </AuthGuard>

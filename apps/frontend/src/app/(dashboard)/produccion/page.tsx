@@ -352,7 +352,7 @@ export default function ProduccionPage() {
       {/* CREATE DIALOG                                                        */}
       {/* ------------------------------------------------------------------ */}
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="@sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Nueva Orden de Producción</DialogTitle>
           </DialogHeader>
@@ -472,7 +472,7 @@ export default function ProduccionPage() {
       {/* DETAIL DIALOG                                                        */}
       {/* ------------------------------------------------------------------ */}
       <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
-        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="@sm:max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {detailOrder
@@ -588,7 +588,7 @@ export default function ProduccionPage() {
                     <CardTitle className="text-sm">Métricas de producción</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
+                    <div className="grid grid-cols-2 @sm:grid-cols-3 gap-4 text-sm">
                       <div>
                         <p className="text-muted-foreground text-xs mb-0.5">MP total</p>
                         <p className="font-semibold">{detailOrder.metrics.totalMpKg.toFixed(2)} kg</p>
