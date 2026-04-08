@@ -81,12 +81,18 @@ export default function VehiculosPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
+    const payload = {
+      placa: form.placa,
+      capacidadKg: form.capacidadKg,
+      ...(form.marca ? { marca: form.marca } : {}),
+      ...(form.modelo ? { modelo: form.modelo } : {}),
+    };
     try {
       if (editingId) {
-        await apiPatch(`/catalogs/vehicles/${editingId}`, form);
+        await apiPatch(`/catalogs/vehicles/${editingId}`, payload);
         toast.success('Vehículo actualizado correctamente');
       } else {
-        await apiPost('/catalogs/vehicles', form);
+        await apiPost('/catalogs/vehicles', payload);
         toast.success('Vehículo creado correctamente');
       }
       setDialogOpen(false);

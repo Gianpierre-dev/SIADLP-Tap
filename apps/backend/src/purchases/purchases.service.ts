@@ -169,6 +169,15 @@ export class PurchasesService {
         );
       }
 
+      const missingDetalles = oc.detalles.filter(
+        (d) => !dto.lineas.some((l) => l.detalleId === d.id),
+      );
+      if (missingDetalles.length > 0) {
+        throw new BadRequestException(
+          'Debe incluir todas las líneas de la orden de compra en la recepción',
+        );
+      }
+
       for (const linea of dto.lineas) {
         await tx.detalleOrdenCompra.update({
           where: { id: linea.detalleId },

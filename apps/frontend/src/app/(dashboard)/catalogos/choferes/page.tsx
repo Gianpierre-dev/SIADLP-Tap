@@ -85,12 +85,19 @@ export default function ChoferesPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
+    const payload = {
+      nombre: form.nombre,
+      apellido: form.apellido,
+      dni: form.dni,
+      ...(form.licencia ? { licencia: form.licencia } : {}),
+      ...(form.telefono ? { telefono: form.telefono } : {}),
+    };
     try {
       if (editingId) {
-        await apiPatch(`/catalogs/drivers/${editingId}`, form);
+        await apiPatch(`/catalogs/drivers/${editingId}`, payload);
         toast.success('Chofer actualizado correctamente');
       } else {
-        await apiPost('/catalogs/drivers', form);
+        await apiPost('/catalogs/drivers', payload);
         toast.success('Chofer creado correctamente');
       }
       setDialogOpen(false);

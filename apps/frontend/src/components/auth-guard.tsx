@@ -11,6 +11,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     hydrate();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsReady(true);
   }, [hydrate]);
 

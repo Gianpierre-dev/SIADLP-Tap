@@ -80,9 +80,21 @@ export class ProductionService {
         data: { estado: ProductionStatus.COMPLETADA },
       });
 
+      // Deduplicate by productoId — sum quantities
+      const productosMap = new Map<number, number>();
+      for (const p of dto.productos) {
+        productosMap.set(
+          p.productoId,
+          (productosMap.get(p.productoId) ?? 0) + p.cantidad,
+        );
+      }
+      const deduplicatedProductos = Array.from(productosMap.entries()).map(
+        ([productoId, cantidad]) => ({ productoId, cantidad }),
+      );
+
       // Create ProductoProduccion records
       await tx.productoProduccion.createMany({
-        data: dto.productos.map((p) => ({
+        data: deduplicatedProductos.map((p) => ({
           ordenProduccionId: id,
           productoId: p.productoId,
           cantidad: p.cantidad,
@@ -104,7 +116,7 @@ export class ProductionService {
       }
 
       // Increase PT stock for each output product
-      for (const output of dto.productos) {
+      for (const output of deduplicatedProductos) {
         const producto = await tx.producto.findUnique({
           where: { id: output.productoId },
           select: { nombre: true, unidadMedida: true },

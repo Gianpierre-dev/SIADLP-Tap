@@ -35,11 +35,13 @@ export class InventoryService {
         });
       }
 
-      const nuevoStock = inventoryItem.stockActual.toNumber() + item.cantidad;
-
       await tx.itemInventario.update({
         where: { id: inventoryItem.id },
-        data: { stockActual: nuevoStock },
+        data: { stockActual: { increment: item.cantidad } },
+      });
+
+      const updated = await tx.itemInventario.findUniqueOrThrow({
+        where: { id: inventoryItem.id },
       });
 
       await tx.movimientoInventario.create({
@@ -47,7 +49,7 @@ export class InventoryService {
           itemInventarioId: inventoryItem.id,
           tipo: MovementType.COMPRA_ENTRADA,
           cantidad: item.cantidad,
-          stockResultante: nuevoStock,
+          stockResultante: updated.stockActual,
           referencia,
           usuarioId,
         },
@@ -203,18 +205,26 @@ export class InventoryService {
           ? MovementType.AJUSTE_POSITIVO
           : MovementType.AJUSTE_NEGATIVO;
       const cantidadAbsoluta = Math.abs(dto.cantidad);
-      const nuevoStock =
-        dto.cantidad >= 0
-          ? item.stockActual.toNumber() + cantidadAbsoluta
-          : item.stockActual.toNumber() - cantidadAbsoluta;
 
-      if (nuevoStock < 0) {
-        throw new BadRequestException('El ajuste dejaría el stock en negativo');
+      if (dto.cantidad < 0) {
+        const updated = await tx.itemInventario.updateMany({
+          where: { id: itemId, stockActual: { gte: cantidadAbsoluta } },
+          data: { stockActual: { increment: dto.cantidad } },
+        });
+        if (updated.count === 0) {
+          throw new BadRequestException(
+            'El ajuste dejaría el stock en negativo',
+          );
+        }
+      } else {
+        await tx.itemInventario.update({
+          where: { id: itemId },
+          data: { stockActual: { increment: dto.cantidad } },
+        });
       }
 
-      await tx.itemInventario.update({
+      const updatedItem = await tx.itemInventario.findUniqueOrThrow({
         where: { id: itemId },
-        data: { stockActual: nuevoStock },
       });
 
       await tx.movimientoInventario.create({
@@ -222,13 +232,13 @@ export class InventoryService {
           itemInventarioId: itemId,
           tipo,
           cantidad: cantidadAbsoluta,
-          stockResultante: nuevoStock,
+          stockResultante: updatedItem.stockActual,
           referencia: `AJUSTE: ${dto.motivo}`,
           usuarioId: userId,
         },
       });
 
-      return tx.itemInventario.findUnique({ where: { id: itemId } });
+      return updatedItem;
     });
   }
 

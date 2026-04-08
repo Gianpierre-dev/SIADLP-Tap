@@ -81,12 +81,18 @@ export default function RutasPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
+    const payload = {
+      nombre: form.nombre,
+      zona: form.zona,
+      tarifa: form.tarifa,
+      ...(form.descripcion ? { descripcion: form.descripcion } : {}),
+    };
     try {
       if (editingId) {
-        await apiPatch(`/catalogs/routes/${editingId}`, form);
+        await apiPatch(`/catalogs/routes/${editingId}`, payload);
         toast.success('Ruta actualizada correctamente');
       } else {
-        await apiPost('/catalogs/routes', form);
+        await apiPost('/catalogs/routes', payload);
         toast.success('Ruta creada correctamente');
       }
       setDialogOpen(false);

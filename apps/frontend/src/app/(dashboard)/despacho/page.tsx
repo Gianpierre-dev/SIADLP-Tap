@@ -1045,11 +1045,12 @@ export default function DespachoPage() {
   );
 
   useEffect(() => {
-    setPage(1);
+    setPage(1); // eslint-disable-line react-hooks/set-state-in-effect
     fetchSheets(1);
   }, [fechaFilter, fetchSheets]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchSheets(page);
   }, [page, fetchSheets]);
 
