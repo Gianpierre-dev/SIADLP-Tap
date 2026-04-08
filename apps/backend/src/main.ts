@@ -32,7 +32,7 @@ async function bootstrap() {
   );
 
   const allowedOrigins = (
-    process.env['CORS_ORIGINS'] ?? 'http://localhost:3001'
+    process.env['CORS_ORIGINS'] ?? 'http://localhost:3020'
   )
     .split(',')
     .map((o) => o.trim());
@@ -44,7 +44,7 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
-  const port = process.env['API_PORT'] ?? 3000;
+  const port = process.env['API_PORT'] ?? 4020;
   await app.listen(port);
   Logger.log(`Application running on port ${port}`, 'Bootstrap');
 }
