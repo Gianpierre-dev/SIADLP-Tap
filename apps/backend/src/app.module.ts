@@ -11,12 +11,13 @@ import { PurchasesModule } from './purchases/purchases.module';
 import { ProductionModule } from './production/production.module';
 import { DispatchModule } from './dispatch/dispatch.module';
 import { AuditModule } from './audit/audit.module';
+import { ReportsModule } from './reports/reports.module';
 import { AuditInterceptor } from './audit/audit.interceptor';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from './auth/guards/permissions.guard';
 
 @Module({
-  imports: [PrismaModule, AuthModule, UsersModule, RolesModule, CatalogsModule, OrdersModule, InventoryModule, PurchasesModule, ProductionModule, DispatchModule, AuditModule],
+  imports: [PrismaModule, AuthModule, UsersModule, RolesModule, CatalogsModule, OrdersModule, InventoryModule, PurchasesModule, ProductionModule, DispatchModule, AuditModule, ReportsModule],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: PermissionsGuard },
