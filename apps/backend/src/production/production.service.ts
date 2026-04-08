@@ -92,6 +92,16 @@ export class ProductionService {
         ([productoId, cantidad]) => ({ productoId, cantidad }),
       );
 
+      // Validate all productoIds exist before writing
+      const productIds = deduplicatedProductos.map((p) => p.productoId);
+      const existingProducts = await tx.producto.findMany({
+        where: { id: { in: productIds } },
+        select: { id: true },
+      });
+      if (existingProducts.length !== productIds.length) {
+        throw new BadRequestException('Uno o más productos no existen');
+      }
+
       // Create ProductoProduccion records
       await tx.productoProduccion.createMany({
         data: deduplicatedProductos.map((p) => ({

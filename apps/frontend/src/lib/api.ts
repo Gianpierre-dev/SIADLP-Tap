@@ -35,12 +35,15 @@ export async function api<T>(
 
   if (!res.ok) {
     if (res.status === 401) {
-      if (typeof window !== 'undefined') {
+      const hadToken =
+        typeof window !== 'undefined' &&
+        !!localStorage.getItem('access_token');
+      if (hadToken) {
         localStorage.removeItem('access_token');
         localStorage.removeItem('user');
         window.location.href = '/login';
       }
-      throw new ApiRequestError(401, 'Sesión expirada');
+      // Fall through to parse the body so login errors show the backend message
     }
     const body: unknown = await res.json().catch(() => null);
     const error: ApiError =

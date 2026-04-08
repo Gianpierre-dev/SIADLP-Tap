@@ -48,6 +48,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const userJson = localStorage.getItem('user');
     if (token && userJson) {
       try {
+        // Check token expiry before restoring session
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        if (payload.exp && payload.exp * 1000 < Date.now()) {
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('user');
+          return;
+        }
         const user = JSON.parse(userJson) as User;
         set({ user, isAuthenticated: true });
       } catch {

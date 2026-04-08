@@ -80,6 +80,10 @@ export default function RutasPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (form.tarifa <= 0) {
+      toast.error('La tarifa debe ser mayor a 0');
+      return;
+    }
     setSaving(true);
     const payload = {
       nombre: form.nombre,

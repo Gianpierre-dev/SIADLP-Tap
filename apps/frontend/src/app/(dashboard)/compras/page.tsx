@@ -440,7 +440,7 @@ export default function ComprasPage() {
                   />
                   <Input
                     type="number"
-                    min={0}
+                    min={0.01}
                     step="any"
                     value={line.cantidad}
                     onChange={(e) =>
@@ -449,7 +449,7 @@ export default function ComprasPage() {
                   />
                   <Input
                     type="number"
-                    min={0}
+                    min={0.01}
                     step="any"
                     value={line.precioUnitario}
                     onChange={(e) =>

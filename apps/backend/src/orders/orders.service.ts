@@ -56,6 +56,11 @@ export class OrdersService {
       throw new NotFoundException('Uno o más productos no fueron encontrados');
     }
 
+    const inactiveProducts = productos.filter((p) => !p.activo);
+    if (inactiveProducts.length > 0) {
+      throw new BadRequestException('Uno o más productos no están activos');
+    }
+
     const lineas = dto.detalles.map((line) => {
       const producto = productosMap.get(line.productoId)!;
       const precioUnitario = producto.precioBase.toNumber() + tarifaRuta;
