@@ -201,6 +201,7 @@ export class ReportsService {
         detalles: { include: { producto: { select: { nombre: true } } } },
       },
       orderBy: { fechaCreacion: 'desc' },
+      take: 10_000,
     });
 
     const workbook = new ExcelJS.Workbook();
@@ -266,6 +267,7 @@ export class ReportsService {
         creadoPor: { select: { nombre: true } },
       },
       orderBy: { fecha: 'desc' },
+      take: 10_000,
     });
 
     const workbook = new ExcelJS.Workbook();
@@ -421,6 +423,7 @@ export class ReportsService {
         },
       },
       orderBy: { fecha: 'desc' },
+      take: 10_000,
     });
 
     const workbook = new ExcelJS.Workbook();

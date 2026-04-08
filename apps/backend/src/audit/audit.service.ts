@@ -25,7 +25,7 @@ export class AuditService {
     await this.prisma.registroAuditoria.create({ data });
   }
 
-  async findAll(filters?: AuditFilters) {
+  async findAll(filters?: AuditFilters, page = 1, pageSize = 20) {
     const where: Record<string, unknown> = {};
 
     if (filters?.usuarioId) where.usuarioId = filters.usuarioId;
@@ -37,13 +37,19 @@ export class AuditService {
       where.fechaCreacion = fechaFilter;
     }
 
-    return this.prisma.registroAuditoria.findMany({
-      where,
-      include: {
-        usuario: { select: { id: true, nombre: true, correo: true } },
-      },
-      orderBy: { fechaCreacion: 'desc' },
-      take: 500,
-    });
+    const skip = (page - 1) * pageSize;
+    const [data, total] = await Promise.all([
+      this.prisma.registroAuditoria.findMany({
+        where,
+        include: {
+          usuario: { select: { id: true, nombre: true, correo: true } },
+        },
+        orderBy: { fechaCreacion: 'desc' },
+        skip,
+        take: pageSize,
+      }),
+      this.prisma.registroAuditoria.count({ where }),
+    ]);
+    return { data, total, page, pageSize };
   }
 }

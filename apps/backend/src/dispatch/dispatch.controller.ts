@@ -38,8 +38,16 @@ export class DispatchController {
 
   @Get()
   @RequirePermissions('despacho.leer')
-  findAll(@Query('fecha') fecha?: string) {
-    return this.dispatchService.findAll(fecha);
+  findAll(
+    @Query('fecha') fecha?: string,
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+  ) {
+    return this.dispatchService.findAll(
+      fecha,
+      page ? Number(page) : undefined,
+      pageSize ? Number(pageSize) : undefined,
+    );
   }
 
   @Post()
@@ -49,6 +57,12 @@ export class DispatchController {
     @Request() req: AuthenticatedRequest,
   ) {
     return this.dispatchService.create(dto, req.user.id);
+  }
+
+  @Post(':id/start-route')
+  @RequirePermissions('despacho.editar')
+  startRoute(@Param('id', ParseIntPipe) id: number) {
+    return this.dispatchService.startRoute(id);
   }
 
   @Get(':id')

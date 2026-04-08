@@ -118,6 +118,7 @@ model Producto {
 
   detallesPedido      DetallePedido[]
   productosProduccion ProductoProduccion[]
+  itemInventario      ItemInventario?
 
   @@map("productos")
 }
@@ -272,8 +273,10 @@ model ItemInventario {
   stockMinimo  Decimal  @default(0) @map("stock_minimo") @db.Decimal(10, 2)
   activo       Boolean  @default(true)
   fechaCreacion DateTime @default(now()) @map("fecha_creacion")
+  productoId   Int?     @unique @map("producto_id")
 
-  movimientos      MovimientoInventario[]
+  producto          Producto?             @relation(fields: [productoId], references: [id], onDelete: SetNull)
+  movimientos       MovimientoInventario[]
   insumosProduccion InsumoProduccion[]
 
   @@unique([tipo, nombre])

@@ -124,9 +124,10 @@ export class InventoryService {
     tx: Prisma.TransactionClient,
     nombre: string,
     unidadMedida: string,
+    productoId: number,
   ): Promise<number> {
     let item = await tx.itemInventario.findFirst({
-      where: { tipo: InventoryType.PRODUCTO_TERMINADO, nombre },
+      where: { tipo: InventoryType.PRODUCTO_TERMINADO, productoId },
     });
 
     if (!item) {
@@ -136,6 +137,7 @@ export class InventoryService {
           nombre,
           unidadMedida,
           stockActual: 0,
+          productoId,
         },
       });
     }

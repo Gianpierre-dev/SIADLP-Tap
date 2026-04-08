@@ -61,7 +61,11 @@ export class PurchasesService {
     });
   }
 
-  async findAll(filters?: { estado?: string; proveedorId?: number }) {
+  async findAll(
+    filters?: { estado?: string; proveedorId?: number },
+    page = 1,
+    pageSize = 20,
+  ) {
     const where: Record<string, unknown> = {};
 
     if (filters?.estado) {
@@ -72,14 +76,21 @@ export class PurchasesService {
       where['proveedorId'] = filters.proveedorId;
     }
 
-    return this.prisma.ordenCompra.findMany({
-      where,
-      include: {
-        proveedor: { select: PROVEEDOR_SELECT },
-        _count: { select: { detalles: true } },
-      },
-      orderBy: { fechaCreacion: 'desc' },
-    });
+    const skip = (page - 1) * pageSize;
+    const [data, total] = await Promise.all([
+      this.prisma.ordenCompra.findMany({
+        where,
+        include: {
+          proveedor: { select: PROVEEDOR_SELECT },
+          _count: { select: { detalles: true } },
+        },
+        orderBy: { fechaCreacion: 'desc' },
+        skip,
+        take: pageSize,
+      }),
+      this.prisma.ordenCompra.count({ where }),
+    ]);
+    return { data, total, page, pageSize };
   }
 
   async findOne(id: number) {
@@ -92,7 +103,7 @@ export class PurchasesService {
     });
 
     if (!oc) {
-      throw new NotFoundException(`Orden de compra con id ${id} no encontrada`);
+      throw new NotFoundException('Orden de compra no encontrada');
     }
 
     return oc;
@@ -103,7 +114,7 @@ export class PurchasesService {
     const oc = await this.prisma.ordenCompra.findUnique({ where: { id } });
 
     if (!oc) {
-      throw new NotFoundException(`Orden de compra con id ${id} no encontrada`);
+      throw new NotFoundException('Orden de compra no encontrada');
     }
 
     const currentStatus = oc.estado as OcStatus;
@@ -138,7 +149,7 @@ export class PurchasesService {
     });
 
     if (!oc) {
-      throw new NotFoundException(`Orden de compra con id ${id} no encontrada`);
+      throw new NotFoundException('Orden de compra no encontrada');
     }
 
     if (oc.estado !== OcStatus.EN_CAMINO) {

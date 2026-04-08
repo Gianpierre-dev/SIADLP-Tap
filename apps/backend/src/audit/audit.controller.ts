@@ -13,12 +13,18 @@ export class AuditController {
     @Query('modulo') modulo?: string,
     @Query('desde') desde?: string,
     @Query('hasta') hasta?: string,
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
   ) {
-    return this.auditService.findAll({
-      usuarioId: usuarioId ? Number(usuarioId) : undefined,
-      modulo,
-      desde,
-      hasta,
-    });
+    return this.auditService.findAll(
+      {
+        usuarioId: usuarioId ? Number(usuarioId) : undefined,
+        modulo,
+        desde,
+        hasta,
+      },
+      page ? Number(page) : undefined,
+      pageSize ? Number(pageSize) : undefined,
+    );
   }
 }

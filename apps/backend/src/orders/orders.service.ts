@@ -38,9 +38,7 @@ export class OrdersService {
     });
 
     if (!cliente || !cliente.activo) {
-      throw new NotFoundException(
-        `Cliente con id ${dto.clienteId} no encontrado o inactivo`,
-      );
+      throw new NotFoundException('Cliente no encontrado o inactivo');
     }
 
     const tarifaRuta = cliente.ruta?.tarifa.toNumber() ?? 0;
@@ -55,9 +53,7 @@ export class OrdersService {
 
     const missingIds = productoIds.filter((id) => !productosMap.has(id));
     if (missingIds.length > 0) {
-      throw new NotFoundException(
-        `Productos no encontrados: ${missingIds.join(', ')}`,
-      );
+      throw new NotFoundException('Uno o más productos no fueron encontrados');
     }
 
     const lineas = dto.detalles.map((line) => {
@@ -116,7 +112,7 @@ export class OrdersService {
     const pedido = await this.prisma.pedido.findUnique({ where: { id } });
 
     if (!pedido) {
-      throw new NotFoundException(`Pedido con id ${id} no encontrado`);
+      throw new NotFoundException('Pedido no encontrado');
     }
 
     const currentStatus = pedido.estado as OrderStatus;
@@ -166,14 +162,21 @@ export class OrdersService {
     return updated;
   }
 
-  async findAll() {
-    return this.prisma.pedido.findMany({
-      include: {
-        cliente: { select: { id: true, razonSocial: true } },
-        _count: { select: { detalles: true } },
-      },
-      orderBy: { fechaCreacion: 'desc' },
-    });
+  async findAll(page = 1, pageSize = 20) {
+    const skip = (page - 1) * pageSize;
+    const [data, total] = await Promise.all([
+      this.prisma.pedido.findMany({
+        include: {
+          cliente: { select: { id: true, razonSocial: true } },
+          _count: { select: { detalles: true } },
+        },
+        orderBy: { fechaCreacion: 'desc' },
+        skip,
+        take: pageSize,
+      }),
+      this.prisma.pedido.count(),
+    ]);
+    return { data, total, page, pageSize };
   }
 
   async findOne(id: number) {
@@ -192,7 +195,7 @@ export class OrdersService {
     });
 
     if (!pedido) {
-      throw new NotFoundException(`Pedido con id ${id} no encontrado`);
+      throw new NotFoundException('Pedido no encontrado');
     }
 
     return pedido;
