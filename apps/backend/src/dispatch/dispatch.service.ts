@@ -151,6 +151,30 @@ export class DispatchService {
         0,
       );
 
+      // Validate ruta, vehiculo and chofer exist and are active
+      const ruta = await tx.ruta.findUnique({ where: { id: dto.rutaId } });
+      if (!ruta || !ruta.activa)
+        throw new BadRequestException('Ruta no encontrada o inactiva');
+
+      const vehiculo = await tx.vehiculo.findUnique({
+        where: { id: dto.vehiculoId },
+      });
+      if (!vehiculo || !vehiculo.activo)
+        throw new BadRequestException('Vehículo no encontrado o inactivo');
+
+      const chofer = await tx.chofer.findUnique({
+        where: { id: dto.choferId },
+      });
+      if (!chofer || !chofer.activo)
+        throw new BadRequestException('Chofer no encontrado o inactivo');
+
+      // Validate vehicle capacity
+      if (totalKg > vehiculo.capacidadKg.toNumber()) {
+        throw new BadRequestException(
+          `El peso total (${totalKg.toFixed(2)} kg) excede la capacidad del vehículo (${vehiculo.capacidadKg.toNumber()} kg)`,
+        );
+      }
+
       const hoja = await tx.hojaCarga.create({
         data: {
           fecha: new Date(dto.fecha),

@@ -213,13 +213,13 @@ export default function VehiculosPage() {
               <Input
                 id="capacidadKg"
                 type="number"
-                min="0"
-                step="1"
+                min="0.01"
+                step="0.01"
                 value={form.capacidadKg}
                 onChange={(e) =>
                   setForm({ ...form, capacidadKg: parseFloat(e.target.value) || 0 })
                 }
-                placeholder="0"
+                placeholder="0.00"
                 required
               />
             </div>

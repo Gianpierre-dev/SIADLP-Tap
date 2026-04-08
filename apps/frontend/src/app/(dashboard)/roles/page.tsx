@@ -75,6 +75,8 @@ const CHECKBOX_CLASS =
 export default function RolesPage() {
   const [items, setItems] = useState<RoleListItem[]>([]);
   const [permissions, setPermissions] = useState<Permission[]>([]);
+  const [permissionsLoading, setPermissionsLoading] = useState(true);
+  const [permissionsError, setPermissionsError] = useState(false);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [mode, setMode] = useState<'create' | 'edit'>('create');
@@ -93,9 +95,15 @@ export default function RolesPage() {
 
   useEffect(() => {
     fetchItems();
+    setPermissionsLoading(true);
+    setPermissionsError(false);
     apiGet<Permission[]>('/roles/permissions')
       .then(setPermissions)
-      .catch(() => toast.error('Error al cargar permisos'));
+      .catch(() => {
+        setPermissionsError(true);
+        toast.error('Error al cargar permisos');
+      })
+      .finally(() => setPermissionsLoading(false));
   }, []);
 
   const grouped = permissions.reduce<Record<string, Permission[]>>((acc, p) => {
@@ -266,8 +274,11 @@ export default function RolesPage() {
 
             <div className="space-y-3">
               <Label className="text-sm font-semibold">Permisos</Label>
-              {Object.keys(grouped).length === 0 && (
+              {permissionsLoading && (
                 <p className="text-sm text-muted-foreground">Cargando permisos...</p>
+              )}
+              {!permissionsLoading && permissionsError && (
+                <p className="text-sm text-destructive">Error al cargar permisos. Intentá cerrar y volver a abrir el diálogo.</p>
               )}
               <div className="space-y-4">
                 {Object.entries(grouped).map(([modulo, perms]) => {

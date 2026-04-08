@@ -276,7 +276,7 @@ model ItemInventario {
   fechaCreacion DateTime @default(now()) @map("fecha_creacion")
   productoId   Int?     @unique @map("producto_id")
 
-  producto          Producto?             @relation(fields: [productoId], references: [id], onDelete: SetNull)
+  producto          Producto?             @relation(fields: [productoId], references: [id], onDelete: Restrict)
   movimientos       MovimientoInventario[]
   insumosProduccion InsumoProduccion[]
 

@@ -23,6 +23,13 @@ export class PurchasesService {
   ) {}
 
   async create(dto: CreatePurchaseDto, userId: number) {
+    const proveedor = await this.prisma.proveedor.findUnique({
+      where: { id: dto.proveedorId },
+    });
+    if (!proveedor || !proveedor.activo) {
+      throw new BadRequestException('Proveedor no encontrado o inactivo');
+    }
+
     const lineas = dto.detalles.map((line) => {
       const subtotal = line.precioUnitario * line.cantidad;
       return {
