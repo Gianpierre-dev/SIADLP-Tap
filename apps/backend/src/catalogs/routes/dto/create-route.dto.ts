@@ -1,4 +1,10 @@
-import { IsString, IsOptional, MinLength, IsNumber, Min } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  MinLength,
+  IsNumber,
+  Min,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateRouteDto {

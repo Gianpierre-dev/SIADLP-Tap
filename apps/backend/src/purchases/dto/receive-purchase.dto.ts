@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer';
 import {
   IsArray,
+  ArrayMinSize,
   ValidateNested,
   IsInt,
   IsPositive,
@@ -21,6 +22,7 @@ export class ReceiveLineDto {
 
 export class ReceivePurchaseDto {
   @IsArray()
+  @ArrayMinSize(1, { message: 'Debe incluir al menos una línea' })
   @ValidateNested({ each: true })
   @Type(() => ReceiveLineDto)
   lineas: ReceiveLineDto[];

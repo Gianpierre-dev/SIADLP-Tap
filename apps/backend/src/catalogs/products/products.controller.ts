@@ -37,10 +37,7 @@ export class ProductsController {
 
   @Patch(':id')
   @RequirePermissions('productos.editar')
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateProductDto,
-  ) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateProductDto) {
     return this.productsService.update(id, dto);
   }
 

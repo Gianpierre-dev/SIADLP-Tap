@@ -1,9 +1,25 @@
+import helmet from 'helmet';
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, Logger } from '@nestjs/common';
 import { AppModule } from './app.module';
 
+function validateEnv(): void {
+  const required = ['DATABASE_URL', 'JWT_SECRET'] as const;
+  const missing = required.filter((key) => !process.env[key]);
+
+  if (missing.length > 0) {
+    throw new Error(
+      `Missing required environment variables: ${missing.join(', ')}. Application cannot start.`,
+    );
+  }
+}
+
 async function bootstrap() {
+  validateEnv();
+
   const app = await NestFactory.create(AppModule);
+
+  app.use(helmet());
 
   app.setGlobalPrefix('api');
 
@@ -15,11 +31,21 @@ async function bootstrap() {
     }),
   );
 
+  const allowedOrigins = (
+    process.env['CORS_ORIGINS'] ?? 'http://localhost:3001'
+  )
+    .split(',')
+    .map((o) => o.trim());
+
   app.enableCors({
-    origin: 'http://localhost:3001',
+    origin: allowedOrigins,
     credentials: true,
+    methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
-  await app.listen(process.env['API_PORT'] ?? 3000);
+  const port = process.env['API_PORT'] ?? 3000;
+  await app.listen(port);
+  Logger.log(`Application running on port ${port}`, 'Bootstrap');
 }
-bootstrap();
+void bootstrap();

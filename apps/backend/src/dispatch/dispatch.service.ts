@@ -11,6 +11,7 @@ import {
   DeliveryStatus,
   MovementType,
   InventoryType,
+  canTransition,
 } from '@siadlp/shared';
 import { CreateLoadSheetDto } from './dto/create-load-sheet.dto';
 import { ConfirmDispatchDto } from './dto/confirm-dispatch.dto';
@@ -125,15 +126,27 @@ export class DispatchService {
         );
       }
 
-      const notConfirmed = pedidos.filter((p) => p.estado !== OrderStatus.CONFIRMED);
+      const notConfirmed = pedidos.filter(
+        (p) => p.estado !== OrderStatus.CONFIRMED,
+      );
       if (notConfirmed.length > 0) {
         throw new BadRequestException(
           `Los siguientes pedidos no están en estado CONFIRMED: ${notConfirmed.map((p) => p.id).join(', ')}`,
         );
       }
 
+      const alreadyAssigned = pedidos.filter((p) => p.hojaCargaId !== null);
+      if (alreadyAssigned.length > 0) {
+        throw new BadRequestException(
+          `Los siguientes pedidos ya están asignados a otra hoja de carga: ${alreadyAssigned.map((p) => p.id).join(', ')}`,
+        );
+      }
+
       const totalKg = pedidos.reduce((acc, pedido) => {
-        return acc + pedido.detalles.reduce((sum, d) => sum + d.cantidad.toNumber(), 0);
+        return (
+          acc +
+          pedido.detalles.reduce((sum, d) => sum + d.cantidad.toNumber(), 0)
+        );
       }, 0);
 
       const totalMonto = pedidos.reduce(
@@ -168,7 +181,9 @@ export class DispatchService {
             },
           },
           ruta: { select: { id: true, nombre: true, zona: true } },
-          vehiculo: { select: { id: true, placa: true, marca: true, modelo: true } },
+          vehiculo: {
+            select: { id: true, placa: true, marca: true, modelo: true },
+          },
           chofer: { select: { id: true, nombre: true, apellido: true } },
         },
       });
@@ -202,7 +217,9 @@ export class DispatchService {
       where: { id },
       include: {
         ruta: { select: { id: true, nombre: true, zona: true } },
-        vehiculo: { select: { id: true, placa: true, marca: true, modelo: true } },
+        vehiculo: {
+          select: { id: true, placa: true, marca: true, modelo: true },
+        },
         chofer: {
           select: {
             id: true,
@@ -244,7 +261,9 @@ export class DispatchService {
             include: {
               detalles: {
                 include: {
-                  producto: { select: { id: true, nombre: true, unidadMedida: true } },
+                  producto: {
+                    select: { id: true, nombre: true, unidadMedida: true },
+                  },
                 },
               },
             },
@@ -261,15 +280,6 @@ export class DispatchService {
           `Solo se puede confirmar una hoja en estado PREPARANDO. Estado actual: ${hoja.estado}`,
         );
       }
-
-      // Update hoja to DESPACHADO and set GRE if provided
-      await tx.hojaCarga.update({
-        where: { id },
-        data: {
-          estado: DispatchStatus.DESPACHADO,
-          ...(dto.numeroGre ? { numeroGre: dto.numeroGre } : {}),
-        },
-      });
 
       const referencia = `HC-${id}`;
 
@@ -311,10 +321,9 @@ export class DispatchService {
           });
 
           if (!ptItem) {
-            console.warn(
-              `[DispatchService] Item PT no encontrado para producto "${detalle.producto.nombre}" (id: ${detalle.productoId}). Se omite descuento de stock.`,
+            throw new BadRequestException(
+              `Item PT no encontrado para producto "${detalle.producto.nombre}". Asegúrese de que exista en inventario antes de despachar.`,
             );
-            continue;
           }
 
           await this.inventoryService.registerMovement(
@@ -328,10 +337,13 @@ export class DispatchService {
         }
       }
 
-      // Transition hoja to EN_RUTA
+      // Update hoja to EN_RUTA and set GRE if provided
       await tx.hojaCarga.update({
         where: { id },
-        data: { estado: DispatchStatus.EN_RUTA },
+        data: {
+          estado: DispatchStatus.EN_RUTA,
+          ...(dto.numeroGre ? { numeroGre: dto.numeroGre } : {}),
+        },
       });
 
       return tx.hojaCarga.findUnique({
@@ -344,7 +356,9 @@ export class DispatchService {
             },
           },
           ruta: { select: { id: true, nombre: true, zona: true } },
-          vehiculo: { select: { id: true, placa: true, marca: true, modelo: true } },
+          vehiculo: {
+            select: { id: true, placa: true, marca: true, modelo: true },
+          },
           chofer: { select: { id: true, nombre: true, apellido: true } },
         },
       });
@@ -502,11 +516,22 @@ export class DispatchService {
         },
       });
 
-      // Get current pedido estado for log
+      // Get current pedido estado for log and validate transition
       const pedido = await tx.pedido.findUniqueOrThrow({
         where: { id: pedidoId },
         select: { estado: true },
       });
+
+      if (
+        !canTransition(
+          pedido.estado as OrderStatus,
+          newOrderStatus as OrderStatus,
+        )
+      ) {
+        throw new BadRequestException(
+          `No se puede transicionar de ${pedido.estado} a ${newOrderStatus}`,
+        );
+      }
 
       // Update pedido estado
       await tx.pedido.update({
@@ -674,12 +699,20 @@ export class DispatchService {
 
     const choferMap = new Map<
       string,
-      { chofer: { nombre: string; apellido: string }; totalCobrado: number; cantidadEntregas: number }
+      {
+        chofer: { nombre: string; apellido: string };
+        totalCobrado: number;
+        cantidadEntregas: number;
+      }
     >();
 
     const rutaMap = new Map<
       string,
-      { ruta: { nombre: string; zona: string }; totalCobrado: number; cantidadEntregas: number }
+      {
+        ruta: { nombre: string; zona: string };
+        totalCobrado: number;
+        cantidadEntregas: number;
+      }
     >();
 
     let totalGeneral = 0;
@@ -700,7 +733,10 @@ export class DispatchService {
         existingChofer.cantidadEntregas += 1;
       } else {
         choferMap.set(choferKey, {
-          chofer: { nombre: hojaCarga.chofer.nombre, apellido: hojaCarga.chofer.apellido },
+          chofer: {
+            nombre: hojaCarga.chofer.nombre,
+            apellido: hojaCarga.chofer.apellido,
+          },
           totalCobrado: monto,
           cantidadEntregas: 1,
         });

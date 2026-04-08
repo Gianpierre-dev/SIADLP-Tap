@@ -25,10 +25,7 @@ export class PurchasesController {
 
   @Post()
   @RequirePermissions('compras.crear')
-  create(
-    @Body() dto: CreatePurchaseDto,
-    @Request() req: AuthenticatedRequest,
-  ) {
+  create(@Body() dto: CreatePurchaseDto, @Request() req: AuthenticatedRequest) {
     return this.purchasesService.create(dto, req.user.id);
   }
 

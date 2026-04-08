@@ -16,16 +16,6 @@ interface AuthenticatedRequest {
   user: { id: number; correo: string; rolId: number };
 }
 
-interface ProductionMetrics {
-  totalMpKg: number;
-  totalPtKg: number;
-  rendimiento: number;
-  mermaKg: number;
-  mermaPct: number;
-  costoTotalMp: number;
-  costoRealPorKg: number;
-}
-
 @Controller('production')
 export class ProductionController {
   constructor(private readonly productionService: ProductionService) {}

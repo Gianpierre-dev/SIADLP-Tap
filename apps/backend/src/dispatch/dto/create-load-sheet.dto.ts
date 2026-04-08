@@ -1,4 +1,10 @@
-import { IsInt, IsPositive, IsArray, IsDateString } from 'class-validator';
+import {
+  IsInt,
+  IsPositive,
+  IsArray,
+  ArrayMinSize,
+  IsDateString,
+} from 'class-validator';
 
 export class CreateLoadSheetDto {
   @IsDateString()
@@ -17,6 +23,7 @@ export class CreateLoadSheetDto {
   choferId: number;
 
   @IsArray()
+  @ArrayMinSize(1, { message: 'Debe incluir al menos un pedido' })
   @IsInt({ each: true })
   pedidoIds: number[];
 }

@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { MovementType, InventoryType } from '@siadlp/shared';
@@ -59,31 +63,60 @@ export class InventoryService {
     referencia: string,
     usuarioId: number,
   ): Promise<void> {
-    const item = await tx.itemInventario.findUnique({ where: { id: itemInventarioId } });
-    if (!item) throw new NotFoundException(`Item de inventario ${itemInventarioId} no encontrado`);
-
     const isExit =
       tipo === MovementType.PRODUCCION_SALIDA ||
       tipo === MovementType.DESPACHO_SALIDA ||
       tipo === MovementType.AJUSTE_NEGATIVO;
 
-    const nuevoStock = isExit
-      ? item.stockActual.toNumber() - cantidad
-      : item.stockActual.toNumber() + cantidad;
+    const delta = isExit ? -cantidad : cantidad;
 
-    if (nuevoStock < 0) {
-      throw new BadRequestException(
-        `Stock insuficiente para ${item.nombre}. Disponible: ${item.stockActual}, requerido: ${cantidad}`,
-      );
+    // Atomic update with constraint check to prevent race conditions
+    if (isExit) {
+      const updated = await tx.itemInventario.updateMany({
+        where: {
+          id: itemInventarioId,
+          stockActual: { gte: cantidad },
+        },
+        data: {
+          stockActual: { increment: delta },
+        },
+      });
+
+      if (updated.count === 0) {
+        const item = await tx.itemInventario.findUnique({
+          where: { id: itemInventarioId },
+        });
+        if (!item)
+          throw new NotFoundException('Item de inventario no encontrado');
+        throw new BadRequestException(
+          `Stock insuficiente para ${item.nombre}. Disponible: ${item.stockActual.toNumber()}, requerido: ${cantidad}`,
+        );
+      }
+    } else {
+      const updated = await tx.itemInventario.updateMany({
+        where: { id: itemInventarioId },
+        data: { stockActual: { increment: delta } },
+      });
+
+      if (updated.count === 0) {
+        throw new NotFoundException('Item de inventario no encontrado');
+      }
     }
 
-    await tx.itemInventario.update({
+    // Read the updated stock for the movement log
+    const item = await tx.itemInventario.findUniqueOrThrow({
       where: { id: itemInventarioId },
-      data: { stockActual: nuevoStock },
     });
 
     await tx.movimientoInventario.create({
-      data: { itemInventarioId, tipo, cantidad, stockResultante: nuevoStock, referencia, usuarioId },
+      data: {
+        itemInventarioId,
+        tipo,
+        cantidad,
+        stockResultante: item.stockActual,
+        referencia,
+        usuarioId,
+      },
     });
   }
 
@@ -124,7 +157,10 @@ export class InventoryService {
     });
   }
 
-  async getKardex(itemId: number, filters?: { desde?: string; hasta?: string }) {
+  async getKardex(
+    itemId: number,
+    filters?: { desde?: string; hasta?: string },
+  ) {
     const where: Record<string, unknown> = { itemInventarioId: itemId };
 
     if (filters?.desde || filters?.hasta) {
@@ -147,16 +183,23 @@ export class InventoryService {
     });
 
     return items.filter(
-      (item) => item.stockMinimo.toNumber() > 0 && item.stockActual.toNumber() <= item.stockMinimo.toNumber(),
+      (item) =>
+        item.stockMinimo.toNumber() > 0 &&
+        item.stockActual.toNumber() <= item.stockMinimo.toNumber(),
     );
   }
 
   async adjustStock(itemId: number, dto: AdjustInventoryDto, userId: number) {
     return this.prisma.$transaction(async (tx) => {
-      const item = await tx.itemInventario.findUnique({ where: { id: itemId } });
+      const item = await tx.itemInventario.findUnique({
+        where: { id: itemId },
+      });
       if (!item) throw new NotFoundException('Item no encontrado');
 
-      const tipo = dto.cantidad >= 0 ? MovementType.AJUSTE_POSITIVO : MovementType.AJUSTE_NEGATIVO;
+      const tipo =
+        dto.cantidad >= 0
+          ? MovementType.AJUSTE_POSITIVO
+          : MovementType.AJUSTE_NEGATIVO;
       const cantidadAbsoluta = Math.abs(dto.cantidad);
       const nuevoStock =
         dto.cantidad >= 0
@@ -188,7 +231,9 @@ export class InventoryService {
   }
 
   async updateMinStock(itemId: number, dto: UpdateMinStockDto) {
-    const item = await this.prisma.itemInventario.findUnique({ where: { id: itemId } });
+    const item = await this.prisma.itemInventario.findUnique({
+      where: { id: itemId },
+    });
     if (!item) throw new NotFoundException('Item no encontrado');
 
     return this.prisma.itemInventario.update({

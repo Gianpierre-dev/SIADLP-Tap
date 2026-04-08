@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
@@ -13,7 +17,9 @@ export class RolesService {
     });
 
     if (existing) {
-      throw new ConflictException(`Ya existe un rol con el nombre "${dto.nombre}"`);
+      throw new ConflictException(
+        `Ya existe un rol con el nombre "${dto.nombre}"`,
+      );
     }
 
     return this.prisma.rol.create({

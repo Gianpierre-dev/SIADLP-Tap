@@ -5,6 +5,7 @@ import {
   IsOptional,
   IsString,
   IsArray,
+  ArrayMinSize,
   ValidateNested,
   IsNumber,
   Min,
@@ -40,6 +41,7 @@ export class CreatePurchaseDto {
   observacion?: string;
 
   @IsArray()
+  @ArrayMinSize(1, { message: 'Debe incluir al menos un detalle' })
   @ValidateNested({ each: true })
   @Type(() => PurchaseLineDto)
   detalles: PurchaseLineDto[];

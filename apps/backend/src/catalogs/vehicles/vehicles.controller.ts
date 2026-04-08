@@ -37,10 +37,7 @@ export class VehiclesController {
 
   @Patch(':id')
   @RequirePermissions('vehiculos.editar')
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateVehicleDto,
-  ) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateVehicleDto) {
     return this.vehiclesService.update(id, dto);
   }
 

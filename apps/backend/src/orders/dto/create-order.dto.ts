@@ -6,6 +6,7 @@ import {
   IsOptional,
   IsString,
   IsArray,
+  ArrayMinSize,
   ValidateNested,
   IsNumber,
   Min,
@@ -35,6 +36,7 @@ export class CreateOrderDto {
   observacion?: string;
 
   @IsArray()
+  @ArrayMinSize(1, { message: 'Debe incluir al menos un detalle' })
   @ValidateNested({ each: true })
   @Type(() => OrderLineDto)
   detalles: OrderLineDto[];
