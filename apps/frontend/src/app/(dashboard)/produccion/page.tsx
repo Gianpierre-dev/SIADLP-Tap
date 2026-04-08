@@ -288,13 +288,13 @@ export default function ProduccionPage() {
       key: 'insumos',
       label: 'Insumos',
       className: 'w-24 text-center',
-      render: (row) => row.insumos.length,
+      render: (row) => row._count?.insumos ?? 0,
     },
     {
       key: 'productos',
       label: 'Productos',
       className: 'w-24 text-center',
-      render: (row) => row.productos.length,
+      render: (row) => row._count?.productos ?? 0,
     },
     {
       key: 'creadoPor',
