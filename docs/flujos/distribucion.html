@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIADLP - Flujo de Distribución</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            padding: 2rem;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
+        h1 span { color: #60a5fa; }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 3rem;
+            font-size: 0.95rem;
+        }
+        h2 {
+            font-size: 1.5rem;
+            margin: 3rem 0 0.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #60a5fa;
+            color: #60a5fa;
+        }
+        h3 {
+            font-size: 1.1rem;
+            margin: 2rem 0 0.5rem;
+            color: #a5b4fc;
+        }
+        p, li {
+            line-height: 1.7;
+            color: #ccc;
+        }
+        ul { padding-left: 1.5rem; margin: 0.5rem 0 1rem; }
+        .diagram-container {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+        }
+        .note {
+            background: #1a1a2e;
+            border-left: 4px solid #60a5fa;
+            padding: 1rem 1.5rem;
+            border-radius: 0 8px 8px 0;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+        .highlight {
+            background: #1a2e1a;
+            border-left: 4px solid #4ade80;
+            padding: 1rem 1.5rem;
+            border-radius: 0 8px 8px 0;
+            margin: 1rem 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        th, td {
+            padding: 0.75rem 1rem;
+            border: 1px solid #333;
+            text-align: left;
+        }
+        th { background: #1a1a2e; color: #60a5fa; }
+        td { background: #111; }
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .tag-blue { background: #1e3a5f; color: #60a5fa; }
+        .tag-green { background: #1a3a1a; color: #4ade80; }
+        .tag-yellow { background: #3a3a1a; color: #facc15; }
+        .tag-purple { background: #2a1a3a; color: #c084fc; }
+        .tag-red { background: #3a1a1a; color: #f87171; }
+    </style>
+</head>
+<body>
+    <h1>SIADLP &mdash; <span>Flujo de Distribución</span></h1>
+    <p class="subtitle">Sistema Integral de Administración, Distribución y Logística de Papa &mdash; La Cosecha S.A.C.</p>
+
+    <!-- ================================================================== -->
+    <h2>1. Problemática</h2>
+    <!-- ================================================================== -->
+
+    <p>La Cosecha S.A.C. es una distribuidora de papas que abastece pollerías en Lima. Actualmente su proceso de distribución es completamente manual:</p>
+    <ul>
+        <li>Los pedidos se registran en papel o por WhatsApp, sin trazabilidad ni historial</li>
+        <li>No hay un sistema para agrupar pedidos por ruta y asignar vehículos/choferes de forma eficiente</li>
+        <li>Las entregas no se registran en tiempo real &mdash; no se sabe qué se entregó, qué quedó pendiente, ni qué tuvo problemas</li>
+        <li>No existe visibilidad del estado operativo del día (cuántos pedidos hay, cuántos se despacharon, cuántos se entregaron)</li>
+    </ul>
+
+    <div class="note">
+        <strong>Alcance del TAP:</strong> El sistema se enfoca exclusivamente en el <strong>proceso de distribución</strong> &mdash; desde que el cliente solicita productos hasta que se confirma la entrega en su local. No cubre abastecimiento (compras a proveedores), procesamiento (producción/pelado) ni almacenamiento (gestión de inventario).
+    </div>
+
+    <!-- ================================================================== -->
+    <h2>2. Flujo General de Distribución</h2>
+    <!-- ================================================================== -->
+
+    <p>El ciclo completo de distribución tiene 4 etapas:</p>
+
+    <div class="diagram-container">
+        <pre class="mermaid">
+flowchart LR
+    A["📋 Registro\nde Pedido"] --> B["✅ Confirmación\ndel Pedido"]
+    B --> C["🚛 Preparación\ny Despacho"]
+    C --> D["📦 Entrega\ny Cierre"]
+
+    style A fill:#1e3a5f,stroke:#60a5fa,color:#fff
+    style B fill:#1a3a1a,stroke:#4ade80,color:#fff
+    style C fill:#3a3a1a,stroke:#facc15,color:#fff
+    style D fill:#2a1a3a,stroke:#c084fc,color:#fff
+        </pre>
+    </div>
+
+    <!-- ================================================================== -->
+    <h2>3. Detalle de Cada Etapa</h2>
+    <!-- ================================================================== -->
+
+    <!-- ---- ETAPA 1 ---- -->
+    <h3>3.1 Registro de Pedido</h3>
+
+    <p>El operador registra el pedido del cliente indicando qué productos necesita y en qué cantidad.</p>
+
+    <div class="diagram-container">
+        <pre class="mermaid">
+flowchart TD
+    A[Operador abre módulo Pedidos] --> B[Selecciona cliente]
+    B --> C["Agrega líneas:\nproducto + cantidad (kg)"]
+    C --> D[Selecciona fecha de entrega]
+    D --> E["Pedido creado en estado REGISTRADO"]
+    E --> F["Log: REGISTRADO por usuario X"]
+
+    style E fill:#1e3a5f,stroke:#60a5fa,color:#fff
+        </pre>
+    </div>
+
+    <div class="highlight">
+        <strong>Datos del pedido:</strong> Cliente, fecha de entrega, lista de productos con cantidades en kg, y observaciones opcionales. El sistema no maneja precios &mdash; la distribución se enfoca en <strong>qué llevar, cuánto y a dónde</strong>.
+    </div>
+
+    <!-- ---- ETAPA 2 ---- -->
+    <h3>3.2 Confirmación del Pedido</h3>
+
+    <div class="diagram-container">
+        <pre class="mermaid">
+flowchart TD
+    A["Pedido en estado REGISTRADO"] --> B{Decisión del operador}
+    B -->|Aprobar| C["Estado → CONFIRMADO"]
+    B -->|Rechazar| D["Estado → CANCELADO\n(requiere motivo)"]
+    C --> E["Pedido disponible para despacho"]
+    D --> F["Pedido cerrado"]
+
+    style C fill:#1a3a1a,stroke:#4ade80,color:#fff
+    style D fill:#3a1a1a,stroke:#f87171,color:#fff
+        </pre>
+    </div>
+
+    <div class="note">
+        <strong>¿Por qué confirmar?</strong> No todos los pedidos registrados se despachan. El operador valida disponibilidad antes de confirmar. Los pedidos cancelados requieren un motivo para trazabilidad.
+    </div>
+
+    <!-- ---- ETAPA 3 ---- -->
+    <h3>3.3 Preparación y Despacho</h3>
+
+    <p>Los pedidos confirmados se organizan por ruta para crear hojas de carga eficientes.</p>
+
+    <div class="diagram-container">
+        <pre class="mermaid">
+flowchart TD
+    A["Operador selecciona fecha de despacho"] --> B["Sistema agrupa pedidos\nCONFIRMADOS por ruta"]
+    B --> C["Operador arma la hoja de carga:\n• Selecciona ruta\n• Asigna vehículo\n• Asigna chofer\n• Elige pedidos a incluir"]
+    C --> D["Se crea Hoja de Carga\nestado: PREPARANDO"]
+    D --> E["Operador confirma el despacho"]
+    E --> F["Estado hoja → DESPACHADO\nPedidos → DISPATCHED\nSe crean entregas PENDIENTE"]
+    F --> G["Chofer inicia la ruta"]
+    G --> H["Estado hoja → EN_RUTA"]
+
+    style D fill:#3a3a1a,stroke:#facc15,color:#fff
+    style F fill:#1e3a5f,stroke:#60a5fa,color:#fff
+    style H fill:#2a1a3a,stroke:#c084fc,color:#fff
+        </pre>
+    </div>
+
+    <div class="note">
+        <strong>Validaciones del despacho:</strong>
+        <ul>
+            <li>Un pedido solo puede pertenecer a una hoja de carga</li>
+            <li>Solo pedidos en estado CONFIRMADO pueden incluirse</li>
+            <li>El peso total (kg) no puede exceder la capacidad del vehículo</li>
+            <li>La ruta, el vehículo y el chofer deben estar activos en el sistema</li>
+        </ul>
+    </div>
+
+    <!-- ---- ETAPA 4 ---- -->
+    <h3>3.4 Entrega y Cierre</h3>
+
+    <p>El chofer registra el resultado de cada entrega en el sistema.</p>
+
+    <div class="diagram-container">
+        <pre class="mermaid">
+flowchart TD
+    A["Hoja de carga EN_RUTA"] --> B["Por cada pedido en la hoja:"]
+    B --> C{¿Se entregó exitosamente?}
+    C -->|Sí| D["Entrega: ENTREGADO\nPedido: DELIVERED"]
+    C -->|No| E["Entrega: NOVEDAD\nPedido: ISSUE\nRegistra observación del problema"]
+    D --> F{¿Todas las entregas\ncompletadas?}
+    E --> F
+    F -->|Sí| G["Hoja de Carga → COMPLETADO\n(automático)"]
+    F -->|No| H["Quedan entregas pendientes"]
+
+    style D fill:#1a3a1a,stroke:#4ade80,color:#fff
+    style E fill:#3a3a1a,stroke:#facc15,color:#fff
+    style G fill:#1a3a1a,stroke:#4ade80,color:#fff
+        </pre>
+    </div>
+
+    <div class="highlight">
+        <strong>Cierre automático:</strong> Cuando TODAS las entregas de una hoja de carga han sido registradas (ya sea como ENTREGADO o NOVEDAD), el sistema transiciona la hoja automáticamente a estado COMPLETADO.
+    </div>
+
+    <!-- ================================================================== -->
+    <h2>4. Máquina de Estados del Pedido</h2>
+    <!-- ================================================================== -->
+
+    <div class="diagram-container">
+        <pre class="mermaid">
+stateDiagram-v2
+    [*] --> REGISTERED : Crear pedido
+    REGISTERED --> CONFIRMED : Confirmar
+    REGISTERED --> CANCELLED : Cancelar (motivo)
+    CONFIRMED --> DISPATCHED : Despachar (hoja de carga)
+    DISPATCHED --> DELIVERED : Entrega exitosa
+    DISPATCHED --> ISSUE : Novedad / problema
+    ISSUE --> CONFIRMED : Reprogramar
+    DELIVERED --> [*]
+    CANCELLED --> [*]
+        </pre>
+    </div>
+
+    <table>
+        <thead>
+            <tr><th>Estado</th><th>Significado</th><th>Quién lo cambia</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><span class="tag tag-blue">REGISTERED</span></td><td>Pedido creado, pendiente de confirmación</td><td>Sistema (al crear)</td></tr>
+            <tr><td><span class="tag tag-green">CONFIRMED</span></td><td>Aprobado, disponible para despacho</td><td>Operador</td></tr>
+            <tr><td><span class="tag tag-yellow">DISPATCHED</span></td><td>Incluido en una hoja de carga, en camino</td><td>Módulo despacho</td></tr>
+            <tr><td><span class="tag tag-green">DELIVERED</span></td><td>Entregado exitosamente al cliente</td><td>Chofer</td></tr>
+            <tr><td><span class="tag tag-yellow">ISSUE</span></td><td>Problema en la entrega (cliente ausente, rechazo, etc.)</td><td>Chofer</td></tr>
+            <tr><td><span class="tag tag-red">CANCELLED</span></td><td>Pedido cancelado antes del despacho</td><td>Operador</td></tr>
+        </tbody>
+    </table>
+
+    <div class="note">
+        <strong>Reprogramación:</strong> Un pedido con NOVEDAD puede volver a estado CONFIRMADO para ser incluido en un despacho futuro.
+    </div>
+
+    <!-- ================================================================== -->
+    <h2>5. Máquina de Estados de la Hoja de Carga</h2>
+    <!-- ================================================================== -->
+
+    <div class="diagram-container">
+        <pre class="mermaid">
+stateDiagram-v2
+    [*] --> PREPARANDO : Crear hoja de carga
+    PREPARANDO --> DESPACHADO : Confirmar despacho
+    DESPACHADO --> EN_RUTA : Chofer inicia ruta
+    EN_RUTA --> COMPLETADO : Todas las entregas registradas
+    COMPLETADO --> [*]
+        </pre>
+    </div>
+
+    <table>
+        <thead>
+            <tr><th>Estado</th><th>Significado</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><span class="tag tag-yellow">PREPARANDO</span></td><td>Se están seleccionando los pedidos y asignando recursos</td></tr>
+            <tr><td><span class="tag tag-blue">DESPACHADO</span></td><td>Confirmado, listo para salir</td></tr>
+            <tr><td><span class="tag tag-purple">EN_RUTA</span></td><td>El chofer está realizando las entregas</td></tr>
+            <tr><td><span class="tag tag-green">COMPLETADO</span></td><td>Todas las entregas fueron registradas</td></tr>
+        </tbody>
+    </table>
+
+    <!-- ================================================================== -->
+    <h2>6. Módulos del Sistema</h2>
+    <!-- ================================================================== -->
+
+    <div class="diagram-container">
+        <pre class="mermaid">
+flowchart TB
+    subgraph AUTH["🔐 Autenticación y Autorización"]
+        A1[Login JWT]
+        A2[RBAC con Permisos Granulares]
+        A3[Gestión de Usuarios y Roles]
+    end
+
+    subgraph CAT["📁 Catálogos — Datos Maestros"]
+        C1[Clientes]
+        C2[Productos]
+        C3[Rutas]
+        C4[Vehículos]
+        C5[Choferes]
+    end
+
+    subgraph DIST["🚛 Distribución — Core del Sistema"]
+        D1["📋 Pedidos\nRegistrar → Confirmar → Cancelar"]
+        D2["🚛 Despacho\nHojas de Carga → Entregas"]
+    end
+
+    subgraph ADMIN["📊 Monitoreo y Control"]
+        E1[Dashboard con KPIs del Día]
+        E2[Reportes Exportables a Excel]
+        E3[Log de Auditoría]
+    end
+
+    AUTH --> CAT
+    CAT --> DIST
+    DIST --> ADMIN
+
+    style DIST fill:#1a2e1a,stroke:#4ade80,color:#fff
+    style AUTH fill:#1a1a2e,stroke:#60a5fa,color:#fff
+    style CAT fill:#2a1a3a,stroke:#c084fc,color:#fff
+    style ADMIN fill:#3a3a1a,stroke:#facc15,color:#fff
+        </pre>
+    </div>
+
+    <div class="highlight">
+        <strong>Core del sistema:</strong> El módulo de Distribución (Pedidos + Despacho) es el centro. Los catálogos proveen los datos maestros necesarios, y el módulo de monitoreo permite al administrador supervisar la operación diaria.
+    </div>
+
+    <table>
+        <thead>
+            <tr><th>Módulo</th><th>Funcionalidad</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Auth</strong></td><td>Login, gestión de usuarios, roles con permisos granulares (módulo.acción)</td></tr>
+            <tr><td><strong>Catálogos</strong></td><td>CRUD de clientes, productos, rutas, vehículos y choferes</td></tr>
+            <tr><td><strong>Pedidos</strong></td><td>Registrar, confirmar, cancelar. Historial de estados con trazabilidad</td></tr>
+            <tr><td><strong>Despacho</strong></td><td>Agrupar por ruta, crear hojas de carga, confirmar despacho, registrar entregas</td></tr>
+            <tr><td><strong>Dashboard</strong></td><td>KPIs del día: pedidos por estado, entregas completadas/pendientes/novedad</td></tr>
+            <tr><td><strong>Reportes</strong></td><td>Exportación a Excel de pedidos y despachos</td></tr>
+            <tr><td><strong>Auditoría</strong></td><td>Registro automático de todas las operaciones de escritura</td></tr>
+        </tbody>
+    </table>
+
+    <!-- ================================================================== -->
+    <h2>7. Arquitectura Técnica</h2>
+    <!-- ================================================================== -->
+
+    <div class="diagram-container">
+        <pre class="mermaid">
+flowchart TB
+    subgraph CLIENT["Frontend — Next.js 16 + React 19"]
+        F1[Login]
+        F2[Dashboard]
+        F3[Pedidos]
+        F4[Despacho]
+        F5[Catálogos]
+        F6[Usuarios / Roles]
+    end
+
+    subgraph API["Backend — NestJS 11"]
+        B1[JWT Auth + RBAC Guards]
+        B2[Controllers + Services]
+        B3[Prisma ORM]
+        B4[Audit Interceptor]
+    end
+
+    subgraph DB["PostgreSQL 15"]
+        D1[(siadlp_db)]
+    end
+
+    CLIENT -->|"HTTP REST\nAuthorization: Bearer JWT"| API
+    API -->|"Prisma Client"| DB
+
+    style CLIENT fill:#1a1a2e,stroke:#60a5fa,color:#fff
+    style API fill:#1a2e1a,stroke:#4ade80,color:#fff
+    style DB fill:#2a1a3a,stroke:#c084fc,color:#fff
+        </pre>
+    </div>
+
+    <table>
+        <thead>
+            <tr><th>Capa</th><th>Tecnología</th><th>Rol</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Frontend</td><td>Next.js 16 + React 19 + Tailwind CSS 4 + shadcn/ui</td><td>Interfaz de usuario responsive</td></tr>
+            <tr><td>Backend</td><td>NestJS 11 + Prisma 7 + JWT + Helmet + Throttler</td><td>API REST con seguridad</td></tr>
+            <tr><td>Base de datos</td><td>PostgreSQL 15</td><td>Persistencia relacional</td></tr>
+            <tr><td>Contenedores</td><td>Docker + Docker Compose</td><td>Despliegue con un solo comando</td></tr>
+            <tr><td>Monorepo</td><td>pnpm workspaces</td><td>Backend, frontend y shared en un repositorio</td></tr>
+        </tbody>
+    </table>
+
+    <!-- ================================================================== -->
+    <h2>8. Seguridad</h2>
+    <!-- ================================================================== -->
+
+    <table>
+        <thead>
+            <tr><th>Medida</th><th>Implementación</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Autenticación</td><td>JWT con expiración de 2 horas, secret de 256 bits</td></tr>
+            <tr><td>Autorización</td><td>RBAC con permisos granulares por módulo y acción</td></tr>
+            <tr><td>Contraseñas</td><td>bcrypt con 12 rounds + validación de complejidad (mayúscula, minúscula, número)</td></tr>
+            <tr><td>Rate Limiting</td><td>5 intentos de login por minuto, 100 requests por minuto global</td></tr>
+            <tr><td>Headers HTTP</td><td>Helmet (Content-Security-Policy, HSTS, X-Frame-Options, etc.)</td></tr>
+            <tr><td>CORS</td><td>Orígenes permitidos configurables por variable de entorno</td></tr>
+            <tr><td>Auditoría</td><td>Interceptor global que registra operaciones POST/PATCH/DELETE</td></tr>
+            <tr><td>Validación</td><td>DTOs con class-validator en backend, variables de entorno validadas al startup</td></tr>
+        </tbody>
+    </table>
+
+    <!-- ================================================================== -->
+    <h2>9. Despliegue</h2>
+    <!-- ================================================================== -->
+
+    <div class="diagram-container">
+        <pre class="mermaid">
+flowchart LR
+    A["git clone"] --> B["docker compose\nup --build"]
+    B --> C["PostgreSQL\n:5432"]
+    B --> D["Backend\n:4020"]
+    B --> E["Frontend\n:3020"]
+    C --> D
+    D --> E
+    E --> F["http://localhost:3020\n✅ Sistema listo"]
+
+    style F fill:#1a3a1a,stroke:#4ade80,color:#fff
+        </pre>
+    </div>
+
+    <div class="highlight">
+        <strong>Un solo comando:</strong> <code>docker compose up --build</code> levanta la base de datos, ejecuta las migraciones automáticamente, arranca el backend y el frontend. Sin instalar Node, pnpm ni PostgreSQL.
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'dark',
+            themeVariables: {
+                primaryColor: '#1e3a5f',
+                primaryTextColor: '#fff',
+                primaryBorderColor: '#60a5fa',
+                lineColor: '#60a5fa',
+                secondaryColor: '#1a2e1a',
+                tertiaryColor: '#2a1a3a',
+                fontFamily: 'Segoe UI, system-ui, sans-serif',
+            }
+        });
+    </script>
+</body>
+</html>
