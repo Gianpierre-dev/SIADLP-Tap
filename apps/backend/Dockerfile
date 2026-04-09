@@ -7,7 +7,8 @@ COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY packages/shared/package.json packages/shared/
 COPY apps/backend/package.json apps/backend/
 
-# Install dependencies
+# Install all dependencies (including devDependencies for build)
+ENV NODE_ENV=development
 RUN pnpm install --frozen-lockfile
 
 # Copy source
