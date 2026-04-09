@@ -247,7 +247,7 @@ export default function RolesPage() {
       <DataTable columns={columns} data={items} loading={loading} />
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="@sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{mode === 'create' ? 'Nuevo' : 'Editar'} Rol</DialogTitle>
           </DialogHeader>

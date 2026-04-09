@@ -180,7 +180,7 @@ export default function ChoferesPage() {
       />
       <DataTable columns={columns} data={items} loading={loading} />
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="@sm:max-w-md">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{editingId ? 'Editar' : 'Nuevo'} Chofer</DialogTitle>
           </DialogHeader>

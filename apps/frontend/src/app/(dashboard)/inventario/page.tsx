@@ -143,7 +143,7 @@ function KardexDialog({ item, open, onClose }: KardexDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="@sm:max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             Kardex — {item?.nombre ?? ''}
@@ -238,7 +238,7 @@ function AdjustDialog({ item, open, onClose, onSuccess }: AdjustDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="@sm:max-w-md">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Ajustar Stock — {item?.nombre ?? ''}</DialogTitle>
         </DialogHeader>
@@ -324,7 +324,7 @@ function MinStockDialog({ item, open, onClose, onSuccess }: MinStockDialogProps)
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="@sm:max-w-sm">
+      <DialogContent className="sm:max-w-sm">
         <DialogHeader>
           <DialogTitle>Stock Mínimo — {item?.nombre ?? ''}</DialogTitle>
         </DialogHeader>

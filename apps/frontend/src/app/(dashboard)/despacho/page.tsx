@@ -251,7 +251,7 @@ function CreateDialog({ open, onClose, onSuccess, routes, vehicles, drivers }: C
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="@sm:max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Nueva Hoja de Carga</DialogTitle>
         </DialogHeader>
@@ -457,7 +457,7 @@ function ConfirmDispatchDialog({ sheet, open, onClose, onSuccess }: ConfirmDispa
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="@sm:max-w-sm">
+      <DialogContent className="sm:max-w-sm">
         <DialogHeader>
           <DialogTitle>Confirmar Despacho</DialogTitle>
         </DialogHeader>
@@ -540,7 +540,7 @@ function DeliveryFormDialog({ pedidoId, open, onClose, onSuccess }: DeliveryForm
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="@sm:max-w-md">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Registrar Entrega — Pedido #{pedidoId}</DialogTitle>
         </DialogHeader>
@@ -658,7 +658,7 @@ function CollectionFormDialog({ pedidoId, open, onClose, onSuccess }: Collection
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="@sm:max-w-md">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Registrar Cobro — Pedido #{pedidoId}</DialogTitle>
         </DialogHeader>
@@ -789,7 +789,7 @@ function DetailDialog({ sheetId, open, onClose, onSuccess }: DetailDialogProps) 
   return (
     <>
       <Dialog open={open} onOpenChange={onClose}>
-        <DialogContent className="@sm:max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {sheet ? `Hoja de Carga #${sheet.id}` : 'Cargando…'}

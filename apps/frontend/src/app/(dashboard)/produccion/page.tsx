@@ -352,7 +352,7 @@ export default function ProduccionPage() {
       {/* CREATE DIALOG                                                        */}
       {/* ------------------------------------------------------------------ */}
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent className="@sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Nueva Orden de Producción</DialogTitle>
           </DialogHeader>
@@ -472,7 +472,7 @@ export default function ProduccionPage() {
       {/* DETAIL DIALOG                                                        */}
       {/* ------------------------------------------------------------------ */}
       <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
-        <DialogContent className="@sm:max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {detailOrder
