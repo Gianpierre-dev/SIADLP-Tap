@@ -4,8 +4,8 @@
   - You are about to drop the `users` table. If the table is not empty, all the data it contains will be lost.
 
 */
--- DropTable
-DROP TABLE "users";
+-- DropTable (IF EXISTS for fresh deploys where init_user_model was removed)
+DROP TABLE IF EXISTS "users";
 
 -- CreateTable
 CREATE TABLE "usuarios" (
