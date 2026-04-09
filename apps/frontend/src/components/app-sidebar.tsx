@@ -19,8 +19,6 @@ import {
   LayoutDashboardIcon,
   ShoppingCartIcon,
   PackageIcon,
-  FactoryIcon,
-  WarehouseIcon,
   TruckIcon,
   UsersIcon,
   ShieldIcon,
@@ -46,9 +44,6 @@ interface NavItem {
 const mainNav: NavItem[] = [
   { label: 'Dashboard', href: '/', icon: LayoutDashboardIcon, permission: 'reportes.leer' },
   { label: 'Pedidos', href: '/pedidos', icon: ShoppingCartIcon, permission: 'pedidos.leer' },
-  { label: 'Compras', href: '/compras', icon: PackageIcon, permission: 'compras.leer' },
-  { label: 'Producción', href: '/produccion', icon: FactoryIcon, permission: 'produccion.leer' },
-  { label: 'Inventario', href: '/inventario', icon: WarehouseIcon, permission: 'inventario.leer' },
   { label: 'Despacho', href: '/despacho', icon: TruckIcon, permission: 'despacho.leer' },
 ];
 

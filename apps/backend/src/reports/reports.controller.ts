@@ -33,40 +33,6 @@ export class ReportsController {
     res.send(buffer);
   }
 
-  @Get('export/production')
-  @RequirePermissions('reportes.exportar')
-  async exportProduction(
-    @Query('desde') desde: string,
-    @Query('hasta') hasta: string,
-    @Res() res: Response,
-  ) {
-    const buffer = await this.reportsService.exportProduction(desde, hasta);
-    res.setHeader(
-      'Content-Type',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    );
-    res.setHeader(
-      'Content-Disposition',
-      'attachment; filename=reporte-produccion.xlsx',
-    );
-    res.send(buffer);
-  }
-
-  @Get('export/inventory')
-  @RequirePermissions('reportes.exportar')
-  async exportInventory(@Res() res: Response) {
-    const buffer = await this.reportsService.exportInventory();
-    res.setHeader(
-      'Content-Type',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    );
-    res.setHeader(
-      'Content-Disposition',
-      'attachment; filename=reporte-inventario.xlsx',
-    );
-    res.send(buffer);
-  }
-
   @Get('export/dispatch')
   @RequirePermissions('reportes.exportar')
   async exportDispatch(

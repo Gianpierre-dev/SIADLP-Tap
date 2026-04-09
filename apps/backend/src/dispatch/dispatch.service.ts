@@ -5,22 +5,17 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { InventoryService } from '../inventory/inventory.service';
 import {
   OrderStatus,
   DispatchStatus,
   DeliveryStatus,
-  MovementType,
-  InventoryType,
   canTransition,
 } from '@siadlp/shared';
 import { CreateLoadSheetDto } from './dto/create-load-sheet.dto';
 import { ConfirmDispatchDto } from './dto/confirm-dispatch.dto';
 import { RegisterDeliveryDto } from './dto/register-delivery.dto';
-import { RegisterCollectionDto } from './dto/register-collection.dto';
 import {
   DeliveryStatusEntry,
-  DailyCollectionSummary,
   RouteGroup,
   Parada,
   RouteSheetResult,
@@ -28,10 +23,7 @@ import {
 
 @Injectable()
 export class DispatchService {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly inventoryService: InventoryService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async getOrdersGroupedByRoute(fecha: string): Promise<RouteGroup[]> {
     const day = new Date(fecha);
@@ -325,8 +317,6 @@ export class DispatchService {
         );
       }
 
-      const referencia = `HC-${id}`;
-
       // Process each pedido
       for (const pedido of hoja.pedidos) {
         // Update pedido estado to DISPATCHED
@@ -354,31 +344,6 @@ export class DispatchService {
             registradoPorId: userId,
           },
         });
-
-        // Deduct PT stock for each detalle
-        for (const detalle of pedido.detalles) {
-          const ptItem = await tx.itemInventario.findFirst({
-            where: {
-              tipo: InventoryType.PRODUCTO_TERMINADO,
-              productoId: detalle.productoId,
-            },
-          });
-
-          if (!ptItem) {
-            throw new BadRequestException(
-              `Item PT no encontrado para producto "${detalle.producto.nombre}". Asegúrese de que exista en inventario antes de despachar.`,
-            );
-          }
-
-          await this.inventoryService.registerMovement(
-            tx,
-            ptItem.id,
-            MovementType.DESPACHO_SALIDA,
-            detalle.cantidad.toNumber(),
-            referencia,
-            userId,
-          );
-        }
       }
 
       // Update hoja to DESPACHADO and set GRE if provided
@@ -542,36 +507,19 @@ export class DispatchService {
         );
       }
 
-      // Determine new order status
-      let newOrderStatus: string;
-      if (
-        dto.estado === 'ENTREGADO' &&
-        dto.montoCobrado !== undefined &&
-        dto.montoCobrado > 0
-      ) {
-        newOrderStatus = OrderStatus.COLLECTED;
-      } else if (dto.estado === 'ENTREGADO') {
-        newOrderStatus = OrderStatus.DELIVERED;
-      } else {
-        newOrderStatus = OrderStatus.ISSUE;
-      }
-
-      // Determine new delivery status
+      // Determine new order and delivery status
+      const newOrderStatus =
+        dto.estado === 'ENTREGADO' ? OrderStatus.DELIVERED : OrderStatus.ISSUE;
       const newDeliveryStatus =
-        newOrderStatus === OrderStatus.COLLECTED
-          ? DeliveryStatus.COBRADO
-          : dto.estado === 'ENTREGADO'
-            ? DeliveryStatus.ENTREGADO
-            : DeliveryStatus.NOVEDAD;
+        dto.estado === 'ENTREGADO'
+          ? DeliveryStatus.ENTREGADO
+          : DeliveryStatus.NOVEDAD;
 
       // Update entrega
       const updatedEntrega = await tx.entrega.update({
         where: { pedidoId },
         data: {
           estado: newDeliveryStatus,
-          montoCobrado: dto.montoCobrado,
-          metodoPago: dto.metodoPago,
-          numeroComprobante: dto.numeroComprobante,
           observacion: dto.observacion,
           fechaEntrega: new Date(),
           registradoPorId: userId,
@@ -636,9 +584,6 @@ export class DispatchService {
               select: {
                 id: true,
                 estado: true,
-                montoCobrado: true,
-                metodoPago: true,
-                numeroComprobante: true,
                 observacion: true,
                 fechaEntrega: true,
               },
@@ -659,179 +604,11 @@ export class DispatchService {
         ? {
             id: pedido.entrega.id,
             estado: pedido.entrega.estado,
-            montoCobrado: pedido.entrega.montoCobrado?.toNumber() ?? null,
-            metodoPago: pedido.entrega.metodoPago,
-            numeroComprobante: pedido.entrega.numeroComprobante,
             observacion: pedido.entrega.observacion,
             fechaEntrega: pedido.entrega.fechaEntrega,
           }
         : null,
-      totalPedido: pedido.total.toNumber(),
     }));
-  }
-
-  async registerCollection(
-    pedidoId: number,
-    dto: RegisterCollectionDto,
-    userId: number,
-  ) {
-    return this.prisma.$transaction(async (tx) => {
-      const pedido = await tx.pedido.findUnique({
-        where: { id: pedidoId },
-        select: { id: true, estado: true },
-      });
-
-      if (!pedido) {
-        throw new NotFoundException('Pedido no encontrado');
-      }
-
-      if (pedido.estado !== OrderStatus.DELIVERED) {
-        throw new BadRequestException(
-          `Solo se puede cobrar un pedido en estado DELIVERED. Estado actual: ${pedido.estado}`,
-        );
-      }
-
-      const entrega = await tx.entrega.findUnique({
-        where: { pedidoId },
-      });
-
-      if (!entrega) {
-        throw new NotFoundException('Entrega no encontrada');
-      }
-
-      // Update entrega
-      const updatedEntrega = await tx.entrega.update({
-        where: { pedidoId },
-        data: {
-          montoCobrado: dto.montoCobrado,
-          metodoPago: dto.metodoPago,
-          numeroComprobante: dto.numeroComprobante,
-          estado: DeliveryStatus.COBRADO,
-        },
-        include: {
-          pedido: {
-            include: {
-              cliente: { select: { id: true, razonSocial: true } },
-            },
-          },
-        },
-      });
-
-      // Update pedido
-      await tx.pedido.update({
-        where: { id: pedidoId },
-        data: { estado: OrderStatus.COLLECTED },
-      });
-
-      // Create log
-      await tx.estadoPedidoLog.create({
-        data: {
-          pedidoId,
-          estadoAnterior: OrderStatus.DELIVERED,
-          estadoNuevo: OrderStatus.COLLECTED,
-          motivo: 'Cobro registrado por separado',
-          usuarioId: userId,
-        },
-      });
-
-      await this.checkAndCompleteHoja(tx, pedidoId);
-
-      return updatedEntrega;
-    });
-  }
-
-  async getDailyCollectionSummary(
-    fecha: string,
-  ): Promise<DailyCollectionSummary> {
-    const day = new Date(fecha);
-    const nextDay = new Date(day);
-    nextDay.setDate(nextDay.getDate() + 1);
-
-    const entregas = await this.prisma.entrega.findMany({
-      where: {
-        estado: DeliveryStatus.COBRADO,
-        fechaEntrega: { gte: day, lt: nextDay },
-      },
-      include: {
-        pedido: {
-          include: {
-            hojaCarga: {
-              include: {
-                chofer: { select: { nombre: true, apellido: true } },
-                ruta: { select: { nombre: true, zona: true } },
-              },
-            },
-          },
-        },
-      },
-    });
-
-    const choferMap = new Map<
-      string,
-      {
-        chofer: { nombre: string; apellido: string };
-        totalCobrado: number;
-        cantidadEntregas: number;
-      }
-    >();
-
-    const rutaMap = new Map<
-      string,
-      {
-        ruta: { nombre: string; zona: string };
-        totalCobrado: number;
-        cantidadEntregas: number;
-      }
-    >();
-
-    let totalGeneral = 0;
-
-    for (const entrega of entregas) {
-      const monto = entrega.montoCobrado?.toNumber() ?? 0;
-      const hojaCarga = entrega.pedido.hojaCarga;
-
-      if (!hojaCarga) continue;
-
-      totalGeneral += monto;
-
-      // Group by chofer
-      const choferKey = `${hojaCarga.chofer.nombre}_${hojaCarga.chofer.apellido}`;
-      const existingChofer = choferMap.get(choferKey);
-      if (existingChofer) {
-        existingChofer.totalCobrado += monto;
-        existingChofer.cantidadEntregas += 1;
-      } else {
-        choferMap.set(choferKey, {
-          chofer: {
-            nombre: hojaCarga.chofer.nombre,
-            apellido: hojaCarga.chofer.apellido,
-          },
-          totalCobrado: monto,
-          cantidadEntregas: 1,
-        });
-      }
-
-      // Group by ruta
-      const rutaKey = hojaCarga.ruta.nombre;
-      const existingRuta = rutaMap.get(rutaKey);
-      if (existingRuta) {
-        existingRuta.totalCobrado += monto;
-        existingRuta.cantidadEntregas += 1;
-      } else {
-        rutaMap.set(rutaKey, {
-          ruta: { nombre: hojaCarga.ruta.nombre, zona: hojaCarga.ruta.zona },
-          totalCobrado: monto,
-          cantidadEntregas: 1,
-        });
-      }
-    }
-
-    return {
-      porChofer: Array.from(choferMap.values()),
-      porRuta: Array.from(rutaMap.values()),
-      totalGeneral,
-      totalEntregas: entregas.length,
-    };
   }
 
   private async checkAndCompleteHoja(

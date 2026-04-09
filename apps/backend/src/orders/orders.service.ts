@@ -12,19 +12,11 @@ const PRODUCTO_SELECT = {
   id: true,
   nombre: true,
   codigoSku: true,
-  precioBase: true,
-} as const;
-
-const RUTA_SELECT = {
-  id: true,
-  nombre: true,
-  tarifa: true,
 } as const;
 
 const CLIENTE_SELECT = {
   id: true,
   razonSocial: true,
-  ruta: { select: RUTA_SELECT },
 } as const;
 
 @Injectable()
@@ -34,16 +26,13 @@ export class OrdersService {
   async create(dto: CreateOrderDto, userId: number) {
     const cliente = await this.prisma.cliente.findUnique({
       where: { id: dto.clienteId },
-      include: { ruta: { select: RUTA_SELECT } },
     });
 
     if (!cliente || !cliente.activo) {
       throw new NotFoundException('Cliente no encontrado o inactivo');
     }
 
-    const tarifaRuta = cliente.ruta?.tarifa.toNumber() ?? 0;
-
-    // Batch fetch all products at once (avoid N+1)
+    // Batch fetch all products at once (avoid N+1) — validate existence and active status
     const productoIds = dto.detalles.map((d) => d.productoId);
     const productos = await this.prisma.producto.findMany({
       where: { id: { in: productoIds } },
@@ -61,19 +50,14 @@ export class OrdersService {
       throw new BadRequestException('Uno o más productos no están activos');
     }
 
-    const lineas = dto.detalles.map((line) => {
-      const producto = productosMap.get(line.productoId)!;
-      const precioUnitario = producto.precioBase.toNumber() + tarifaRuta;
-      const subtotal = precioUnitario * line.cantidad;
-      return {
-        productoId: line.productoId,
-        cantidad: line.cantidad,
-        precioUnitario,
-        subtotal,
-      };
-    });
+    const lineas = dto.detalles.map((line) => ({
+      productoId: line.productoId,
+      cantidad: line.cantidad,
+      precioUnitario: 0,
+      subtotal: 0,
+    }));
 
-    const total = lineas.reduce((acc, l) => acc + l.subtotal, 0);
+    const total = 0;
 
     const pedido = await this.prisma.$transaction(async (tx) => {
       const created = await tx.pedido.create({

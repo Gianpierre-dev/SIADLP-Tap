@@ -9,8 +9,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   ShoppingCartIcon,
-  FactoryIcon,
-  WarehouseIcon,
   TruckIcon,
   DownloadIcon,
   Loader2Icon,
@@ -49,10 +47,6 @@ export default function ReportesPage() {
   const [loading, setLoading] = useState<Record<string, boolean>>({});
 
   const [ordersRange, setOrdersRange] = useState<DateRange>({
-    desde: defaultDesde(),
-    hasta: defaultHasta(),
-  });
-  const [productionRange, setProductionRange] = useState<DateRange>({
     desde: defaultDesde(),
     hasta: defaultHasta(),
   });
@@ -136,96 +130,6 @@ export default function ReportesPage() {
               }
             >
               {loading['orders'] ? (
-                <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <DownloadIcon className="mr-2 h-4 w-4" />
-              )}
-              Descargar Excel
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Producción */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FactoryIcon className="h-5 w-5 text-muted-foreground" />
-              Producción
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Exporta el registro de órdenes de producción en el rango de fechas seleccionado.
-            </p>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="production-desde">Desde</Label>
-                <Input
-                  id="production-desde"
-                  type="date"
-                  value={productionRange.desde}
-                  onChange={(e) =>
-                    setProductionRange((r) => ({ ...r, desde: e.target.value }))
-                  }
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="production-hasta">Hasta</Label>
-                <Input
-                  id="production-hasta"
-                  type="date"
-                  value={productionRange.hasta}
-                  onChange={(e) =>
-                    setProductionRange((r) => ({ ...r, hasta: e.target.value }))
-                  }
-                />
-              </div>
-            </div>
-            <Button
-              className="w-full"
-              disabled={loading['production']}
-              onClick={() =>
-                handleDownload(
-                  'production',
-                  `/reports/export/production?desde=${productionRange.desde}&hasta=${productionRange.hasta}`,
-                  `produccion_${productionRange.desde}_${productionRange.hasta}.xlsx`,
-                )
-              }
-            >
-              {loading['production'] ? (
-                <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <DownloadIcon className="mr-2 h-4 w-4" />
-              )}
-              Descargar Excel
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Inventario */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <WarehouseIcon className="h-5 w-5 text-muted-foreground" />
-              Inventario
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Exporta el estado actual del inventario de productos.
-            </p>
-            <Button
-              className="w-full"
-              disabled={loading['inventory']}
-              onClick={() =>
-                handleDownload(
-                  'inventory',
-                  '/reports/export/inventory',
-                  `inventario_${defaultHasta()}.xlsx`,
-                )
-              }
-            >
-              {loading['inventory'] ? (
                 <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
               ) : (
                 <DownloadIcon className="mr-2 h-4 w-4" />

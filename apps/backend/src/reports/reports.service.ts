@@ -1,35 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import * as ExcelJS from 'exceljs';
 import { PrismaService } from '../prisma/prisma.service';
-import {
-  InventoryType,
-  DeliveryStatus,
-  ProductionStatus,
-} from '@siadlp/shared';
+import { DeliveryStatus } from '@siadlp/shared';
 
 export interface DashboardData {
   pedidos: {
     total: number;
     porEstado: Record<string, number>;
   };
-  produccion: {
-    lotesDelDia: number;
-    kgProducidos: number;
-    rendimientoPromedio: number;
-  };
-  inventario: {
-    alertasMp: number;
-    alertasPt: number;
-  };
   despacho: {
     hojasDelDia: number;
     entregasCompletadas: number;
     entregasPendientes: number;
     entregasConNovedad: number;
-  };
-  cobros: {
-    totalCobrado: number;
-    cantidadCobros: number;
   };
 }
 
@@ -43,32 +26,11 @@ export class ReportsService {
     nextDay.setDate(nextDay.getDate() + 1);
 
     // Run all independent queries in parallel
-    const [
-      pedidosGrouped,
-      ordenesProduccion,
-      itemsConStockMinimo,
-      hojasDelDia,
-      entregasDelDia,
-      cobrosDelDia,
-    ] = await Promise.all([
+    const [pedidosGrouped, hojasDelDia, entregasDelDia] = await Promise.all([
       this.prisma.pedido.groupBy({
         by: ['estado'],
         where: { fechaCreacion: { gte: day, lt: nextDay } },
         _count: { id: true },
-      }),
-      this.prisma.ordenProduccion.findMany({
-        where: {
-          fecha: { gte: day, lt: nextDay },
-          estado: ProductionStatus.COMPLETADA,
-        },
-        include: {
-          productos: { select: { cantidad: true } },
-          insumos: { select: { cantidad: true } },
-        },
-      }),
-      this.prisma.itemInventario.findMany({
-        where: { activo: true, stockMinimo: { gt: 0 } },
-        select: { tipo: true, stockActual: true, stockMinimo: true },
       }),
       this.prisma.hojaCarga.count({
         where: { fecha: { gte: day, lt: nextDay } },
@@ -82,14 +44,6 @@ export class ReportsService {
         },
         _count: { id: true },
       }),
-      this.prisma.entrega.aggregate({
-        where: {
-          estado: DeliveryStatus.COBRADO,
-          fechaEntrega: { gte: day, lt: nextDay },
-        },
-        _sum: { montoCobrado: true },
-        _count: { id: true },
-      }),
     ]);
 
     // Process pedidos
@@ -100,54 +54,13 @@ export class ReportsService {
       totalPedidos += group._count.id;
     }
 
-    // Process producción
-    let kgProducidos = 0;
-    let rendimientoTotal = 0;
-    const lotesDelDia = ordenesProduccion.length;
-
-    for (const orden of ordenesProduccion) {
-      const kgSalida = orden.productos.reduce(
-        (acc, p) => acc + p.cantidad.toNumber(),
-        0,
-      );
-      kgProducidos += kgSalida;
-
-      const kgEntrada = orden.insumos.reduce(
-        (acc, i) => acc + i.cantidad.toNumber(),
-        0,
-      );
-      if (kgEntrada > 0) {
-        rendimientoTotal += (kgSalida / kgEntrada) * 100;
-      }
-    }
-
-    const rendimientoPromedio =
-      lotesDelDia > 0 ? rendimientoTotal / lotesDelDia : 0;
-
-    // Process inventario alerts
-    let alertasMp = 0;
-    let alertasPt = 0;
-
-    for (const item of itemsConStockMinimo) {
-      if (item.stockActual.toNumber() <= item.stockMinimo.toNumber()) {
-        if (item.tipo === InventoryType.MATERIA_PRIMA) {
-          alertasMp++;
-        } else if (item.tipo === InventoryType.PRODUCTO_TERMINADO) {
-          alertasPt++;
-        }
-      }
-    }
-
     // Process entregas
     let entregasCompletadas = 0;
     let entregasPendientes = 0;
     let entregasConNovedad = 0;
 
     for (const group of entregasDelDia) {
-      if (
-        group.estado === DeliveryStatus.ENTREGADO ||
-        group.estado === DeliveryStatus.COBRADO
-      ) {
+      if (group.estado === DeliveryStatus.ENTREGADO) {
         entregasCompletadas += group._count.id;
       } else if (group.estado === DeliveryStatus.PENDIENTE) {
         entregasPendientes += group._count.id;
@@ -161,24 +74,11 @@ export class ReportsService {
         total: totalPedidos,
         porEstado,
       },
-      produccion: {
-        lotesDelDia,
-        kgProducidos: Math.round(kgProducidos * 100) / 100,
-        rendimientoPromedio: Math.round(rendimientoPromedio * 100) / 100,
-      },
-      inventario: {
-        alertasMp,
-        alertasPt,
-      },
       despacho: {
         hojasDelDia,
         entregasCompletadas,
         entregasPendientes,
         entregasConNovedad,
-      },
-      cobros: {
-        totalCobrado: cobrosDelDia._sum.montoCobrado?.toNumber() ?? 0,
-        cantidadCobros: cobrosDelDia._count.id,
       },
     };
   }
@@ -243,149 +143,6 @@ export class ReportsService {
         fechaEntrega: order.fechaEntrega.toISOString().split('T')[0],
         productos,
       });
-    }
-
-    const buffer = await workbook.xlsx.writeBuffer();
-    return Buffer.from(buffer);
-  }
-
-  async exportProduction(desde: string, hasta: string): Promise<Buffer> {
-    const desdeDate = desde ? new Date(desde) : this.defaultDesde();
-    const hastaDate = hasta ? new Date(hasta) : new Date();
-    hastaDate.setHours(23, 59, 59, 999);
-
-    const ordenes = await this.prisma.ordenProduccion.findMany({
-      where: {
-        fecha: {
-          gte: desdeDate,
-          lte: hastaDate,
-        },
-      },
-      include: {
-        productos: { include: { producto: { select: { nombre: true } } } },
-        insumos: { include: { itemInventario: { select: { nombre: true } } } },
-        creadoPor: { select: { nombre: true } },
-      },
-      orderBy: { fecha: 'desc' },
-      take: 10_000,
-    });
-
-    const workbook = new ExcelJS.Workbook();
-    workbook.creator = 'SIADLP';
-    workbook.created = new Date();
-
-    const sheet = workbook.addWorksheet('Producción');
-
-    sheet.columns = [
-      { header: 'ID', key: 'id', width: 8 },
-      { header: 'Fecha', key: 'fecha', width: 15 },
-      { header: 'Estado', key: 'estado', width: 15 },
-      { header: 'Kg Producidos', key: 'kgProducidos', width: 15 },
-      { header: 'Costo Insumos (S/)', key: 'costoInsumos', width: 20 },
-      { header: 'Rendimiento (%)', key: 'rendimiento', width: 18 },
-      { header: 'Productos', key: 'productos', width: 40 },
-      { header: 'Creado Por', key: 'creadoPor', width: 20 },
-    ];
-
-    const headerRow = sheet.getRow(1);
-    headerRow.font = { bold: true };
-    headerRow.fill = {
-      type: 'pattern',
-      pattern: 'solid',
-      fgColor: { argb: 'FFD9E1F2' },
-    };
-
-    for (const orden of ordenes) {
-      const kgProducidos = orden.productos.reduce(
-        (acc, p) => acc + p.cantidad.toNumber(),
-        0,
-      );
-      const kgEntrada = orden.insumos.reduce(
-        (acc, i) => acc + i.cantidad.toNumber(),
-        0,
-      );
-      const costoInsumos = orden.insumos.reduce(
-        (acc, i) => acc + i.costoTotal.toNumber(),
-        0,
-      );
-      const rendimiento =
-        kgEntrada > 0
-          ? Math.round((kgProducidos / kgEntrada) * 10000) / 100
-          : 0;
-
-      const productos = orden.productos
-        .map((p) => `${p.producto.nombre} (${p.cantidad.toNumber()} kg)`)
-        .join(', ');
-
-      sheet.addRow({
-        id: orden.id,
-        fecha: orden.fecha.toISOString().split('T')[0],
-        estado: orden.estado,
-        kgProducidos: Math.round(kgProducidos * 100) / 100,
-        costoInsumos: Math.round(costoInsumos * 100) / 100,
-        rendimiento,
-        productos,
-        creadoPor: orden.creadoPor.nombre,
-      });
-    }
-
-    const buffer = await workbook.xlsx.writeBuffer();
-    return Buffer.from(buffer);
-  }
-
-  async exportInventory(): Promise<Buffer> {
-    const items = await this.prisma.itemInventario.findMany({
-      where: { activo: true },
-      orderBy: [{ tipo: 'asc' }, { nombre: 'asc' }],
-    });
-
-    const workbook = new ExcelJS.Workbook();
-    workbook.creator = 'SIADLP';
-    workbook.created = new Date();
-
-    const sheet = workbook.addWorksheet('Inventario');
-
-    sheet.columns = [
-      { header: 'ID', key: 'id', width: 8 },
-      { header: 'Tipo', key: 'tipo', width: 20 },
-      { header: 'Nombre', key: 'nombre', width: 35 },
-      { header: 'Unidad', key: 'unidad', width: 12 },
-      { header: 'Stock Actual', key: 'stockActual', width: 15 },
-      { header: 'Stock Mínimo', key: 'stockMinimo', width: 15 },
-      { header: 'Estado', key: 'estado', width: 15 },
-    ];
-
-    const headerRow = sheet.getRow(1);
-    headerRow.font = { bold: true };
-    headerRow.fill = {
-      type: 'pattern',
-      pattern: 'solid',
-      fgColor: { argb: 'FFD9E1F2' },
-    };
-
-    for (const item of items) {
-      const stockActual = item.stockActual.toNumber();
-      const stockMinimo = item.stockMinimo.toNumber();
-      const alerta = stockMinimo > 0 && stockActual <= stockMinimo;
-
-      const row = sheet.addRow({
-        id: item.id,
-        tipo: item.tipo,
-        nombre: item.nombre,
-        unidad: item.unidadMedida,
-        stockActual,
-        stockMinimo,
-        estado: alerta ? 'ALERTA' : 'OK',
-      });
-
-      // Highlight rows with alerts
-      if (alerta) {
-        row.fill = {
-          type: 'pattern',
-          pattern: 'solid',
-          fgColor: { argb: 'FFFCE4D6' },
-        };
-      }
     }
 
     const buffer = await workbook.xlsx.writeBuffer();

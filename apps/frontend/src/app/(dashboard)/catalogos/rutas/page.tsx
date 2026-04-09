@@ -22,7 +22,6 @@ interface Route {
   id: number;
   nombre: string;
   zona: string;
-  tarifa: string; // Decimal from Prisma
   descripcion: string | null;
   activa: boolean;
 }
@@ -30,14 +29,12 @@ interface Route {
 interface RouteForm {
   nombre: string;
   zona: string;
-  tarifa: number;
   descripcion: string;
 }
 
 const EMPTY_FORM: RouteForm = {
   nombre: '',
   zona: '',
-  tarifa: 0,
   descripcion: '',
 };
 
@@ -72,7 +69,6 @@ export default function RutasPage() {
     setForm({
       nombre: item.nombre,
       zona: item.zona,
-      tarifa: Number(item.tarifa),
       descripcion: item.descripcion ?? '',
     });
     setDialogOpen(true);
@@ -80,15 +76,10 @@ export default function RutasPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (form.tarifa <= 0) {
-      toast.error('La tarifa debe ser mayor a 0');
-      return;
-    }
     setSaving(true);
     const payload = {
       nombre: form.nombre,
       zona: form.zona,
-      tarifa: form.tarifa,
       ...(form.descripcion ? { descripcion: form.descripcion } : {}),
     };
     try {
@@ -123,11 +114,6 @@ export default function RutasPage() {
     { key: 'id', label: 'ID', className: 'w-16' },
     { key: 'nombre', label: 'Nombre' },
     { key: 'zona', label: 'Zona' },
-    {
-      key: 'tarifa',
-      label: 'Tarifa (S/)',
-      render: (row) => `S/ ${Number(row.tarifa).toFixed(2)}`,
-    },
     {
       key: 'descripcion',
       label: 'Descripción',
@@ -197,21 +183,6 @@ export default function RutasPage() {
                 value={form.zona}
                 onChange={(e) => setForm({ ...form, zona: e.target.value })}
                 placeholder="Zona de cobertura"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="tarifa">Tarifa (S/) *</Label>
-              <Input
-                id="tarifa"
-                type="number"
-                min="0"
-                step="0.01"
-                value={form.tarifa}
-                onChange={(e) =>
-                  setForm({ ...form, tarifa: parseFloat(e.target.value) || 0 })
-                }
-                placeholder="0.00"
                 required
               />
             </div>
