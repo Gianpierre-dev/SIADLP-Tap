@@ -24,7 +24,6 @@ interface Product {
   codigoSku: string;
   descripcion: string | null;
   unidadMedida: string;
-  stockMinimo: string | null;
   activo: boolean;
 }
 
@@ -33,7 +32,6 @@ interface ProductForm {
   codigoSku: string;
   descripcion: string;
   unidadMedida: string;
-  stockMinimo: string;
 }
 
 const EMPTY_FORM: ProductForm = {
@@ -41,7 +39,6 @@ const EMPTY_FORM: ProductForm = {
   codigoSku: '',
   descripcion: '',
   unidadMedida: '',
-  stockMinimo: '',
 };
 
 export default function ProductosPage() {
@@ -77,7 +74,6 @@ export default function ProductosPage() {
       codigoSku: item.codigoSku,
       descripcion: item.descripcion ?? '',
       unidadMedida: item.unidadMedida,
-      stockMinimo: item.stockMinimo ?? '',
     });
     setDialogOpen(true);
   };
@@ -90,7 +86,6 @@ export default function ProductosPage() {
       codigoSku: form.codigoSku,
       descripcion: form.descripcion || undefined,
       unidadMedida: form.unidadMedida,
-      stockMinimo: form.stockMinimo ? Number(form.stockMinimo) : undefined,
     };
     try {
       if (editingId) {
@@ -208,17 +203,6 @@ export default function ProductosPage() {
                   id="descripcion"
                   value={form.descripcion}
                   onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="stockMinimo">Stock Mínimo</Label>
-                <Input
-                  id="stockMinimo"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={form.stockMinimo}
-                  onChange={(e) => setForm({ ...form, stockMinimo: e.target.value })}
                 />
               </div>
             </div>

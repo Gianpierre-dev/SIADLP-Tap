@@ -24,7 +24,6 @@ interface LoadSheet {
   id: number;
   fecha: string;
   estado: string;
-  numeroGre: string | null;
   totalKg: string;
   ruta: { id: number; nombre: string; zona: string };
   vehiculo: { id: number; placa: string; marca: string };
@@ -416,20 +415,13 @@ interface ConfirmDispatchDialogProps {
 }
 
 function ConfirmDispatchDialog({ sheet, open, onClose, onSuccess }: ConfirmDispatchDialogProps) {
-  const [numeroGre, setNumeroGre] = useState('');
   const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    if (open) setNumeroGre('');
-  }, [open]);
 
   const handleConfirm = async () => {
     if (!sheet) return;
     setSaving(true);
     try {
-      await apiPost(`/dispatch/${sheet.id}/confirm`, {
-        numeroGre: numeroGre.trim() || undefined,
-      });
+      await apiPost(`/dispatch/${sheet.id}/confirm`, {});
       toast.success('Despacho confirmado');
       onClose();
       onSuccess();
@@ -448,17 +440,8 @@ function ConfirmDispatchDialog({ sheet, open, onClose, onSuccess }: ConfirmDispa
         </DialogHeader>
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Confirmás el despacho de la hoja de carga #{sheet?.id}. Podés ingresar el número de GRE (opcional).
+            ¿Confirmar el despacho de la hoja de carga #{sheet?.id}?
           </p>
-          <div className="space-y-1.5">
-            <Label htmlFor="gre-number">Número GRE</Label>
-            <Input
-              id="gre-number"
-              placeholder="Opcional"
-              value={numeroGre}
-              onChange={(e) => setNumeroGre(e.target.value)}
-            />
-          </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
@@ -662,12 +645,6 @@ function DetailDialog({ sheetId, open, onClose, onSuccess }: DetailDialogProps) 
                   <p className="text-muted-foreground">Chofer</p>
                   <p>{sheet.chofer.nombre} {sheet.chofer.apellido}</p>
                 </div>
-                {sheet.numeroGre && (
-                  <div>
-                    <p className="text-muted-foreground">N° GRE</p>
-                    <p>{sheet.numeroGre}</p>
-                  </div>
-                )}
               </div>
 
               {/* Pedidos table — for PREPARANDO and DESPACHADO */}
