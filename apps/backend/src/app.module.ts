@@ -17,8 +17,8 @@ import { PermissionsGuard } from './auth/guards/permissions.guard';
 @Module({
   imports: [
     ThrottlerModule.forRoot([
-      { name: 'short', ttl: 60_000, limit: 10 },
-      { name: 'medium', ttl: 60_000, limit: 100 },
+      { name: 'short', ttl: 60_000, limit: 20 },
+      { name: 'medium', ttl: 60_000, limit: 300 },
     ]),
     PrismaModule,
     AuthModule,
