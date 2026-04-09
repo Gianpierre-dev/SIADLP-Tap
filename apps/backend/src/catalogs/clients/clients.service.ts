@@ -10,7 +10,7 @@ import { UpdateClientDto } from './dto/update-client.dto';
 const RUTA_SELECT = {
   id: true,
   nombre: true,
-  tarifa: true,
+  zona: true,
 } as const;
 
 @Injectable()

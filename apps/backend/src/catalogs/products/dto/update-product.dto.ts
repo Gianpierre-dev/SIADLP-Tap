@@ -1,11 +1,4 @@
-import {
-  IsString,
-  IsOptional,
-  MinLength,
-  IsNumber,
-  Min,
-} from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsString, IsOptional, MinLength } from 'class-validator';
 
 export class UpdateProductDto {
   @IsOptional()
@@ -26,16 +19,4 @@ export class UpdateProductDto {
   @IsString()
   @MinLength(1)
   unidadMedida?: string;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber({ maxDecimalPlaces: 2 })
-  @Min(0)
-  precioBase?: number;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber({ maxDecimalPlaces: 2 })
-  @Min(0)
-  stockMinimo?: number;
 }

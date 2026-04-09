@@ -1,12 +1,4 @@
-import {
-  IsString,
-  IsOptional,
-  MinLength,
-  IsNumber,
-  Min,
-  IsBoolean,
-} from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsString, IsOptional, MinLength, IsBoolean } from 'class-validator';
 
 export class UpdateRouteDto {
   @IsOptional()
@@ -18,12 +10,6 @@ export class UpdateRouteDto {
   @IsString()
   @MinLength(2)
   zona?: string;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber({ maxDecimalPlaces: 2 })
-  @Min(0)
-  tarifa?: number;
 
   @IsOptional()
   @IsString()
