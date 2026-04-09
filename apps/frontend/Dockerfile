@@ -18,6 +18,9 @@ COPY apps/frontend/ apps/frontend/
 # Build shared package first, then frontend
 RUN pnpm --filter @siadlp/shared build
 
+# Reset to production for Next.js build
+ENV NODE_ENV=production
+
 # Set env at build time for Next.js static optimization
 ARG NEXT_PUBLIC_API_URL=http://localhost:4020/api
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
