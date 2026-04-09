@@ -9,19 +9,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import {
   ShoppingCartIcon,
-  FactoryIcon,
-  WarehouseIcon,
   TruckIcon,
-  BanknoteIcon,
-  AlertTriangleIcon,
 } from 'lucide-react';
 
 interface DashboardData {
   pedidos: { total: number; porEstado: Record<string, number> };
-  produccion: { lotesDelDia: number; kgProducidos: number; rendimientoPromedio: number };
-  inventario: { alertasMp: number; alertasPt: number };
   despacho: { hojasDelDia: number; entregasCompletadas: number; entregasPendientes: number; entregasConNovedad: number };
-  cobros: { totalCobrado: number; cantidadCobros: number };
 }
 
 function KpiCard({
@@ -57,7 +50,6 @@ function StateSummary({ porEstado }: { porEstado: Record<string, number> }) {
     CONFIRMED: 'bg-green-100 text-green-800',
     DISPATCHED: 'bg-yellow-100 text-yellow-800',
     DELIVERED: 'bg-emerald-100 text-emerald-800',
-    COLLECTED: 'bg-purple-100 text-purple-800',
     CANCELLED: 'bg-red-100 text-red-800',
     ISSUE: 'bg-orange-100 text-orange-800',
   };
@@ -67,7 +59,6 @@ function StateSummary({ porEstado }: { porEstado: Record<string, number> }) {
     CONFIRMED: 'Confirmado',
     DISPATCHED: 'Despachado',
     DELIVERED: 'Entregado',
-    COLLECTED: 'Cobrado',
     CANCELLED: 'Cancelado',
     ISSUE: 'Novedad',
   };
@@ -99,8 +90,8 @@ export default function DashboardPage() {
     return (
       <div className="space-y-6">
         <PageHeader title="Dashboard" description="Resumen del día" />
-        <div className="grid grid-cols-1 gap-4 @sm:grid-cols-2 @lg:grid-cols-3 @xl:grid-cols-5">
-          {Array.from({ length: 5 }).map((_, i) => (
+        <div className="grid grid-cols-1 gap-4 @sm:grid-cols-2 @lg:grid-cols-3 @xl:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
             <Skeleton key={i} className="h-28" />
           ))}
         </div>
@@ -117,41 +108,31 @@ export default function DashboardPage() {
     );
   }
 
-  const totalAlertas = data.inventario.alertasMp + data.inventario.alertasPt;
-
   return (
     <div className="space-y-6">
       <PageHeader title="Dashboard" description="Resumen operativo del día" />
 
-      <div className="grid grid-cols-1 gap-4 @sm:grid-cols-2 @lg:grid-cols-3 @xl:grid-cols-5">
+      <div className="grid grid-cols-1 gap-4 @sm:grid-cols-2 @lg:grid-cols-4">
         <KpiCard
           title="Pedidos del día"
           value={data.pedidos.total}
           icon={ShoppingCartIcon}
         />
         <KpiCard
-          title="Producción"
-          value={`${data.produccion.kgProducidos} kg`}
-          description={`${data.produccion.lotesDelDia} lotes · ${data.produccion.rendimientoPromedio}% rend.`}
-          icon={FactoryIcon}
-        />
-        <KpiCard
-          title="Alertas inventario"
-          value={totalAlertas}
-          description={`${data.inventario.alertasMp} MP · ${data.inventario.alertasPt} PT`}
-          icon={totalAlertas > 0 ? AlertTriangleIcon : WarehouseIcon}
-        />
-        <KpiCard
-          title="Despachos"
+          title="Despachos del día"
           value={data.despacho.hojasDelDia}
-          description={`${data.despacho.entregasCompletadas} completadas · ${data.despacho.entregasPendientes} pendientes`}
           icon={TruckIcon}
         />
         <KpiCard
-          title="Cobros"
-          value={`S/ ${data.cobros.totalCobrado.toFixed(2)}`}
-          description={`${data.cobros.cantidadCobros} cobros`}
-          icon={BanknoteIcon}
+          title="Entregas completadas"
+          value={data.despacho.entregasCompletadas}
+          description={`${data.despacho.entregasPendientes} pendientes`}
+          icon={TruckIcon}
+        />
+        <KpiCard
+          title="Entregas con novedad"
+          value={data.despacho.entregasConNovedad}
+          icon={TruckIcon}
         />
       </div>
 
@@ -168,47 +149,25 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 gap-4 @md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Entregas del día</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span>Completadas</span>
-              <span className="font-medium">{data.despacho.entregasCompletadas}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Pendientes</span>
-              <span className="font-medium">{data.despacho.entregasPendientes}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Con novedad</span>
-              <span className="font-medium text-orange-600">{data.despacho.entregasConNovedad}</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Producción del día</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span>Lotes completados</span>
-              <span className="font-medium">{data.produccion.lotesDelDia}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Kg producidos</span>
-              <span className="font-medium">{data.produccion.kgProducidos} kg</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Rendimiento promedio</span>
-              <span className="font-medium">{data.produccion.rendimientoPromedio}%</span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Entregas del día</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2 text-sm">
+          <div className="flex justify-between">
+            <span>Completadas</span>
+            <span className="font-medium">{data.despacho.entregasCompletadas}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Pendientes</span>
+            <span className="font-medium">{data.despacho.entregasPendientes}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Con novedad</span>
+            <span className="font-medium text-orange-600">{data.despacho.entregasConNovedad}</span>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

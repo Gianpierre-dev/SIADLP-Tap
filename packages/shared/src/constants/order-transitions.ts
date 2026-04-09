@@ -5,8 +5,7 @@ export const ORDER_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   [OrderStatus.CONFIRMED]: [OrderStatus.DISPATCHED],
   [OrderStatus.DISPATCHED]: [OrderStatus.ON_ROUTE],
   [OrderStatus.ON_ROUTE]: [OrderStatus.DELIVERED, OrderStatus.ISSUE],
-  [OrderStatus.DELIVERED]: [OrderStatus.COLLECTED],
-  [OrderStatus.COLLECTED]: [],
+  [OrderStatus.DELIVERED]: [],
   [OrderStatus.ISSUE]: [OrderStatus.CONFIRMED],
   [OrderStatus.CANCELLED]: [],
 };

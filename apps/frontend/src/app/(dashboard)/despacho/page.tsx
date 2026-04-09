@@ -26,7 +26,6 @@ interface LoadSheet {
   estado: string;
   numeroGre: string | null;
   totalKg: string;
-  totalMonto: string;
   ruta: { id: number; nombre: string; zona: string };
   vehiculo: { id: number; placa: string; marca: string };
   chofer: { id: number; nombre: string; apellido: string };
@@ -37,22 +36,17 @@ interface RouteGroup {
   ruta: { id: number; nombre: string; zona: string };
   pedidos: Array<{
     id: number;
-    total: number;
     cliente: { id: number; razonSocial: string; direccion: string; telefono: string | null };
   }>;
   totalKg: number;
-  totalMonto: number;
 }
 
 interface DeliveryEntry {
   pedidoId: number;
-  totalPedido: number;
   cliente: { razonSocial: string };
   entrega: {
     id: number;
     estado: string;
-    montoCobrado: number | null;
-    metodoPago: string | null;
     observacion: string | null;
     fechaEntrega: string | null;
   } | null;
@@ -61,13 +55,10 @@ interface DeliveryEntry {
 interface LoadSheetFull extends LoadSheet {
   pedidos: Array<{
     id: number;
-    total: string;
     cliente: { razonSocial: string; direccion: string };
     entrega: {
       id: number;
       estado: string;
-      montoCobrado: number | null;
-      metodoPago: string | null;
       observacion: string | null;
       fechaEntrega: string | null;
     } | null;
@@ -114,14 +105,12 @@ const deliveryStateColors: Record<string, string> = {
   PENDIENTE: 'bg-gray-100 text-gray-800',
   ENTREGADO: 'bg-green-100 text-green-800',
   NOVEDAD: 'bg-orange-100 text-orange-800',
-  COBRADO: 'bg-purple-100 text-purple-800',
 };
 
 const deliveryStateLabels: Record<string, string> = {
   PENDIENTE: 'Pendiente',
   ENTREGADO: 'Entregado',
   NOVEDAD: 'Novedad',
-  COBRADO: 'Cobrado',
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -366,8 +355,7 @@ function CreateDialog({ open, onClose, onSuccess, routes, vehicles, drivers }: C
                           >
                             {group.ruta.nombre} — {group.ruta.zona}{' '}
                             <span className="text-muted-foreground font-normal">
-                              ({group.pedidos.length} pedidos · S/{' '}
-                              {group.totalMonto.toFixed(2)})
+                              ({group.pedidos.length} pedidos)
                             </span>
                           </label>
                         </div>
@@ -386,9 +374,6 @@ function CreateDialog({ open, onClose, onSuccess, routes, vehicles, drivers }: C
                                 className="text-sm cursor-pointer"
                               >
                                 #{pedido.id} — {pedido.cliente.razonSocial}
-                                <span className="text-muted-foreground ml-2">
-                                  S/ {Number(pedido.total).toFixed(2)}
-                                </span>
                               </label>
                             </div>
                           ))}
@@ -500,18 +485,12 @@ interface DeliveryFormDialogProps {
 
 function DeliveryFormDialog({ pedidoId, open, onClose, onSuccess }: DeliveryFormDialogProps) {
   const [estado, setEstado] = useState<'ENTREGADO' | 'NOVEDAD'>('ENTREGADO');
-  const [montoCobrado, setMontoCobrado] = useState('');
-  const [metodoPago, setMetodoPago] = useState('');
-  const [numeroComprobante, setNumeroComprobante] = useState('');
   const [observacion, setObservacion] = useState('');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (open) {
       setEstado('ENTREGADO');
-      setMontoCobrado('');
-      setMetodoPago('');
-      setNumeroComprobante('');
       setObservacion('');
     }
   }, [open]);
@@ -523,9 +502,6 @@ function DeliveryFormDialog({ pedidoId, open, onClose, onSuccess }: DeliveryForm
     try {
       await apiPost(`/dispatch/delivery/${pedidoId}`, {
         estado,
-        montoCobrado: montoCobrado ? Number(montoCobrado) : undefined,
-        metodoPago: metodoPago || undefined,
-        numeroComprobante: numeroComprobante || undefined,
         observacion: observacion || undefined,
       });
       toast.success('Entrega registrada');
@@ -559,33 +535,6 @@ function DeliveryFormDialog({ pedidoId, open, onClose, onSuccess }: DeliveryForm
             </select>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="entrega-monto">Monto Cobrado</Label>
-            <Input
-              id="entrega-monto"
-              type="number"
-              min={0}
-              step="0.01"
-              placeholder="0.00"
-              value={montoCobrado}
-              onChange={(e) => setMontoCobrado(e.target.value)}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="entrega-metodo">Método de Pago</Label>
-            <select
-              id="entrega-metodo"
-              className={nativeSelectClass()}
-              value={metodoPago}
-              onChange={(e) => setMetodoPago(e.target.value)}
-            >
-              <option value="">Sin especificar</option>
-              <option value="EFECTIVO">Efectivo</option>
-              <option value="TRANSFERENCIA">Transferencia</option>
-              <option value="YAPE">Yape</option>
-              <option value="PLIN">Plin</option>
-            </select>
-          </div>
-          <div className="space-y-1.5">
             <Label htmlFor="entrega-observacion">Observación</Label>
             <Input
               id="entrega-observacion"
@@ -601,112 +550,6 @@ function DeliveryFormDialog({ pedidoId, open, onClose, onSuccess }: DeliveryForm
             <Button type="submit" disabled={saving}>
               {saving && <Loader2Icon className="h-4 w-4 animate-spin mr-2" />}
               Registrar
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-// ─── Collection Form Dialog ───────────────────────────────────────────────────
-
-interface CollectionFormDialogProps {
-  pedidoId: number | null;
-  open: boolean;
-  onClose: () => void;
-  onSuccess: () => void;
-}
-
-function CollectionFormDialog({ pedidoId, open, onClose, onSuccess }: CollectionFormDialogProps) {
-  const [montoCobrado, setMontoCobrado] = useState('');
-  const [metodoPago, setMetodoPago] = useState('');
-  const [numeroComprobante, setNumeroComprobante] = useState('');
-  const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    if (open) {
-      setMontoCobrado('');
-      setMetodoPago('');
-      setNumeroComprobante('');
-    }
-  }, [open]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!pedidoId) return;
-    if (!montoCobrado) {
-      toast.error('Ingresá el monto cobrado');
-      return;
-    }
-    setSaving(true);
-    try {
-      await apiPost(`/dispatch/collection/${pedidoId}`, {
-        montoCobrado: Number(montoCobrado),
-        metodoPago: metodoPago || undefined,
-        numeroComprobante: numeroComprobante || undefined,
-      });
-      toast.success('Cobro registrado');
-      onClose();
-      onSuccess();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Error al registrar cobro');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Registrar Cobro — Pedido #{pedidoId}</DialogTitle>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="cobro-monto">Monto Cobrado *</Label>
-            <Input
-              id="cobro-monto"
-              type="number"
-              min={0}
-              step="0.01"
-              placeholder="0.00"
-              value={montoCobrado}
-              onChange={(e) => setMontoCobrado(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="cobro-metodo">Método de Pago</Label>
-            <select
-              id="cobro-metodo"
-              className={nativeSelectClass()}
-              value={metodoPago}
-              onChange={(e) => setMetodoPago(e.target.value)}
-            >
-              <option value="">Sin especificar</option>
-              <option value="EFECTIVO">Efectivo</option>
-              <option value="TRANSFERENCIA">Transferencia</option>
-              <option value="YAPE">Yape</option>
-              <option value="PLIN">Plin</option>
-            </select>
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="cobro-comprobante">N° Comprobante</Label>
-            <Input
-              id="cobro-comprobante"
-              placeholder="Opcional"
-              value={numeroComprobante}
-              onChange={(e) => setNumeroComprobante(e.target.value)}
-            />
-          </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={saving}>
-              {saving && <Loader2Icon className="h-4 w-4 animate-spin mr-2" />}
-              Registrar Cobro
             </Button>
           </DialogFooter>
         </form>
@@ -734,8 +577,6 @@ function DetailDialog({ sheetId, open, onClose, onSuccess }: DetailDialogProps) 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deliveryPedidoId, setDeliveryPedidoId] = useState<number | null>(null);
   const [deliveryOpen, setDeliveryOpen] = useState(false);
-  const [collectionPedidoId, setCollectionPedidoId] = useState<number | null>(null);
-  const [collectionOpen, setCollectionOpen] = useState(false);
 
   const fetchDetail = useCallback(() => {
     if (!sheetId) return;
@@ -774,11 +615,6 @@ function DetailDialog({ sheetId, open, onClose, onSuccess }: DetailDialogProps) 
   const openDelivery = (pedidoId: number) => {
     setDeliveryPedidoId(pedidoId);
     setDeliveryOpen(true);
-  };
-
-  const openCollection = (pedidoId: number) => {
-    setCollectionPedidoId(pedidoId);
-    setCollectionOpen(true);
   };
 
   const handleSubSuccess = () => {
@@ -826,10 +662,6 @@ function DetailDialog({ sheetId, open, onClose, onSuccess }: DetailDialogProps) 
                   <p className="text-muted-foreground">Chofer</p>
                   <p>{sheet.chofer.nombre} {sheet.chofer.apellido}</p>
                 </div>
-                <div>
-                  <p className="text-muted-foreground">Total</p>
-                  <p className="font-semibold">S/ {Number(sheet.totalMonto).toFixed(2)}</p>
-                </div>
                 {sheet.numeroGre && (
                   <div>
                     <p className="text-muted-foreground">N° GRE</p>
@@ -849,7 +681,6 @@ function DetailDialog({ sheetId, open, onClose, onSuccess }: DetailDialogProps) 
                           <th className="text-left px-3 py-2">ID</th>
                           <th className="text-left px-3 py-2">Cliente</th>
                           <th className="text-left px-3 py-2">Dirección</th>
-                          <th className="text-right px-3 py-2">Total</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y">
@@ -858,7 +689,6 @@ function DetailDialog({ sheetId, open, onClose, onSuccess }: DetailDialogProps) 
                             <td className="px-3 py-2 text-muted-foreground">#{p.id}</td>
                             <td className="px-3 py-2">{p.cliente.razonSocial}</td>
                             <td className="px-3 py-2 text-muted-foreground">{p.cliente.direccion}</td>
-                            <td className="px-3 py-2 text-right">S/ {Number(p.total).toFixed(2)}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -877,9 +707,7 @@ function DetailDialog({ sheetId, open, onClose, onSuccess }: DetailDialogProps) 
                         <tr>
                           <th className="text-left px-3 py-2">Pedido</th>
                           <th className="text-left px-3 py-2">Cliente</th>
-                          <th className="text-right px-3 py-2">Total</th>
                           <th className="text-left px-3 py-2">Estado</th>
-                          <th className="text-right px-3 py-2">Cobrado</th>
                           {sheet.estado === 'EN_RUTA' && (
                             <th className="text-center px-3 py-2">Acciones</th>
                           )}
@@ -892,9 +720,6 @@ function DetailDialog({ sheetId, open, onClose, onSuccess }: DetailDialogProps) 
                               #{entry.pedidoId}
                             </td>
                             <td className="px-3 py-2">{entry.cliente.razonSocial}</td>
-                            <td className="px-3 py-2 text-right">
-                              S/ {Number(entry.totalPedido).toFixed(2)}
-                            </td>
                             <td className="px-3 py-2">
                               {entry.entrega ? (
                                 <StateBadge
@@ -910,11 +735,6 @@ function DetailDialog({ sheetId, open, onClose, onSuccess }: DetailDialogProps) 
                                 />
                               )}
                             </td>
-                            <td className="px-3 py-2 text-right">
-                              {entry.entrega?.montoCobrado != null
-                                ? `S/ ${Number(entry.entrega.montoCobrado).toFixed(2)}`
-                                : '—'}
-                            </td>
                             {sheet.estado === 'EN_RUTA' && (
                               <td className="px-3 py-2 text-center">
                                 <div className="flex items-center justify-center gap-1">
@@ -925,15 +745,6 @@ function DetailDialog({ sheetId, open, onClose, onSuccess }: DetailDialogProps) 
                                       onClick={() => openDelivery(entry.pedidoId)}
                                     >
                                       Registrar Entrega
-                                    </Button>
-                                  )}
-                                  {entry.entrega?.estado === 'ENTREGADO' && (
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => openCollection(entry.pedidoId)}
-                                    >
-                                      Registrar Cobro
                                     </Button>
                                   )}
                                   {entry.entrega?.observacion && (
@@ -990,12 +801,6 @@ function DetailDialog({ sheetId, open, onClose, onSuccess }: DetailDialogProps) 
         pedidoId={deliveryPedidoId}
         open={deliveryOpen}
         onClose={() => setDeliveryOpen(false)}
-        onSuccess={handleSubSuccess}
-      />
-      <CollectionFormDialog
-        pedidoId={collectionPedidoId}
-        open={collectionOpen}
-        onClose={() => setCollectionOpen(false)}
         onSuccess={handleSubSuccess}
       />
     </>
@@ -1115,12 +920,6 @@ export default function DespachoPage() {
       label: 'Pedidos',
       className: 'w-20 text-center',
       render: (row) => row._count?.pedidos ?? 0,
-    },
-    {
-      key: 'totalMonto',
-      label: 'Total (S/)',
-      className: 'w-28 text-right',
-      render: (row) => `S/ ${Number(row.totalMonto).toFixed(2)}`,
     },
     {
       key: 'acciones',

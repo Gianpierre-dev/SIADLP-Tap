@@ -4,28 +4,9 @@ export interface DeliveryStatusEntry {
   entrega: {
     id: number;
     estado: string;
-    montoCobrado: number | null;
-    metodoPago: string | null;
-    numeroComprobante: string | null;
     observacion: string | null;
     fechaEntrega: Date | null;
   } | null;
-  totalPedido: number;
-}
-
-export interface DailyCollectionSummary {
-  porChofer: Array<{
-    chofer: { nombre: string; apellido: string };
-    totalCobrado: number;
-    cantidadEntregas: number;
-  }>;
-  porRuta: Array<{
-    ruta: { nombre: string; zona: string };
-    totalCobrado: number;
-    cantidadEntregas: number;
-  }>;
-  totalGeneral: number;
-  totalEntregas: number;
 }
 
 export interface RouteGroup {

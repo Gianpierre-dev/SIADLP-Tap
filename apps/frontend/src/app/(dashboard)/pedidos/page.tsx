@@ -32,7 +32,6 @@ interface Order {
   clienteId: number;
   fechaEntrega: string;
   estado: string;
-  total: string;
   observacion: string | null;
   fechaCreacion: string;
   cliente: { id: number; razonSocial: string };
@@ -43,9 +42,7 @@ interface OrderDetail {
   id: number;
   productoId: number;
   cantidad: string;
-  precioUnitario: string;
-  subtotal: string;
-  producto: { id: number; nombre: string; codigoSku: string; precioBase: string };
+  producto: { id: number; nombre: string; codigoSku: string };
 }
 
 interface OrderFull extends Omit<Order, '_count'> {
@@ -60,7 +57,7 @@ interface OrderFull extends Omit<Order, '_count'> {
   cliente: {
     id: number;
     razonSocial: string;
-    ruta?: { id: number; nombre: string; tarifa: string };
+    ruta?: { id: number; nombre: string };
   };
 }
 
@@ -74,7 +71,6 @@ interface Product {
   id: number;
   nombre: string;
   codigoSku: string;
-  precioBase: string;
   activo: boolean;
 }
 
@@ -100,7 +96,6 @@ const STATE_COLORS: Record<string, string> = {
   DISPATCHED: 'bg-yellow-100 text-yellow-800',
   ON_ROUTE: 'bg-amber-100 text-amber-800',
   DELIVERED: 'bg-emerald-100 text-emerald-800',
-  COLLECTED: 'bg-purple-100 text-purple-800',
   CANCELLED: 'bg-red-100 text-red-800',
   ISSUE: 'bg-orange-100 text-orange-800',
 };
@@ -111,7 +106,6 @@ const STATE_LABELS: Record<string, string> = {
   DISPATCHED: 'Despachado',
   ON_ROUTE: 'En Ruta',
   DELIVERED: 'Entregado',
-  COLLECTED: 'Cobrado',
   CANCELLED: 'Cancelado',
   ISSUE: 'Novedad',
 };
@@ -122,10 +116,6 @@ const EMPTY_LINE: OrderLine = { productoId: 0, cantidad: 0 };
 
 function formatDate(iso: string): string {
   return iso.slice(0, 10);
-}
-
-function formatTotal(value: string): string {
-  return `S/ ${Number(value).toFixed(2)}`;
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -332,12 +322,6 @@ export default function PedidosPage() {
       render: (row) => <StateBadge estado={row.estado} />,
     },
     {
-      key: 'total',
-      label: 'Total',
-      className: 'w-28 text-right',
-      render: (row) => formatTotal(row.total),
-    },
-    {
       key: 'fechaCreacion',
       label: 'Fecha Creación',
       className: 'w-32',
@@ -531,10 +515,6 @@ export default function PedidosPage() {
                   <StateBadge estado={selectedOrder.estado} />
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Total</p>
-                  <p className="font-semibold">{formatTotal(selectedOrder.total)}</p>
-                </div>
-                <div>
                   <p className="text-muted-foreground">Fecha de Entrega</p>
                   <p>{formatDate(selectedOrder.fechaEntrega)}</p>
                 </div>
@@ -566,8 +546,6 @@ export default function PedidosPage() {
                         <th className="text-left px-3 py-2">SKU</th>
                         <th className="text-left px-3 py-2">Producto</th>
                         <th className="text-right px-3 py-2">Cantidad</th>
-                        <th className="text-right px-3 py-2">P. Unitario</th>
-                        <th className="text-right px-3 py-2">Subtotal</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y">
@@ -578,12 +556,6 @@ export default function PedidosPage() {
                           </td>
                           <td className="px-3 py-2">{d.producto.nombre}</td>
                           <td className="px-3 py-2 text-right">{d.cantidad}</td>
-                          <td className="px-3 py-2 text-right">
-                            {formatTotal(d.precioUnitario)}
-                          </td>
-                          <td className="px-3 py-2 text-right font-medium">
-                            {formatTotal(d.subtotal)}
-                          </td>
                         </tr>
                       ))}
                     </tbody>

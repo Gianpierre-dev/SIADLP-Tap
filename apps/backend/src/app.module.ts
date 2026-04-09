@@ -7,9 +7,6 @@ import { UsersModule } from './users/users.module';
 import { RolesModule } from './roles/roles.module';
 import { CatalogsModule } from './catalogs/catalogs.module';
 import { OrdersModule } from './orders/orders.module';
-import { InventoryModule } from './inventory/inventory.module';
-import { PurchasesModule } from './purchases/purchases.module';
-import { ProductionModule } from './production/production.module';
 import { DispatchModule } from './dispatch/dispatch.module';
 import { AuditModule } from './audit/audit.module';
 import { ReportsModule } from './reports/reports.module';
@@ -29,9 +26,6 @@ import { PermissionsGuard } from './auth/guards/permissions.guard';
     RolesModule,
     CatalogsModule,
     OrdersModule,
-    InventoryModule,
-    PurchasesModule,
-    ProductionModule,
     DispatchModule,
     AuditModule,
     ReportsModule,

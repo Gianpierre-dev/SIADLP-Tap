@@ -24,7 +24,6 @@ interface Product {
   codigoSku: string;
   descripcion: string | null;
   unidadMedida: string;
-  precioBase: string;
   stockMinimo: string | null;
   activo: boolean;
 }
@@ -34,7 +33,6 @@ interface ProductForm {
   codigoSku: string;
   descripcion: string;
   unidadMedida: string;
-  precioBase: string;
   stockMinimo: string;
 }
 
@@ -43,7 +41,6 @@ const EMPTY_FORM: ProductForm = {
   codigoSku: '',
   descripcion: '',
   unidadMedida: '',
-  precioBase: '',
   stockMinimo: '',
 };
 
@@ -80,7 +77,6 @@ export default function ProductosPage() {
       codigoSku: item.codigoSku,
       descripcion: item.descripcion ?? '',
       unidadMedida: item.unidadMedida,
-      precioBase: item.precioBase,
       stockMinimo: item.stockMinimo ?? '',
     });
     setDialogOpen(true);
@@ -94,7 +90,6 @@ export default function ProductosPage() {
       codigoSku: form.codigoSku,
       descripcion: form.descripcion || undefined,
       unidadMedida: form.unidadMedida,
-      precioBase: Number(form.precioBase),
       stockMinimo: form.stockMinimo ? Number(form.stockMinimo) : undefined,
     };
     try {
@@ -130,12 +125,6 @@ export default function ProductosPage() {
     { key: 'codigoSku', label: 'SKU', className: 'w-32' },
     { key: 'nombre', label: 'Nombre' },
     { key: 'unidadMedida', label: 'Unidad', className: 'w-24' },
-    {
-      key: 'precioBase',
-      label: 'Precio Base',
-      className: 'w-32',
-      render: (row) => `S/ ${Number(row.precioBase).toFixed(2)}`,
-    },
     {
       key: 'activo',
       label: 'Estado',
@@ -219,18 +208,6 @@ export default function ProductosPage() {
                   id="descripcion"
                   value={form.descripcion}
                   onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="precioBase">Precio Base (S/) *</Label>
-                <Input
-                  id="precioBase"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={form.precioBase}
-                  onChange={(e) => setForm({ ...form, precioBase: e.target.value })}
-                  required
                 />
               </div>
               <div className="space-y-1.5">
