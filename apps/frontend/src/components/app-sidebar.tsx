@@ -28,7 +28,6 @@ import {
   MapPinIcon,
   CarIcon,
   UserIcon,
-  BoxIcon,
   LogOutIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -49,7 +48,6 @@ const mainNav: NavItem[] = [
 
 const catalogNav: NavItem[] = [
   { label: 'Clientes', href: '/catalogos/clientes', icon: BuildingIcon, permission: 'clientes.leer' },
-  { label: 'Proveedores', href: '/catalogos/proveedores', icon: BoxIcon, permission: 'proveedores.leer' },
   { label: 'Productos', href: '/catalogos/productos', icon: PackageIcon, permission: 'productos.leer' },
   { label: 'Rutas', href: '/catalogos/rutas', icon: MapPinIcon, permission: 'rutas.leer' },
   { label: 'Vehículos', href: '/catalogos/vehiculos', icon: CarIcon, permission: 'vehiculos.leer' },

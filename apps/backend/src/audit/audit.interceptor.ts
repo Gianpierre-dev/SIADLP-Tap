@@ -23,7 +23,6 @@ const PATH_MODULE_MAP: Record<string, string> = {
   users: 'usuarios',
   roles: 'roles',
   'catalogs/clients': 'clientes',
-  'catalogs/suppliers': 'proveedores',
   'catalogs/products': 'productos',
   'catalogs/routes': 'rutas',
   'catalogs/vehicles': 'vehiculos',

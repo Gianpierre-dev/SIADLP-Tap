@@ -53,11 +53,7 @@ export class OrdersService {
     const lineas = dto.detalles.map((line) => ({
       productoId: line.productoId,
       cantidad: line.cantidad,
-      precioUnitario: 0,
-      subtotal: 0,
     }));
-
-    const total = 0;
 
     const pedido = await this.prisma.$transaction(async (tx) => {
       const created = await tx.pedido.create({
@@ -65,14 +61,11 @@ export class OrdersService {
           clienteId: dto.clienteId,
           fechaEntrega: new Date(dto.fechaEntrega),
           observacion: dto.observacion,
-          total,
           creadoPorId: userId,
           detalles: {
             create: lineas.map((l) => ({
               productoId: l.productoId,
               cantidad: l.cantidad,
-              precioUnitario: l.precioUnitario,
-              subtotal: l.subtotal,
             })),
           },
         },

@@ -67,11 +67,9 @@ export class DispatchService {
         (acc, d) => acc + d.cantidad.toNumber(),
         0,
       );
-      const pedidoMonto = pedido.total.toNumber();
 
       const pedidoData = {
         id: pedido.id,
-        total: pedidoMonto,
         cliente: {
           id: pedido.cliente.id,
           razonSocial: pedido.cliente.razonSocial,
@@ -81,8 +79,6 @@ export class DispatchService {
         detalles: pedido.detalles.map((d) => ({
           productoId: d.productoId,
           cantidad: d.cantidad.toNumber(),
-          precioUnitario: d.precioUnitario.toNumber(),
-          subtotal: d.subtotal.toNumber(),
           producto: d.producto,
         })),
       };
@@ -90,13 +86,11 @@ export class DispatchService {
       if (existing) {
         existing.pedidos.push(pedidoData);
         existing.totalKg += pedidoKg;
-        existing.totalMonto += pedidoMonto;
       } else {
         groupMap.set(ruta.id, {
           ruta: { id: ruta.id, nombre: ruta.nombre, zona: ruta.zona },
           pedidos: [pedidoData],
           totalKg: pedidoKg,
-          totalMonto: pedidoMonto,
         });
       }
     }
@@ -138,11 +132,6 @@ export class DispatchService {
         );
       }, 0);
 
-      const totalMonto = pedidos.reduce(
-        (acc, pedido) => acc + pedido.total.toNumber(),
-        0,
-      );
-
       // Validate ruta, vehiculo and chofer exist and are active
       const ruta = await tx.ruta.findUnique({ where: { id: dto.rutaId } });
       if (!ruta || !ruta.activa)
@@ -175,7 +164,6 @@ export class DispatchService {
           choferId: dto.choferId,
           estado: DispatchStatus.PREPARANDO,
           totalKg,
-          totalMonto,
           creadoPorId: userId,
         },
       });
@@ -269,8 +257,6 @@ export class DispatchService {
               select: {
                 id: true,
                 estado: true,
-                montoCobrado: true,
-                metodoPago: true,
                 observacion: true,
                 fechaEntrega: true,
               },
@@ -346,12 +332,11 @@ export class DispatchService {
         });
       }
 
-      // Update hoja to DESPACHADO and set GRE if provided
+      // Update hoja to DESPACHADO
       await tx.hojaCarga.update({
         where: { id },
         data: {
           estado: DispatchStatus.DESPACHADO,
-          ...(dto.numeroGre ? { numeroGre: dto.numeroGre } : {}),
         },
       });
 
@@ -450,22 +435,17 @@ export class DispatchService {
       },
       pedido: {
         id: pedido.id,
-        total: pedido.total.toNumber(),
       },
       productos: pedido.detalles.map((d) => ({
         nombre: d.producto.nombre,
         cantidad: d.cantidad.toNumber(),
-        precioUnitario: d.precioUnitario.toNumber(),
-        subtotal: d.subtotal.toNumber(),
       })),
-      montoACobrar: pedido.total.toNumber(),
     }));
 
     return {
       hoja: {
         id: hoja.id,
         fecha: hoja.fecha,
-        numeroGre: hoja.numeroGre,
         estado: hoja.estado,
       },
       ruta: { nombre: hoja.ruta.nombre, zona: hoja.ruta.zona },
@@ -483,7 +463,6 @@ export class DispatchService {
       },
       paradas,
       totalKg: hoja.totalKg.toNumber(),
-      totalMonto: hoja.totalMonto.toNumber(),
     };
   }
 

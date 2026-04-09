@@ -115,7 +115,6 @@ export class ReportsService {
       { header: 'Fecha Creación', key: 'fecha', width: 18 },
       { header: 'Cliente', key: 'cliente', width: 35 },
       { header: 'Estado', key: 'estado', width: 15 },
-      { header: 'Total (S/)', key: 'total', width: 15 },
       { header: 'Fecha Entrega', key: 'fechaEntrega', width: 18 },
       { header: 'Productos', key: 'productos', width: 50 },
     ];
@@ -139,7 +138,6 @@ export class ReportsService {
         fecha: order.fechaCreacion.toISOString().split('T')[0],
         cliente: order.cliente.razonSocial,
         estado: order.estado,
-        total: order.total.toNumber(),
         fechaEntrega: order.fechaEntrega.toISOString().split('T')[0],
         productos,
       });
@@ -171,8 +169,6 @@ export class ReportsService {
             entrega: {
               select: {
                 estado: true,
-                montoCobrado: true,
-                metodoPago: true,
                 fechaEntrega: true,
               },
             },
@@ -199,10 +195,7 @@ export class ReportsService {
       { header: 'Estado Hoja', key: 'estadoHoja', width: 15 },
       { header: 'Pedido ID', key: 'pedidoId', width: 10 },
       { header: 'Cliente', key: 'cliente', width: 35 },
-      { header: 'Total Pedido (S/)', key: 'totalPedido', width: 18 },
       { header: 'Estado Entrega', key: 'estadoEntrega', width: 15 },
-      { header: 'Monto Cobrado (S/)', key: 'montoCobrado', width: 20 },
-      { header: 'Método Pago', key: 'metodoPago', width: 15 },
       { header: 'Fecha Entrega', key: 'fechaEntrega', width: 18 },
     ];
 
@@ -226,10 +219,7 @@ export class ReportsService {
           estadoHoja: hoja.estado,
           pedidoId: pedido.id,
           cliente: pedido.cliente.razonSocial,
-          totalPedido: pedido.total.toNumber(),
           estadoEntrega: pedido.entrega?.estado ?? 'SIN ENTREGA',
-          montoCobrado: pedido.entrega?.montoCobrado?.toNumber() ?? 0,
-          metodoPago: pedido.entrega?.metodoPago ?? '',
           fechaEntrega:
             pedido.entrega?.fechaEntrega?.toISOString().split('T')[0] ?? '',
         });

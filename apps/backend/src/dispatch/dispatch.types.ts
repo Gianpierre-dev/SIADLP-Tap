@@ -13,7 +13,6 @@ export interface RouteGroup {
   ruta: { id: number; nombre: string; zona: string };
   pedidos: Array<{
     id: number;
-    total: number;
     cliente: {
       id: number;
       razonSocial: string;
@@ -23,30 +22,24 @@ export interface RouteGroup {
     detalles: Array<{
       productoId: number;
       cantidad: number;
-      precioUnitario: number;
-      subtotal: number;
       producto: { id: number; nombre: string };
     }>;
   }>;
   totalKg: number;
-  totalMonto: number;
 }
 
 export interface Parada {
   orden: number;
   cliente: { razonSocial: string; direccion: string; telefono: string | null };
-  pedido: { id: number; total: number };
+  pedido: { id: number };
   productos: Array<{
     nombre: string;
     cantidad: number;
-    precioUnitario: number;
-    subtotal: number;
   }>;
-  montoACobrar: number;
 }
 
 export interface RouteSheetResult {
-  hoja: { id: number; fecha: Date; numeroGre: string | null; estado: string };
+  hoja: { id: number; fecha: Date; estado: string };
   ruta: { nombre: string; zona: string };
   vehiculo: { placa: string; marca: string | null; modelo: string | null };
   chofer: {
@@ -58,5 +51,4 @@ export interface RouteSheetResult {
   };
   paradas: Parada[];
   totalKg: number;
-  totalMonto: number;
 }
