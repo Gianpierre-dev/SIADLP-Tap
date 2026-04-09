@@ -10,6 +10,40 @@ services:
       - "5432:5432"
     volumes:
       - siadlp_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "4020:4020"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:sql@db:5432/siadlp_db
+      JWT_SECRET: b23816d61e59c94c25ef225319f833e1ea2bc9b9003072bae8cfd135bd223f8a
+      JWT_EXPIRES_IN: 2h
+      API_PORT: 4020
+      CORS_ORIGINS: http://localhost:3020
+
+  frontend:
+    build:
+      context: .
+      dockerfile: apps/frontend/Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:4020/api
+    restart: unless-stopped
+    ports:
+      - "3020:3020"
+    depends_on:
+      - backend
 
 volumes:
   siadlp_pgdata:
