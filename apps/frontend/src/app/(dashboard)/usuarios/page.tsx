@@ -250,6 +250,7 @@ export default function UsuariosPage() {
                   value={createForm.contrasena}
                   onChange={(e) => setCreateForm({ ...createForm, contrasena: e.target.value })}
                   placeholder="Mín. 8 chars, mayúscula, minúscula y número"
+                  minLength={8}
                   required
                 />
               </div>

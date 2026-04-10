@@ -228,6 +228,11 @@ export default function ClientesPage() {
                   id="ruc"
                   value={form.ruc}
                   onChange={(e) => setForm({ ...form, ruc: e.target.value })}
+                  maxLength={11}
+                  minLength={11}
+                  pattern="[0-9]{11}"
+                  inputMode="numeric"
+                  placeholder="20123456789"
                 />
               </div>
               <div className="col-span-2 space-y-1.5">
@@ -245,6 +250,9 @@ export default function ClientesPage() {
                   id="telefono"
                   value={form.telefono}
                   onChange={(e) => setForm({ ...form, telefono: e.target.value })}
+                  inputMode="tel"
+                  pattern="[0-9+\-\s]{7,15}"
+                  placeholder="01-234-5678"
                 />
               </div>
               <div className="space-y-1.5">

@@ -4,6 +4,7 @@ import {
   MinLength,
   IsInt,
   IsPositive,
+  Matches,
 } from 'class-validator';
 
 export class UpdateClientDto {
@@ -18,6 +19,7 @@ export class UpdateClientDto {
 
   @IsOptional()
   @IsString()
+  @Matches(/^\d{11}$/, { message: 'RUC debe ser exactamente 11 dígitos' })
   ruc?: string;
 
   @IsOptional()
@@ -27,6 +29,7 @@ export class UpdateClientDto {
 
   @IsOptional()
   @IsString()
+  @Matches(/^[\d+\-\s]{7,15}$/, { message: 'Teléfono inválido' })
   telefono?: string;
 
   @IsOptional()

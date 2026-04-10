@@ -175,6 +175,7 @@ export default function ProductosPage() {
                   id="nombre"
                   value={form.nombre}
                   onChange={(e) => setForm({ ...form, nombre: e.target.value })}
+                  maxLength={100}
                   required
                 />
               </div>
@@ -184,6 +185,7 @@ export default function ProductosPage() {
                   id="codigoSku"
                   value={form.codigoSku}
                   onChange={(e) => setForm({ ...form, codigoSku: e.target.value })}
+                  maxLength={20}
                   required
                 />
               </div>

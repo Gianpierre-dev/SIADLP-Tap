@@ -214,6 +214,8 @@ export default function ChoferesPage() {
                 placeholder="12345678"
                 maxLength={8}
                 minLength={8}
+                pattern="[0-9]{8}"
+                inputMode="numeric"
                 required
               />
             </div>
@@ -232,7 +234,9 @@ export default function ChoferesPage() {
                 id="telefono"
                 value={form.telefono}
                 onChange={(e) => setForm({ ...form, telefono: e.target.value })}
-                placeholder="Número de teléfono"
+                inputMode="tel"
+                pattern="[0-9+\-\s]{7,15}"
+                placeholder="999-888-777"
               />
             </div>
             <DialogFooter>

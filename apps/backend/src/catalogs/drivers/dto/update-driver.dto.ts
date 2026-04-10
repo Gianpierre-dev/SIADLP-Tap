@@ -1,4 +1,10 @@
-import { IsString, IsOptional, MinLength, IsBoolean } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  MinLength,
+  IsBoolean,
+  Matches,
+} from 'class-validator';
 
 export class UpdateDriverDto {
   @IsOptional()
@@ -13,7 +19,7 @@ export class UpdateDriverDto {
 
   @IsOptional()
   @IsString()
-  @MinLength(8)
+  @Matches(/^\d{8}$/, { message: 'DNI debe ser exactamente 8 dígitos' })
   dni?: string;
 
   @IsOptional()
@@ -22,6 +28,7 @@ export class UpdateDriverDto {
 
   @IsOptional()
   @IsString()
+  @Matches(/^[\d+\-\s]{7,15}$/, { message: 'Teléfono inválido' })
   telefono?: string;
 
   @IsOptional()

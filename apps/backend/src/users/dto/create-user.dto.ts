@@ -2,6 +2,7 @@ import {
   IsEmail,
   IsString,
   MinLength,
+  MaxLength,
   Matches,
   IsInt,
   IsPositive,
@@ -9,6 +10,7 @@ import {
 
 export class CreateUserDto {
   @IsEmail()
+  @MaxLength(100)
   correo: string;
 
   @IsString()
@@ -21,6 +23,7 @@ export class CreateUserDto {
 
   @IsString()
   @MinLength(2)
+  @MaxLength(100)
   nombre: string;
 
   @IsInt()

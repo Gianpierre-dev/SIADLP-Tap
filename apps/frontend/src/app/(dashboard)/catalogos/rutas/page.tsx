@@ -173,6 +173,7 @@ export default function RutasPage() {
                 value={form.nombre}
                 onChange={(e) => setForm({ ...form, nombre: e.target.value })}
                 placeholder="Nombre de la ruta"
+                maxLength={50}
                 required
               />
             </div>
@@ -183,6 +184,7 @@ export default function RutasPage() {
                 value={form.zona}
                 onChange={(e) => setForm({ ...form, zona: e.target.value })}
                 placeholder="Zona de cobertura"
+                maxLength={50}
                 required
               />
             </div>
