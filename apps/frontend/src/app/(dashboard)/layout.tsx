@@ -13,12 +13,14 @@ export default function DashboardLayout({
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset>
-          <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 h-4" />
-            <span className="text-sm font-medium text-muted-foreground">
-              La Cosecha S.A.C.
-            </span>
+          <header className="flex h-14 shrink-0 items-center justify-between border-b bg-background px-6">
+            <div className="flex items-center gap-3">
+              <SidebarTrigger className="-ml-1 text-muted-foreground" />
+              <Separator orientation="vertical" className="h-4" />
+              <span className="text-sm font-semibold text-[#33691e]">
+                Sistema de Distribución
+              </span>
+            </div>
           </header>
           <main className="flex-1 p-6 @container">{children}</main>
         </SidebarInset>

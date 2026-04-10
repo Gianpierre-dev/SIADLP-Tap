@@ -73,7 +73,9 @@ function NavGroup({ label, items }: { label: string; items: NavItem[] }) {
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>{label}</SidebarGroupLabel>
+      <SidebarGroupLabel className="text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-[#c5a028]/80">
+        {label}
+      </SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu>
           {visibleItems.map((item) => (
@@ -98,18 +100,19 @@ export function AppSidebar() {
 
   return (
     <Sidebar>
-      <SidebarHeader className="border-b px-4 h-14 flex items-center">
-        <div className="flex items-center gap-3">
+      <SidebarHeader className="border-b border-white/10 px-4 py-5 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-2.5">
           <Image
             src="/LogoLaCosecha.png"
             alt="La Cosecha"
-            width={36}
-            height={36}
-            className="rounded-md"
+            width={88}
+            height={88}
+            className="rounded-lg drop-shadow-lg"
+            priority
           />
-          <div className="flex flex-col">
-            <span className="text-lg font-bold tracking-tight text-sidebar-primary-foreground">La Cosecha</span>
-            <span className="text-xs text-[#c5a028]">SIADLP</span>
+          <div className="flex flex-col items-center leading-tight">
+            <span className="text-base font-bold tracking-tight text-white">La Cosecha</span>
+            <span className="text-[0.65rem] font-semibold tracking-[0.15em] text-[#c5a028] uppercase">SIADLP</span>
           </div>
         </div>
       </SidebarHeader>
@@ -118,13 +121,23 @@ export function AppSidebar() {
         <NavGroup label="Catálogos" items={catalogNav} />
         <NavGroup label="Administración" items={adminNav} />
       </SidebarContent>
-      <SidebarFooter className="border-t p-3">
-        <div className="flex items-center justify-between">
-          <div className="flex flex-col text-sm">
-            <span className="font-medium truncate max-w-[140px]">{user?.nombre}</span>
-            <span className="text-xs text-muted-foreground truncate max-w-[140px]">{user?.correo}</span>
+      <SidebarFooter className="border-t border-white/10 p-3">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#c5a028] text-[#1a3a0e] text-sm font-bold">
+            {user?.nombre?.charAt(0).toUpperCase() ?? 'U'}
           </div>
-          <Button variant="ghost" size="sm" onClick={logout} title="Cerrar sesión" aria-label="Cerrar sesión">
+          <div className="flex min-w-0 flex-1 flex-col leading-tight">
+            <span className="truncate text-sm font-semibold text-white">{user?.nombre}</span>
+            <span className="truncate text-[0.7rem] text-[#c5e1a5]">{user?.correo}</span>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={logout}
+            title="Cerrar sesión"
+            aria-label="Cerrar sesión"
+            className="h-8 w-8 shrink-0 p-0 text-[#c5e1a5] hover:bg-white/10 hover:text-white"
+          >
             <LogOutIcon className="h-4 w-4" />
           </Button>
         </div>
