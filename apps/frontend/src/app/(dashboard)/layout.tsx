@@ -13,7 +13,7 @@ export default function DashboardLayout({
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset>
-          <header className="flex h-14 shrink-0 items-center justify-between border-b bg-background px-6">
+          <header className="flex h-16 shrink-0 items-center justify-between border-b bg-background px-6">
             <div className="flex items-center gap-3">
               <SidebarTrigger className="-ml-1 text-muted-foreground" />
               <Separator orientation="vertical" className="h-4" />

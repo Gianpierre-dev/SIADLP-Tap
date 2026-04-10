@@ -11,6 +11,7 @@ import { DispatchModule } from './dispatch/dispatch.module';
 import { AuditModule } from './audit/audit.module';
 import { ReportsModule } from './reports/reports.module';
 import { UbigeoModule } from './ubigeo/ubigeo.module';
+import { EmpresaModule } from './empresa/empresa.module';
 import { AuditInterceptor } from './audit/audit.interceptor';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from './auth/guards/permissions.guard';
@@ -31,6 +32,7 @@ import { PermissionsGuard } from './auth/guards/permissions.guard';
     AuditModule,
     ReportsModule,
     UbigeoModule,
+    EmpresaModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthStore } from '@/lib/auth';
+import { useEmpresaStore } from '@/lib/empresa';
 import {
   Sidebar,
   SidebarContent,
@@ -29,9 +30,17 @@ import {
   CarIcon,
   UserIcon,
   LogOutIcon,
+  SettingsIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
+
+const getBackendUrl = (path: string | null | undefined): string => {
+  if (!path) return '/LogoLaCosecha.png';
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? '';
+  const baseUrl = apiUrl.replace(/\/api$/, '');
+  return `${baseUrl}${path}`;
+};
 
 interface NavItem {
   label: string;
@@ -59,6 +68,7 @@ const adminNav: NavItem[] = [
   { label: 'Roles', href: '/roles', icon: ShieldIcon, permission: 'roles.leer' },
   { label: 'Reportes', href: '/reportes', icon: FileTextIcon, permission: 'reportes.exportar' },
   { label: 'Auditoría', href: '/auditoria', icon: ClipboardListIcon, permission: 'auditoria.leer' },
+  { label: 'Configuración', href: '/configuracion', icon: SettingsIcon, permission: 'usuarios.editar' },
 ];
 
 function NavGroup({ label, items }: { label: string; items: NavItem[] }) {
@@ -97,23 +107,25 @@ function NavGroup({ label, items }: { label: string; items: NavItem[] }) {
 
 export function AppSidebar() {
   const { user, logout } = useAuthStore();
+  const { empresa } = useEmpresaStore();
+
+  const logoSrc = getBackendUrl(empresa?.logoUrl);
+  const empresaNombre = empresa?.nombreComercial ?? empresa?.razonSocial ?? 'Empresa';
 
   return (
     <Sidebar>
-      <SidebarHeader className="h-14 border-b border-white/10 px-4 flex items-center">
-        <div className="flex items-center gap-2.5">
+      <SidebarHeader className="h-16 border-b border-white/10 px-4 flex items-center justify-center">
+        <div className="flex items-center gap-3">
           <Image
-            src="/LogoLaCosecha.png"
-            alt="La Cosecha"
-            width={36}
-            height={36}
+            src={logoSrc}
+            alt={empresaNombre}
+            width={56}
+            height={56}
             className="rounded-md shrink-0"
             priority
+            unoptimized={!!empresa?.logoUrl}
           />
-          <div className="flex flex-col leading-tight">
-            <span className="text-sm font-bold tracking-tight text-white">La Cosecha</span>
-            <span className="text-[0.6rem] font-semibold tracking-[0.15em] text-[#c5a028] uppercase">SIADLP</span>
-          </div>
+          <span className="text-lg font-bold tracking-tight text-white">{empresaNombre}</span>
         </div>
       </SidebarHeader>
       <SidebarContent>

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useAuthStore } from '@/lib/auth';
+import { useEmpresaStore } from '@/lib/empresa';
 import { apiPost } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +12,13 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LogInIcon, Loader2Icon } from 'lucide-react';
 import Image from 'next/image';
+
+const getBackendUrl = (path: string | null | undefined): string => {
+  if (!path) return '/LogoLaCosecha.png';
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? '';
+  const baseUrl = apiUrl.replace(/\/api$/, '');
+  return `${baseUrl}${path}`;
+};
 
 interface LoginResponse {
   accessToken: string;
@@ -25,13 +33,15 @@ interface LoginResponse {
 export default function LoginPage() {
   const router = useRouter();
   const { setUser, isAuthenticated, hydrate } = useAuthStore();
+  const { empresa, fetchEmpresa } = useEmpresaStore();
   const [correo, setCorreo] = useState('');
   const [contrasena, setContrasena] = useState('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     hydrate();
-  }, [hydrate]);
+    fetchEmpresa();
+  }, [hydrate, fetchEmpresa]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -60,15 +70,16 @@ export default function LoginPage() {
       <Card className="w-full max-w-sm relative z-10 shadow-2xl">
         <CardHeader className="text-center items-center">
           <Image
-            src="/LogoLaCosecha.png"
-            alt="La Cosecha S.A.C."
+            src={getBackendUrl(empresa?.logoUrl)}
+            alt={empresa?.razonSocial ?? 'La Cosecha S.A.C.'}
             width={160}
             height={160}
             className="mx-auto"
             priority
+            unoptimized={!!empresa?.logoUrl}
           />
           <CardTitle className="text-2xl font-bold text-[#33691e]">SIADLP</CardTitle>
-          <CardDescription>Sistema Integral — La Cosecha S.A.C.</CardDescription>
+          <CardDescription>Sistema Integral — {empresa?.razonSocial ?? 'La Cosecha S.A.C.'}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
