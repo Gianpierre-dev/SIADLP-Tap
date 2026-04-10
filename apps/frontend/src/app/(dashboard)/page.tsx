@@ -10,6 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import {
   ShoppingCartIcon,
   TruckIcon,
+  CircleCheckIcon,
+  TriangleAlertIcon,
 } from 'lucide-react';
 
 interface DashboardData {
@@ -22,22 +24,36 @@ function KpiCard({
   value,
   description,
   icon: Icon,
+  accent = 'default',
 }: {
   title: string;
   value: string | number;
   description?: string;
   icon: React.ElementType;
+  accent?: 'default' | 'blue' | 'green' | 'amber' | 'red';
 }) {
+  const accentStyles: Record<string, string> = {
+    default: 'bg-muted text-muted-foreground',
+    blue: 'bg-blue-100 text-blue-700',
+    green: 'bg-emerald-100 text-emerald-700',
+    amber: 'bg-amber-100 text-amber-700',
+    red: 'bg-red-100 text-red-700',
+  };
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" />
+        <CardTitle className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          {title}
+        </CardTitle>
+        <div className={`rounded-md p-2 ${accentStyles[accent]}`}>
+          <Icon className="h-4 w-4" />
+        </div>
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+        <div className="text-4xl font-bold tracking-tight">{value}</div>
         {description && (
-          <p className="text-xs text-muted-foreground mt-1">{description}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{description}</p>
         )}
       </CardContent>
     </Card>
@@ -90,7 +106,7 @@ export default function DashboardPage() {
     return (
       <div className="space-y-6">
         <PageHeader title="Dashboard" description="Resumen del día" />
-        <div className="grid grid-cols-1 gap-4 @sm:grid-cols-2 @lg:grid-cols-3 @xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <Skeleton key={i} className="h-28" />
           ))}
@@ -112,62 +128,83 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <PageHeader title="Dashboard" description="Resumen operativo del día" />
 
-      <div className="grid grid-cols-1 gap-4 @sm:grid-cols-2 @lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard
           title="Pedidos del día"
           value={data.pedidos.total}
           icon={ShoppingCartIcon}
+          accent="blue"
         />
         <KpiCard
           title="Despachos del día"
           value={data.despacho.hojasDelDia}
           icon={TruckIcon}
+          accent="blue"
         />
         <KpiCard
           title="Entregas completadas"
           value={data.despacho.entregasCompletadas}
           description={`${data.despacho.entregasPendientes} pendientes`}
-          icon={TruckIcon}
+          icon={CircleCheckIcon}
+          accent="green"
         />
         <KpiCard
           title="Entregas con novedad"
           value={data.despacho.entregasConNovedad}
-          icon={TruckIcon}
+          icon={TriangleAlertIcon}
+          accent="amber"
         />
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Pedidos por estado</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {data.pedidos.total === 0 ? (
-            <p className="text-sm text-muted-foreground">Sin pedidos hoy</p>
-          ) : (
-            <StateSummary porEstado={data.pedidos.porEstado} />
-          )}
-        </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Pedidos por estado</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {data.pedidos.total === 0 ? (
+              <div className="flex flex-col items-center justify-center py-6 text-center">
+                <ShoppingCartIcon className="h-8 w-8 text-muted-foreground/50" />
+                <p className="mt-2 text-sm font-medium">Sin pedidos hoy</p>
+                <p className="text-xs text-muted-foreground">
+                  Los pedidos aparecerán aquí conforme se registren
+                </p>
+              </div>
+            ) : (
+              <StateSummary porEstado={data.pedidos.porEstado} />
+            )}
+          </CardContent>
+        </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Entregas del día</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span>Completadas</span>
-            <span className="font-medium">{data.despacho.entregasCompletadas}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Pendientes</span>
-            <span className="font-medium">{data.despacho.entregasPendientes}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Con novedad</span>
-            <span className="font-medium text-orange-600">{data.despacho.entregasConNovedad}</span>
-          </div>
-        </CardContent>
-      </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Entregas del día</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                <span>Completadas</span>
+              </div>
+              <span className="text-base font-semibold">{data.despacho.entregasCompletadas}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="h-2.5 w-2.5 rounded-full bg-blue-500" />
+                <span>Pendientes</span>
+              </div>
+              <span className="text-base font-semibold">{data.despacho.entregasPendientes}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="h-2.5 w-2.5 rounded-full bg-amber-500" />
+                <span>Con novedad</span>
+              </div>
+              <span className="text-base font-semibold text-amber-600">{data.despacho.entregasConNovedad}</span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

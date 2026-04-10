@@ -61,8 +61,9 @@ export default function LoginPage() {
           <Image
             src="/LogoLaCosecha.png"
             alt="La Cosecha S.A.C."
-            width={120}
-            height={120}
+            width={180}
+            height={180}
+            className="mx-auto"
             priority
           />
           <CardTitle className="text-2xl font-bold">SIADLP</CardTitle>

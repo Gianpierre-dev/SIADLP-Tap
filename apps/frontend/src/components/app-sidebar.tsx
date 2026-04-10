@@ -103,8 +103,8 @@ export function AppSidebar() {
           <Image
             src="/LogoLaCosecha.png"
             alt="La Cosecha"
-            width={40}
-            height={40}
+            width={56}
+            height={56}
             className="rounded-md"
           />
           <div className="flex flex-col">
@@ -124,7 +124,7 @@ export function AppSidebar() {
             <span className="font-medium truncate max-w-[140px]">{user?.nombre}</span>
             <span className="text-xs text-muted-foreground truncate max-w-[140px]">{user?.correo}</span>
           </div>
-          <Button variant="ghost" size="sm" onClick={logout} title="Cerrar sesión">
+          <Button variant="ghost" size="sm" onClick={logout} title="Cerrar sesión" aria-label="Cerrar sesión">
             <LogOutIcon className="h-4 w-4" />
           </Button>
         </div>
