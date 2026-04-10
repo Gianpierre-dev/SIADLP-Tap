@@ -29,7 +29,9 @@ export class UpdateClientDto {
 
   @IsOptional()
   @IsString()
-  @Matches(/^[\d+\-\s]{7,15}$/, { message: 'Teléfono inválido' })
+  @Matches(/^9\d{8}$/, {
+    message: 'Teléfono debe ser 9 dígitos y empezar con 9',
+  })
   telefono?: string;
 
   @IsOptional()

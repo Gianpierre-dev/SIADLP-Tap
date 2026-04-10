@@ -249,10 +249,12 @@ export default function ClientesPage() {
                 <Input
                   id="telefono"
                   value={form.telefono}
-                  onChange={(e) => setForm({ ...form, telefono: e.target.value.replace(/[^\d+\-\s]/g, '') })}
-                  inputMode="tel"
-                  pattern="[0-9+\-\s]{7,15}"
-                  placeholder="01-234-5678"
+                  onChange={(e) => setForm({ ...form, telefono: e.target.value.replace(/\D/g, '').slice(0, 9) })}
+                  inputMode="numeric"
+                  maxLength={9}
+                  minLength={9}
+                  pattern="9[0-9]{8}"
+                  placeholder="987654321"
                 />
               </div>
               <div className="space-y-1.5">

@@ -233,10 +233,12 @@ export default function ChoferesPage() {
               <Input
                 id="telefono"
                 value={form.telefono}
-                onChange={(e) => setForm({ ...form, telefono: e.target.value.replace(/[^\d+\-\s]/g, '') })}
-                inputMode="tel"
-                pattern="[0-9+\-\s]{7,15}"
-                placeholder="999-888-777"
+                onChange={(e) => setForm({ ...form, telefono: e.target.value.replace(/\D/g, '').slice(0, 9) })}
+                inputMode="numeric"
+                maxLength={9}
+                minLength={9}
+                pattern="9[0-9]{8}"
+                placeholder="987654321"
               />
             </div>
             <DialogFooter>
