@@ -253,6 +253,13 @@ export default function UsuariosPage() {
                   minLength={8}
                   required
                 />
+                {createForm.contrasena && !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(createForm.contrasena) && (
+                  <p className="text-xs text-destructive mt-1">
+                    {createForm.contrasena.length < 8
+                      ? `Mínimo 8 caracteres (faltan ${8 - createForm.contrasena.length})`
+                      : 'Debe incluir mayúscula, minúscula y número'}
+                  </p>
+                )}
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="c-rol">Rol *</Label>

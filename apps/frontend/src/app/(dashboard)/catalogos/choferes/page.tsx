@@ -218,6 +218,11 @@ export default function ChoferesPage() {
                 inputMode="numeric"
                 required
               />
+              {form.dni && form.dni.length !== 8 && (
+                <p className="text-xs text-destructive mt-1">
+                  El DNI debe tener 8 dígitos ({8 - form.dni.length > 0 ? `faltan ${8 - form.dni.length}` : `sobran ${form.dni.length - 8}`})
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="licencia">Licencia</Label>
@@ -240,6 +245,13 @@ export default function ChoferesPage() {
                 pattern="9[0-9]{8}"
                 placeholder="987654321"
               />
+              {form.telefono && (form.telefono.length !== 9 || !form.telefono.startsWith('9')) && (
+                <p className="text-xs text-destructive mt-1">
+                  {!form.telefono.startsWith('9') && form.telefono.length > 0
+                    ? 'El teléfono debe empezar con 9'
+                    : `El teléfono debe tener 9 dígitos (faltan ${9 - form.telefono.length})`}
+                </p>
+              )}
             </div>
             <DialogFooter>
               <Button type="submit" disabled={saving}>

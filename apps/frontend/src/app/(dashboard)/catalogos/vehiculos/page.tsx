@@ -192,6 +192,11 @@ export default function VehiculosPage() {
                 style={{ textTransform: 'uppercase' }}
                 required
               />
+              {form.placa && !/^[A-Z0-9]{3}-[A-Z0-9]{3}$/.test(form.placa) && (
+                <p className="text-xs text-destructive mt-1">
+                  La placa debe tener formato ABC-123
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="marca">Marca</Label>

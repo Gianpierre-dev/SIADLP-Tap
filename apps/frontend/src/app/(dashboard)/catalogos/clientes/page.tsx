@@ -309,6 +309,11 @@ export default function ClientesPage() {
                   inputMode="numeric"
                   placeholder="20123456789"
                 />
+                {form.ruc && form.ruc.length !== 11 && (
+                  <p className="text-xs text-destructive mt-1">
+                    El RUC debe tener 11 dígitos ({11 - form.ruc.length > 0 ? `faltan ${11 - form.ruc.length}` : `sobran ${form.ruc.length - 11}`})
+                  </p>
+                )}
               </div>
               <div className="col-span-2 space-y-1.5">
                 <Label htmlFor="direccion">Dirección *</Label>
@@ -331,6 +336,13 @@ export default function ClientesPage() {
                   pattern="9[0-9]{8}"
                   placeholder="987654321"
                 />
+                {form.telefono && (form.telefono.length !== 9 || !form.telefono.startsWith('9')) && (
+                  <p className="text-xs text-destructive mt-1">
+                    {!form.telefono.startsWith('9') && form.telefono.length > 0
+                      ? 'El teléfono debe empezar con 9'
+                      : `El teléfono debe tener 9 dígitos (faltan ${9 - form.telefono.length})`}
+                  </p>
+                )}
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="contacto">Contacto</Label>
