@@ -91,13 +91,13 @@ interface OrderLine {
 const PAGE_SIZE = 20;
 
 const STATE_COLORS: Record<string, string> = {
-  REGISTERED: 'bg-blue-100 text-blue-800',
-  CONFIRMED: 'bg-green-100 text-green-800',
-  DISPATCHED: 'bg-yellow-100 text-yellow-800',
-  ON_ROUTE: 'bg-amber-100 text-amber-800',
-  DELIVERED: 'bg-emerald-100 text-emerald-800',
-  CANCELLED: 'bg-red-100 text-red-800',
-  ISSUE: 'bg-orange-100 text-orange-800',
+  REGISTERED: 'bg-[#e3f2fd] text-[#1565c0]',
+  CONFIRMED:  'bg-[#e8f5e9] text-[#33691e]',
+  DISPATCHED: 'bg-[#fff3c4] text-[#8a6914]',
+  ON_ROUTE:   'bg-[#fef3c7] text-[#d97706]',
+  DELIVERED:  'bg-[#e8f5e9] text-[#245216]',
+  CANCELLED:  'bg-[#fee2e2] text-[#c62828]',
+  ISSUE:      'bg-[#fef3c7] text-[#d97706]',
 };
 
 const STATE_LABELS: Record<string, string> = {

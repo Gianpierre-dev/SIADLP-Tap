@@ -55,18 +55,19 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="@container flex min-h-screen items-center justify-center bg-muted/40 px-4">
-      <Card className="w-full max-w-sm">
+    <div className="@container flex min-h-screen items-center justify-center bg-[#1a3a0e] px-4 relative overflow-hidden">
+      <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'repeating-linear-gradient(-45deg, transparent, transparent 30px, white 30px, white 60px)' }} />
+      <Card className="w-full max-w-sm relative z-10 shadow-2xl">
         <CardHeader className="text-center items-center">
           <Image
             src="/LogoLaCosecha.png"
             alt="La Cosecha S.A.C."
-            width={180}
-            height={180}
+            width={160}
+            height={160}
             className="mx-auto"
             priority
           />
-          <CardTitle className="text-2xl font-bold">SIADLP</CardTitle>
+          <CardTitle className="text-2xl font-bold text-[#33691e]">SIADLP</CardTitle>
           <CardDescription>Sistema Integral — La Cosecha S.A.C.</CardDescription>
         </CardHeader>
         <CardContent>
