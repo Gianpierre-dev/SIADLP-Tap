@@ -227,7 +227,7 @@ export default function ClientesPage() {
                 <Input
                   id="ruc"
                   value={form.ruc}
-                  onChange={(e) => setForm({ ...form, ruc: e.target.value })}
+                  onChange={(e) => setForm({ ...form, ruc: e.target.value.replace(/\D/g, '') })}
                   maxLength={11}
                   minLength={11}
                   pattern="[0-9]{11}"
@@ -249,7 +249,7 @@ export default function ClientesPage() {
                 <Input
                   id="telefono"
                   value={form.telefono}
-                  onChange={(e) => setForm({ ...form, telefono: e.target.value })}
+                  onChange={(e) => setForm({ ...form, telefono: e.target.value.replace(/[^\d+\-\s]/g, '') })}
                   inputMode="tel"
                   pattern="[0-9+\-\s]{7,15}"
                   placeholder="01-234-5678"

@@ -210,7 +210,7 @@ export default function ChoferesPage() {
               <Input
                 id="dni"
                 value={form.dni}
-                onChange={(e) => setForm({ ...form, dni: e.target.value })}
+                onChange={(e) => setForm({ ...form, dni: e.target.value.replace(/\D/g, '') })}
                 placeholder="12345678"
                 maxLength={8}
                 minLength={8}
@@ -233,7 +233,7 @@ export default function ChoferesPage() {
               <Input
                 id="telefono"
                 value={form.telefono}
-                onChange={(e) => setForm({ ...form, telefono: e.target.value })}
+                onChange={(e) => setForm({ ...form, telefono: e.target.value.replace(/[^\d+\-\s]/g, '') })}
                 inputMode="tel"
                 pattern="[0-9+\-\s]{7,15}"
                 placeholder="999-888-777"

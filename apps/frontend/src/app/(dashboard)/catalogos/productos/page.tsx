@@ -184,7 +184,7 @@ export default function ProductosPage() {
                 <Input
                   id="codigoSku"
                   value={form.codigoSku}
-                  onChange={(e) => setForm({ ...form, codigoSku: e.target.value })}
+                  onChange={(e) => setForm({ ...form, codigoSku: e.target.value.replace(/[^a-zA-Z0-9-]/g, '') })}
                   maxLength={20}
                   required
                 />

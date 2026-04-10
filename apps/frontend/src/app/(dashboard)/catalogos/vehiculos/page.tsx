@@ -185,7 +185,7 @@ export default function VehiculosPage() {
               <Input
                 id="placa"
                 value={form.placa}
-                onChange={(e) => setForm({ ...form, placa: e.target.value.toUpperCase() })}
+                onChange={(e) => setForm({ ...form, placa: e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '') })}
                 placeholder="ABC-123"
                 maxLength={7}
                 pattern="[A-Z0-9]{3}-[A-Z0-9]{3}"
