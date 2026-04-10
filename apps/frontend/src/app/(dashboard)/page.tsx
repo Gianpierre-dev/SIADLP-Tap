@@ -30,14 +30,15 @@ function KpiCard({
   value: string | number;
   description?: string;
   icon: React.ElementType;
-  accent?: 'default' | 'blue' | 'green' | 'amber' | 'red';
+  accent?: 'default' | 'blue' | 'green' | 'gold' | 'amber' | 'red';
 }) {
   const accentStyles: Record<string, string> = {
     default: 'bg-muted text-muted-foreground',
-    blue: 'bg-blue-100 text-blue-700',
-    green: 'bg-emerald-100 text-emerald-700',
-    amber: 'bg-amber-100 text-amber-700',
-    red: 'bg-red-100 text-red-700',
+    blue: 'bg-[#e3f2fd] text-[#1565c0]',
+    green: 'bg-[#e8f5e9] text-[#33691e]',
+    gold: 'bg-[#fff3c4] text-[#8a6914]',
+    amber: 'bg-[#fef3c7] text-[#d97706]',
+    red: 'bg-[#fee2e2] text-[#c62828]',
   };
 
   return (
@@ -62,12 +63,12 @@ function KpiCard({
 
 function StateSummary({ porEstado }: { porEstado: Record<string, number> }) {
   const stateColors: Record<string, string> = {
-    REGISTERED: 'bg-blue-100 text-blue-800',
-    CONFIRMED: 'bg-green-100 text-green-800',
-    DISPATCHED: 'bg-yellow-100 text-yellow-800',
-    DELIVERED: 'bg-emerald-100 text-emerald-800',
-    CANCELLED: 'bg-red-100 text-red-800',
-    ISSUE: 'bg-orange-100 text-orange-800',
+    REGISTERED: 'bg-[#e3f2fd] text-[#1565c0]',
+    CONFIRMED: 'bg-[#e8f5e9] text-[#33691e]',
+    DISPATCHED: 'bg-[#fff3c4] text-[#8a6914]',
+    DELIVERED: 'bg-[#e8f5e9] text-[#245216]',
+    CANCELLED: 'bg-[#fee2e2] text-[#c62828]',
+    ISSUE: 'bg-[#fef3c7] text-[#d97706]',
   };
 
   const stateLabels: Record<string, string> = {
@@ -139,7 +140,7 @@ export default function DashboardPage() {
           title="Despachos del día"
           value={data.despacho.hojasDelDia}
           icon={TruckIcon}
-          accent="blue"
+          accent="gold"
         />
         <KpiCard
           title="Entregas completadas"
@@ -183,24 +184,24 @@ export default function DashboardPage() {
           <CardContent className="space-y-3 text-sm">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                <div className="h-2.5 w-2.5 rounded-full bg-[#33691e]" />
                 <span>Completadas</span>
               </div>
               <span className="text-base font-semibold">{data.despacho.entregasCompletadas}</span>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="h-2.5 w-2.5 rounded-full bg-blue-500" />
+                <div className="h-2.5 w-2.5 rounded-full bg-[#1565c0]" />
                 <span>Pendientes</span>
               </div>
               <span className="text-base font-semibold">{data.despacho.entregasPendientes}</span>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="h-2.5 w-2.5 rounded-full bg-amber-500" />
+                <div className="h-2.5 w-2.5 rounded-full bg-[#d97706]" />
                 <span>Con novedad</span>
               </div>
-              <span className="text-base font-semibold text-amber-600">{data.despacho.entregasConNovedad}</span>
+              <span className="text-base font-semibold text-[#d97706]">{data.despacho.entregasConNovedad}</span>
             </div>
           </CardContent>
         </Card>

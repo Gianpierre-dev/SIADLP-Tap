@@ -87,10 +87,10 @@ interface Driver {
 const PAGE_SIZE = 20;
 
 const stateColors: Record<string, string> = {
-  PREPARANDO: 'bg-yellow-100 text-yellow-800',
-  DESPACHADO: 'bg-blue-100 text-blue-800',
-  EN_RUTA: 'bg-amber-100 text-amber-800',
-  COMPLETADO: 'bg-green-100 text-green-800',
+  PREPARANDO: 'bg-[#fff3c4] text-[#8a6914]',
+  DESPACHADO: 'bg-[#e3f2fd] text-[#1565c0]',
+  EN_RUTA:    'bg-[#fef3c7] text-[#d97706]',
+  COMPLETADO: 'bg-[#e8f5e9] text-[#33691e]',
 };
 
 const stateLabels: Record<string, string> = {
@@ -101,9 +101,9 @@ const stateLabels: Record<string, string> = {
 };
 
 const deliveryStateColors: Record<string, string> = {
-  PENDIENTE: 'bg-gray-100 text-gray-800',
-  ENTREGADO: 'bg-green-100 text-green-800',
-  NOVEDAD: 'bg-orange-100 text-orange-800',
+  PENDIENTE: 'bg-[#f5f5f5] text-[#525252]',
+  ENTREGADO: 'bg-[#e8f5e9] text-[#33691e]',
+  NOVEDAD:   'bg-[#fef3c7] text-[#d97706]',
 };
 
 const deliveryStateLabels: Record<string, string> = {

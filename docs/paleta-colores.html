@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIADLP — Sistema de Diseno Visual</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green-900: #0f2b0a;
+  --green-800: #1a3a0e;
+  --green-700: #245216;
+  --green-600: #33691e;
+  --green-500: #4a7c2e;
+  --green-400: #689f38;
+  --green-300: #8bc34a;
+  --green-200: #c5e1a5;
+  --green-100: #e8f5e9;
+  --green-50:  #f1f8e9;
+
+  --gold-700: #8a6914;
+  --gold-600: #a07a1a;
+  --gold-500: #bf8c2e;
+  --gold-400: #c5a028;
+  --gold-300: #dbb742;
+  --gold-200: #ffd54f;
+  --gold-100: #fff3c4;
+  --gold-50:  #fffbeb;
+
+  --red-700: #991b1b;
+  --red-600: #c62828;
+  --red-500: #dc2626;
+  --red-400: #ef4444;
+  --red-100: #fee2e2;
+  --red-50:  #fef2f2;
+
+  --blue-600: #1565c0;
+  --blue-100: #e3f2fd;
+
+  --amber-600: #d97706;
+  --amber-100: #fef3c7;
+
+  --neutral-950: #0a0a0a;
+  --neutral-900: #171717;
+  --neutral-800: #262626;
+  --neutral-700: #404040;
+  --neutral-600: #525252;
+  --neutral-500: #737373;
+  --neutral-400: #a3a3a3;
+  --neutral-300: #d4d4d4;
+  --neutral-200: #e5e5e5;
+  --neutral-100: #f5f5f5;
+  --neutral-50:  #fafafa;
+
+  --font-display: 'DM Serif Display', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+  --radius: 8px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: var(--font-body); background: var(--neutral-100); color: var(--neutral-900); line-height: 1.5; }
+
+/* ---- Layout ---- */
+.page-header {
+  background: var(--green-800);
+  color: var(--green-200);
+  padding: 3rem 2rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.page-header::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 20px,
+    rgba(255,255,255,0.015) 20px,
+    rgba(255,255,255,0.015) 40px
+  );
+}
+.page-header h1 {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  color: white;
+  position: relative;
+  margin-bottom: 0.25rem;
+}
+.page-header h1 span { color: var(--gold-300); }
+.page-header p { font-size: 0.95rem; position: relative; }
+
+.section { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem; }
+.section-title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  color: var(--green-800);
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--gold-500);
+  display: inline-block;
+}
+.section-desc { color: var(--neutral-500); margin-bottom: 1.5rem; font-size: 0.9rem; }
+.section + .section { border-top: 1px solid var(--neutral-200); }
+
+/* ---- Color System ---- */
+.color-groups { display: flex; gap: 2rem; flex-wrap: wrap; }
+.color-group { flex: 1; min-width: 200px; }
+.color-group-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--neutral-500); margin-bottom: 0.5rem; font-weight: 600; }
+.swatch-row { display: flex; flex-direction: column; gap: 3px; }
+.swatch {
+  height: 40px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  transition: transform 0.15s;
+}
+.swatch:hover { transform: scale(1.02); }
+.swatch-light { color: var(--neutral-700); }
+.swatch-dark { color: rgba(255,255,255,0.9); }
+.swatch-role { font-size: 0.6rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.04em; }
+
+/* ---- Components Preview ---- */
+.components-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+.comp-card {
+  background: white;
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  border: 1px solid var(--neutral-200);
+}
+.comp-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--neutral-500); margin-bottom: 0.75rem; font-weight: 600; }
+.comp-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+
+.btn {
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.btn-primary { background: var(--green-600); color: white; }
+.btn-secondary { background: var(--gold-500); color: white; }
+.btn-outline { background: transparent; border: 1.5px solid var(--green-600); color: var(--green-600); }
+.btn-ghost { background: var(--green-50); color: var(--green-700); }
+.btn-destructive { background: var(--red-600); color: white; }
+.btn-sm { padding: 5px 12px; font-size: 0.75rem; }
+
+.badge {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.input-demo {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1.5px solid var(--neutral-300);
+  font-size: 0.85rem;
+  font-family: var(--font-body);
+  width: 200px;
+  outline: none;
+  transition: all 0.15s;
+}
+.input-focus {
+  border-color: var(--green-600);
+  box-shadow: 0 0 0 3px rgba(51,105,30,0.12);
+}
+.input-error {
+  border-color: var(--red-500);
+  box-shadow: 0 0 0 3px rgba(220,38,38,0.1);
+}
+
+/* ---- Mock Layouts ---- */
+.mock-frame {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--neutral-200);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  background: white;
+}
+
+/* Dashboard Mock */
+.dash-layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  height: 520px;
+}
+.dash-sidebar {
+  background: var(--green-800);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+.dash-sidebar::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  width: 1px;
+  background: rgba(255,255,255,0.06);
+}
+.dash-sidebar-header {
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.dash-sidebar-logo {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--gold-500), var(--gold-300));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--green-900);
+  font-weight: 700;
+  font-size: 0.75rem;
+}
+.dash-sidebar-brand-name {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--green-100);
+}
+.dash-sidebar-brand-sub {
+  font-size: 0.6rem;
+  color: var(--gold-400);
+  letter-spacing: 0.04em;
+}
+.dash-sidebar-section {
+  padding: 14px 16px 6px;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--green-400);
+  font-weight: 600;
+}
+.dash-nav { padding: 0 8px; }
+.dash-nav-item {
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--green-200);
+  margin-bottom: 2px;
+  transition: all 0.15s;
+  cursor: pointer;
+}
+.dash-nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
+.dash-nav-item.active {
+  background: rgba(255,255,255,0.1);
+  color: white;
+  font-weight: 600;
+  border-left: 3px solid var(--gold-400);
+  margin-left: -3px;
+}
+.dash-nav-item svg { width: 16px; height: 16px; opacity: 0.7; }
+.dash-nav-item.active svg { opacity: 1; }
+
+.dash-sidebar-footer {
+  margin-top: auto;
+  padding: 12px 16px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.dash-sidebar-avatar {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: var(--green-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+.dash-sidebar-user-name { font-size: 0.75rem; color: var(--green-100); font-weight: 500; }
+.dash-sidebar-user-email { font-size: 0.6rem; color: var(--green-400); }
+
+.dash-main { display: flex; flex-direction: column; background: var(--neutral-50); }
+.dash-header {
+  height: 48px;
+  border-bottom: 1px solid var(--neutral-200);
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.8rem;
+  color: var(--neutral-500);
+  background: white;
+}
+.dash-header svg { color: var(--neutral-400); }
+.dash-content { padding: 20px; flex: 1; overflow-y: auto; }
+.dash-title { font-family: var(--font-display); font-size: 1.3rem; color: var(--neutral-900); }
+.dash-subtitle { font-size: 0.8rem; color: var(--neutral-500); margin-bottom: 16px; }
+
+.kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+.kpi-card {
+  background: white;
+  border-radius: var(--radius);
+  padding: 14px;
+  border: 1px solid var(--neutral-200);
+}
+.kpi-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.kpi-label { font-size: 0.6rem; color: var(--neutral-500); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+.kpi-icon {
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.kpi-icon svg { width: 14px; height: 14px; }
+.kpi-value { font-size: 1.8rem; font-weight: 700; line-height: 1; }
+.kpi-desc { font-size: 0.65rem; color: var(--neutral-400); margin-top: 4px; }
+
+.bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.bottom-card {
+  background: white;
+  border-radius: var(--radius);
+  padding: 14px;
+  border: 1px solid var(--neutral-200);
+}
+.bottom-card-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--gold-100);
+}
+.stat-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-size: 0.75rem;
+}
+.stat-label { display: flex; align-items: center; gap: 6px; color: var(--neutral-600); }
+.stat-dot { width: 8px; height: 8px; border-radius: 50%; }
+.stat-value { font-weight: 600; color: var(--neutral-800); }
+
+/* ---- CRUD Mock ---- */
+.crud-layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  height: 460px;
+}
+.crud-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.crud-search {
+  padding: 7px 12px 7px 32px;
+  border: 1.5px solid var(--neutral-300);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  width: 240px;
+  font-family: var(--font-body);
+  background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a3a3a3' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E") 8px center no-repeat;
+}
+.crud-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+.crud-table thead { background: var(--green-50); }
+.crud-table th {
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--green-800);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 2px solid var(--gold-200);
+}
+.crud-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--neutral-100);
+  color: var(--neutral-700);
+}
+.crud-table tbody tr:hover { background: var(--green-50); }
+.crud-table .actions { display: flex; gap: 4px; }
+
+/* ---- Login Mock ---- */
+.login-layout {
+  height: 440px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--green-800) 0%, var(--green-900) 50%, var(--neutral-950) 100%);
+  position: relative;
+}
+.login-layout::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 30px,
+    rgba(255,255,255,0.01) 30px,
+    rgba(255,255,255,0.01) 60px
+  );
+}
+.login-card {
+  width: 340px;
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  position: relative;
+  z-index: 1;
+}
+.login-logo {
+  width: 56px; height: 56px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--gold-500), var(--gold-300));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  color: var(--green-900);
+  font-weight: 700;
+  font-size: 1.1rem;
+  font-family: var(--font-display);
+}
+.login-title {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  text-align: center;
+  color: var(--green-800);
+  margin-bottom: 4px;
+}
+.login-desc {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--neutral-500);
+  margin-bottom: 20px;
+}
+.login-field { margin-bottom: 14px; }
+.login-field label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--neutral-700);
+  display: block;
+  margin-bottom: 4px;
+}
+.login-field input {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1.5px solid var(--neutral-300);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-family: var(--font-body);
+  outline: none;
+  transition: all 0.15s;
+}
+.login-field input:focus {
+  border-color: var(--green-600);
+  box-shadow: 0 0 0 3px rgba(51,105,30,0.12);
+}
+.login-btn {
+  width: 100%;
+  padding: 10px;
+  background: var(--green-600);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: var(--font-body);
+  cursor: pointer;
+  margin-top: 6px;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.login-btn:hover { background: var(--green-700); }
+
+/* ---- Usage Guide ---- */
+.usage-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.usage-card {
+  background: white;
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  border: 1px solid var(--neutral-200);
+}
+.usage-card-title { font-weight: 600; font-size: 0.85rem; margin-bottom: 8px; color: var(--green-800); }
+.usage-card p { font-size: 0.8rem; color: var(--neutral-600); line-height: 1.6; }
+.usage-card .color-dot {
+  display: inline-block;
+  width: 12px; height: 12px;
+  border-radius: 3px;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- HEADER                                                        -->
+<!-- ============================================================ -->
+<div class="page-header">
+  <h1>SIADLP — <span>Sistema de Diseno Visual</span></h1>
+  <p>La Cosecha S.A.C. — Paleta de colores, componentes y maquetas</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- 1. COLOR SYSTEM                                               -->
+<!-- ============================================================ -->
+<div class="section">
+  <h2 class="section-title">1. Sistema de Color</h2>
+  <p class="section-desc">Extraidos del logo corporativo. Verde como primario, dorado como acento de identidad, rojo exclusivo para destructivo.</p>
+
+  <div class="color-groups">
+    <div class="color-group">
+      <div class="color-group-label">Verde — Primario</div>
+      <div class="swatch-row">
+        <div class="swatch swatch-dark" style="background:var(--green-900)"><span class="swatch-role">Sidebar BG</span>#0f2b0a</div>
+        <div class="swatch swatch-dark" style="background:var(--green-800)"><span class="swatch-role">Sidebar / Header</span>#1a3a0e</div>
+        <div class="swatch swatch-dark" style="background:var(--green-700)"><span class="swatch-role">Hover</span>#245216</div>
+        <div class="swatch swatch-dark" style="background:var(--green-600)"><span class="swatch-role">Botones / Primary</span>#33691e</div>
+        <div class="swatch swatch-dark" style="background:var(--green-500)"><span class="swatch-role">Active state</span>#4a7c2e</div>
+        <div class="swatch swatch-dark" style="background:var(--green-400)"><span class="swatch-role">Links</span>#689f38</div>
+        <div class="swatch swatch-light" style="background:var(--green-200)"><span class="swatch-role">Sidebar text</span>#c5e1a5</div>
+        <div class="swatch swatch-light" style="background:var(--green-100)"><span class="swatch-role">Badge BG</span>#e8f5e9</div>
+        <div class="swatch swatch-light" style="background:var(--green-50)"><span class="swatch-role">Table hover</span>#f1f8e9</div>
+      </div>
+    </div>
+
+    <div class="color-group">
+      <div class="color-group-label">Dorado — Acento de Marca</div>
+      <div class="swatch-row">
+        <div class="swatch swatch-dark" style="background:var(--gold-700)"><span class="swatch-role">Texto oscuro</span>#8a6914</div>
+        <div class="swatch swatch-dark" style="background:var(--gold-500)"><span class="swatch-role">Acento principal</span>#bf8c2e</div>
+        <div class="swatch swatch-dark" style="background:var(--gold-400)"><span class="swatch-role">Sidebar active</span>#c5a028</div>
+        <div class="swatch swatch-light" style="background:var(--gold-200)"><span class="swatch-role">Table header</span>#ffd54f</div>
+        <div class="swatch swatch-light" style="background:var(--gold-100)"><span class="swatch-role">Card accent</span>#fff3c4</div>
+        <div class="swatch swatch-light" style="background:var(--gold-50)"><span class="swatch-role">Badge BG</span>#fffbeb</div>
+      </div>
+    </div>
+
+    <div class="color-group">
+      <div class="color-group-label">Semanticos</div>
+      <div class="swatch-row">
+        <div class="swatch swatch-dark" style="background:var(--red-600)"><span class="swatch-role">Destructivo</span>#c62828</div>
+        <div class="swatch swatch-light" style="background:var(--red-100)"><span class="swatch-role">Badge error</span>#fee2e2</div>
+        <div class="swatch swatch-dark" style="background:var(--blue-600)"><span class="swatch-role">Info / Registrado</span>#1565c0</div>
+        <div class="swatch swatch-light" style="background:var(--blue-100)"><span class="swatch-role">Badge info</span>#e3f2fd</div>
+        <div class="swatch swatch-dark" style="background:var(--amber-600)"><span class="swatch-role">Alerta / En Ruta</span>#d97706</div>
+        <div class="swatch swatch-light" style="background:var(--amber-100)"><span class="swatch-role">Badge alerta</span>#fef3c7</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 2. UI COMPONENTS                                              -->
+<!-- ============================================================ -->
+<div class="section">
+  <h2 class="section-title">2. Componentes UI</h2>
+  <p class="section-desc">Botones, badges, inputs y elementos reutilizables del sistema.</p>
+
+  <div class="components-grid">
+    <div class="comp-card">
+      <div class="comp-label">Botones</div>
+      <div class="comp-row">
+        <button class="btn btn-primary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Crear Pedido
+        </button>
+        <button class="btn btn-secondary">Confirmar</button>
+        <button class="btn btn-outline">Secundario</button>
+      </div>
+      <div class="comp-row">
+        <button class="btn btn-ghost btn-sm">Editar</button>
+        <button class="btn btn-destructive btn-sm">Cancelar</button>
+        <button class="btn btn-outline btn-sm" style="border-color:var(--neutral-300); color:var(--neutral-600)">Cerrar</button>
+      </div>
+    </div>
+
+    <div class="comp-card">
+      <div class="comp-label">Badges de Estado — Pedidos</div>
+      <div class="comp-row">
+        <span class="badge" style="background:var(--blue-100); color:var(--blue-600)">Registrado</span>
+        <span class="badge" style="background:var(--green-100); color:var(--green-600)">Confirmado</span>
+        <span class="badge" style="background:var(--gold-50); color:var(--gold-700)">Despachado</span>
+      </div>
+      <div class="comp-row">
+        <span class="badge" style="background:var(--green-100); color:var(--green-700)">Entregado</span>
+        <span class="badge" style="background:var(--amber-100); color:var(--amber-600)">Novedad</span>
+        <span class="badge" style="background:var(--red-100); color:var(--red-600)">Cancelado</span>
+      </div>
+    </div>
+
+    <div class="comp-card">
+      <div class="comp-label">Badges de Estado — Hoja de Carga</div>
+      <div class="comp-row">
+        <span class="badge" style="background:var(--gold-100); color:var(--gold-700)">Preparando</span>
+        <span class="badge" style="background:var(--blue-100); color:var(--blue-600)">Despachado</span>
+        <span class="badge" style="background:var(--amber-100); color:var(--amber-600)">En Ruta</span>
+        <span class="badge" style="background:var(--green-100); color:var(--green-700)">Completado</span>
+      </div>
+    </div>
+
+    <div class="comp-card">
+      <div class="comp-label">Inputs</div>
+      <div class="comp-row">
+        <input class="input-demo" placeholder="Normal" readonly>
+        <input class="input-demo input-focus" placeholder="Con foco" readonly>
+      </div>
+      <div class="comp-row">
+        <input class="input-demo input-error" placeholder="Con error" readonly>
+        <div>
+          <span style="font-size:0.7rem; color:var(--red-500)">El RUC debe tener 11 digitos (faltan 3)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 3. DASHBOARD MOCK                                             -->
+<!-- ============================================================ -->
+<div class="section">
+  <h2 class="section-title">3. Dashboard</h2>
+  <p class="section-desc">Vista principal con sidebar oscuro, KPIs con iconos por color de marca y cards inferiores.</p>
+
+  <div class="mock-frame">
+    <div class="dash-layout">
+      <div class="dash-sidebar">
+        <div class="dash-sidebar-header">
+          <div class="dash-sidebar-logo">LC</div>
+          <div>
+            <div class="dash-sidebar-brand-name">La Cosecha</div>
+            <div class="dash-sidebar-brand-sub">SIADLP</div>
+          </div>
+        </div>
+        <div class="dash-sidebar-section">Principal</div>
+        <div class="dash-nav">
+          <div class="dash-nav-item active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+            Dashboard
+          </div>
+          <div class="dash-nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            Pedidos
+          </div>
+          <div class="dash-nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+            Despacho
+          </div>
+        </div>
+        <div class="dash-sidebar-section">Catalogos</div>
+        <div class="dash-nav">
+          <div class="dash-nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Clientes
+          </div>
+          <div class="dash-nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            Productos
+          </div>
+          <div class="dash-nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="10" r="3"/><path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 6.9 8 11.7z"/></svg>
+            Rutas
+          </div>
+        </div>
+        <div class="dash-sidebar-section">Administracion</div>
+        <div class="dash-nav">
+          <div class="dash-nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            Usuarios
+          </div>
+        </div>
+        <div class="dash-sidebar-footer">
+          <div class="dash-sidebar-avatar">A</div>
+          <div>
+            <div class="dash-sidebar-user-name">Administrador</div>
+            <div class="dash-sidebar-user-email">admin@lacosecha.com</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-main">
+        <div class="dash-header">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg>
+          <span>La Cosecha S.A.C.</span>
+        </div>
+        <div class="dash-content">
+          <div class="dash-title">Dashboard</div>
+          <div class="dash-subtitle">Resumen operativo del dia</div>
+
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-label">Pedidos del dia</span>
+                <div class="kpi-icon" style="background:var(--blue-100); color:var(--blue-600)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value" style="color:var(--green-800)">12</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-label">Despachos</span>
+                <div class="kpi-icon" style="background:var(--gold-100); color:var(--gold-600)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value" style="color:var(--green-800)">5</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-label">Completadas</span>
+                <div class="kpi-icon" style="background:var(--green-100); color:var(--green-600)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value" style="color:var(--green-700)">8</div>
+              <div class="kpi-desc">3 pendientes</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-top">
+                <span class="kpi-label">Novedades</span>
+                <div class="kpi-icon" style="background:var(--amber-100); color:var(--amber-600)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value" style="color:var(--amber-600)">2</div>
+            </div>
+          </div>
+
+          <div class="bottom-grid">
+            <div class="bottom-card">
+              <div class="bottom-card-title">Pedidos por estado</div>
+              <div class="stat-row"><span class="stat-label"><span class="stat-dot" style="background:var(--blue-600)"></span>Registrados</span><span class="stat-value">4</span></div>
+              <div class="stat-row"><span class="stat-label"><span class="stat-dot" style="background:var(--green-600)"></span>Confirmados</span><span class="stat-value">6</span></div>
+              <div class="stat-row"><span class="stat-label"><span class="stat-dot" style="background:var(--gold-500)"></span>Despachados</span><span class="stat-value">2</span></div>
+            </div>
+            <div class="bottom-card">
+              <div class="bottom-card-title">Entregas del dia</div>
+              <div class="stat-row"><span class="stat-label"><span class="stat-dot" style="background:var(--green-600)"></span>Completadas</span><span class="stat-value">8</span></div>
+              <div class="stat-row"><span class="stat-label"><span class="stat-dot" style="background:var(--blue-600)"></span>Pendientes</span><span class="stat-value">3</span></div>
+              <div class="stat-row"><span class="stat-label"><span class="stat-dot" style="background:var(--amber-600)"></span>Con novedad</span><span class="stat-value" style="color:var(--amber-600)">2</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 4. CRUD PAGE MOCK                                             -->
+<!-- ============================================================ -->
+<div class="section">
+  <h2 class="section-title">4. Pagina CRUD — Clientes</h2>
+  <p class="section-desc">Tabla de datos con buscador, botones de accion y badges de estado.</p>
+
+  <div class="mock-frame">
+    <div class="crud-layout">
+      <div class="dash-sidebar">
+        <div class="dash-sidebar-header">
+          <div class="dash-sidebar-logo">LC</div>
+          <div>
+            <div class="dash-sidebar-brand-name">La Cosecha</div>
+            <div class="dash-sidebar-brand-sub">SIADLP</div>
+          </div>
+        </div>
+        <div class="dash-sidebar-section">Principal</div>
+        <div class="dash-nav">
+          <div class="dash-nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+            Dashboard
+          </div>
+          <div class="dash-nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            Pedidos
+          </div>
+        </div>
+        <div class="dash-sidebar-section">Catalogos</div>
+        <div class="dash-nav">
+          <div class="dash-nav-item active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Clientes
+          </div>
+          <div class="dash-nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            Productos
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-main">
+        <div class="dash-header">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg>
+          <span>La Cosecha S.A.C.</span>
+        </div>
+        <div class="dash-content">
+          <div class="dash-title">Clientes</div>
+          <div class="dash-subtitle">Gestion de clientes del sistema</div>
+
+          <div class="crud-toolbar">
+            <input class="crud-search" placeholder="Buscar cliente..." readonly>
+            <button class="btn btn-primary btn-sm">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Nuevo Cliente
+            </button>
+          </div>
+
+          <table class="crud-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Razon Social</th>
+                <th>RUC</th>
+                <th>Ubicacion</th>
+                <th>Ruta</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td style="font-weight:500; color:var(--neutral-900)">Polleria El Dorado S.A.C.</td>
+                <td>20512345678</td>
+                <td>Ate, Lima</td>
+                <td>Ruta Norte</td>
+                <td><span class="badge" style="background:var(--green-100); color:var(--green-700)">Activo</span></td>
+                <td class="actions">
+                  <button class="btn btn-ghost btn-sm" style="padding:4px 8px">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+                  </button>
+                  <button class="btn btn-sm" style="padding:4px 8px; background:var(--red-50); color:var(--red-600)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td style="font-weight:500; color:var(--neutral-900)">Polleria La Brasa Roja</td>
+                <td>20498765432</td>
+                <td>SJL, Lima</td>
+                <td>Ruta Centro</td>
+                <td><span class="badge" style="background:var(--green-100); color:var(--green-700)">Activo</span></td>
+                <td class="actions">
+                  <button class="btn btn-ghost btn-sm" style="padding:4px 8px">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+                  </button>
+                  <button class="btn btn-sm" style="padding:4px 8px; background:var(--red-50); color:var(--red-600)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td style="font-weight:500; color:var(--neutral-900)">Restaurante Sabor Criollo</td>
+                <td>20387654321</td>
+                <td>Villa El Salvador, Lima</td>
+                <td>Ruta Sur</td>
+                <td><span class="badge" style="background:var(--neutral-100); color:var(--neutral-500)">Inactivo</span></td>
+                <td class="actions">
+                  <button class="btn btn-ghost btn-sm" style="padding:4px 8px">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; font-size:0.75rem; color:var(--neutral-500)">
+            <span>Mostrando 1-3 de 3</span>
+            <div style="display:flex; gap:4px">
+              <button class="btn btn-outline btn-sm" style="padding:4px 10px; border-color:var(--neutral-300); color:var(--neutral-400)" disabled>Anterior</button>
+              <button class="btn btn-outline btn-sm" style="padding:4px 10px; border-color:var(--neutral-300); color:var(--neutral-400)" disabled>Siguiente</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 5. LOGIN MOCK                                                 -->
+<!-- ============================================================ -->
+<div class="section">
+  <h2 class="section-title">5. Login</h2>
+  <p class="section-desc">Pantalla de inicio de sesion con fondo oscuro verde y card centrada.</p>
+
+  <div class="mock-frame">
+    <div class="login-layout">
+      <div class="login-card">
+        <div class="login-logo">LC</div>
+        <div class="login-title">SIADLP</div>
+        <div class="login-desc">La Cosecha S.A.C.</div>
+        <div class="login-field">
+          <label>Correo electronico</label>
+          <input type="text" placeholder="admin@lacosecha.com" readonly>
+        </div>
+        <div class="login-field">
+          <label>Contrasena</label>
+          <input type="password" value="Admin123!" readonly>
+        </div>
+        <button class="login-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          Ingresar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 6. USAGE GUIDE                                                -->
+<!-- ============================================================ -->
+<div class="section">
+  <h2 class="section-title">6. Guia de Uso del Color</h2>
+  <p class="section-desc">Donde y como aplicar cada color del sistema.</p>
+
+  <div class="usage-grid">
+    <div class="usage-card">
+      <div class="usage-card-title">Verde — Primario</div>
+      <p>
+        <span class="color-dot" style="background:var(--green-800)"></span> Sidebar background<br>
+        <span class="color-dot" style="background:var(--green-600)"></span> Botones primarios<br>
+        <span class="color-dot" style="background:var(--green-100)"></span> Badges positivos (Confirmado, Entregado, Activo)<br>
+        <span class="color-dot" style="background:var(--green-50)"></span> Hover en filas de tabla
+      </p>
+    </div>
+    <div class="usage-card">
+      <div class="usage-card-title">Dorado — Identidad de Marca</div>
+      <p>
+        <span class="color-dot" style="background:var(--gold-500)"></span> Logo sidebar, botones secundarios<br>
+        <span class="color-dot" style="background:var(--gold-400)"></span> Borde activo en sidebar, breadcrumb<br>
+        <span class="color-dot" style="background:var(--gold-200)"></span> Borde inferior en headers de tabla<br>
+        <span class="color-dot" style="background:var(--gold-100)"></span> Fondo de iconos KPI (despachos), bordes de cards
+      </p>
+    </div>
+    <div class="usage-card">
+      <div class="usage-card-title">Rojo + Ambar + Azul — Semanticos</div>
+      <p>
+        <span class="color-dot" style="background:var(--red-600)"></span> Solo destructivo: cancelar, eliminar, errores<br>
+        <span class="color-dot" style="background:var(--amber-600)"></span> Alertas intermedias: En Ruta, Novedad<br>
+        <span class="color-dot" style="background:var(--blue-600)"></span> Informativo: Registrado, pendientes, datos neutros
+      </p>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -98,18 +98,18 @@ export function AppSidebar() {
 
   return (
     <Sidebar>
-      <SidebarHeader className="border-b px-4 py-3">
+      <SidebarHeader className="border-b px-4 h-14 flex items-center">
         <div className="flex items-center gap-3">
           <Image
             src="/LogoLaCosecha.png"
             alt="La Cosecha"
-            width={56}
-            height={56}
+            width={36}
+            height={36}
             className="rounded-md"
           />
           <div className="flex flex-col">
-            <span className="text-lg font-bold tracking-tight">La Cosecha</span>
-            <span className="text-xs text-muted-foreground">SIADLP</span>
+            <span className="text-lg font-bold tracking-tight text-sidebar-primary-foreground">La Cosecha</span>
+            <span className="text-xs text-[#c5a028]">SIADLP</span>
           </div>
         </div>
       </SidebarHeader>
