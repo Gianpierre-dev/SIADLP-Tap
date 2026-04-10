@@ -307,3 +307,17 @@ model RegistroAuditoria {
   @@index([fechaCreacion])
   @@map("registro_auditoria")
 }
+
+model Empresa {
+  id                 Int      @id @default(1)
+  razonSocial        String   @map("razon_social")
+  nombreComercial    String?  @map("nombre_comercial")
+  ruc                String?  @db.VarChar(11)
+  direccion          String?
+  telefono           String?  @db.VarChar(9)
+  correo             String?
+  logoUrl            String?  @map("logo_url")
+  fechaActualizacion DateTime @updatedAt @map("fecha_actualizacion")
+
+  @@map("empresa")
+}
