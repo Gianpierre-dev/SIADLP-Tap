@@ -13,6 +13,13 @@ const RUTA_SELECT = {
   zona: true,
 } as const;
 
+const UBIGEO_INCLUDE = {
+  ruta: { select: RUTA_SELECT },
+  departamento: { select: { id: true, nombre: true } },
+  provincia: { select: { id: true, nombre: true } },
+  distrito: { select: { id: true, nombre: true } },
+} as const;
+
 @Injectable()
 export class ClientsService {
   constructor(private readonly prisma: PrismaService) {}
@@ -30,14 +37,14 @@ export class ClientsService {
 
     return this.prisma.cliente.create({
       data: dto,
-      include: { ruta: { select: RUTA_SELECT } },
+      include: UBIGEO_INCLUDE,
     });
   }
 
   async findAll() {
     return this.prisma.cliente.findMany({
       where: { activo: true },
-      include: { ruta: { select: RUTA_SELECT } },
+      include: UBIGEO_INCLUDE,
       orderBy: { razonSocial: 'asc' },
     });
   }
@@ -45,7 +52,7 @@ export class ClientsService {
   async findOne(id: number) {
     const cliente = await this.prisma.cliente.findUnique({
       where: { id },
-      include: { ruta: { select: RUTA_SELECT } },
+      include: UBIGEO_INCLUDE,
     });
 
     if (!cliente) {
@@ -71,7 +78,7 @@ export class ClientsService {
     return this.prisma.cliente.update({
       where: { id },
       data: dto,
-      include: { ruta: { select: RUTA_SELECT } },
+      include: UBIGEO_INCLUDE,
     });
   }
 
@@ -81,7 +88,7 @@ export class ClientsService {
     return this.prisma.cliente.update({
       where: { id },
       data: { activo: false },
-      include: { ruta: { select: RUTA_SELECT } },
+      include: UBIGEO_INCLUDE,
     });
   }
 }

@@ -33,6 +33,7 @@ const PATH_MODULE_MAP: Record<string, string> = {
   inventory: 'inventario',
   dispatch: 'despacho',
   audit: 'auditoria',
+  ubigeo: 'ubigeo',
 };
 
 function resolveModulo(path: string): string {

@@ -38,7 +38,15 @@ export class CreateClientDto {
 
   @IsOptional()
   @IsString()
-  ubigeo?: string;
+  departamentoId?: string;
+
+  @IsOptional()
+  @IsString()
+  provinciaId?: string;
+
+  @IsOptional()
+  @IsString()
+  distritoId?: string;
 
   @IsInt()
   @IsPositive()

@@ -40,7 +40,15 @@ export class UpdateClientDto {
 
   @IsOptional()
   @IsString()
-  ubigeo?: string;
+  departamentoId?: string;
+
+  @IsOptional()
+  @IsString()
+  provinciaId?: string;
+
+  @IsOptional()
+  @IsString()
+  distritoId?: string;
 
   @IsOptional()
   @IsInt()

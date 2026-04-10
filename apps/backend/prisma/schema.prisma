@@ -64,6 +64,43 @@ model RolPermiso {
   @@map("rol_permisos")
 }
 
+model Departamento {
+  id     String @id @db.VarChar(2)
+  nombre String
+
+  provincias Provincia[]
+  clientes   Cliente[]
+
+  @@map("departamentos")
+}
+
+model Provincia {
+  id             String @id @db.VarChar(4)
+  nombre         String
+  departamentoId String @map("departamento_id") @db.VarChar(2)
+
+  departamento Departamento @relation(fields: [departamentoId], references: [id])
+  distritos    Distrito[]
+  clientes     Cliente[]
+
+  @@index([departamentoId])
+  @@map("provincias")
+}
+
+model Distrito {
+  id             String @id @db.VarChar(6)
+  nombre         String
+  provinciaId    String @map("provincia_id") @db.VarChar(4)
+  departamentoId String @map("departamento_id") @db.VarChar(2)
+
+  provincia Provincia @relation(fields: [provinciaId], references: [id])
+  clientes  Cliente[]
+
+  @@index([provinciaId])
+  @@index([departamentoId])
+  @@map("distritos")
+}
+
 model Cliente {
   id                 Int      @id @default(autoincrement())
   razonSocial        String   @map("razon_social")
@@ -72,17 +109,25 @@ model Cliente {
   direccion          String
   telefono           String?
   contacto           String?
-  ubigeo             String?
+  departamentoId     String?  @map("departamento_id") @db.VarChar(2)
+  provinciaId        String?  @map("provincia_id") @db.VarChar(4)
+  distritoId         String?  @map("distrito_id") @db.VarChar(6)
   rutaId             Int      @map("ruta_id")
   activo             Boolean  @default(true)
   fechaCreacion      DateTime @default(now()) @map("fecha_creacion")
   fechaActualizacion DateTime @updatedAt @map("fecha_actualizacion")
 
-  ruta Ruta @relation(fields: [rutaId], references: [id], onDelete: Restrict)
+  ruta         Ruta          @relation(fields: [rutaId], references: [id], onDelete: Restrict)
+  departamento Departamento? @relation(fields: [departamentoId], references: [id])
+  provincia    Provincia?    @relation(fields: [provinciaId], references: [id])
+  distrito     Distrito?     @relation(fields: [distritoId], references: [id])
 
   pedidos Pedido[]
 
   @@index([rutaId])
+  @@index([departamentoId])
+  @@index([provinciaId])
+  @@index([distritoId])
   @@map("clientes")
 }
 

@@ -23,6 +23,11 @@ interface Route {
   nombre: string;
 }
 
+interface UbigeoOption {
+  id: string;
+  nombre: string;
+}
+
 interface Client {
   id: number;
   razonSocial: string;
@@ -31,7 +36,12 @@ interface Client {
   direccion: string;
   telefono: string | null;
   contacto: string | null;
-  ubigeo: string | null;
+  departamentoId: string | null;
+  provinciaId: string | null;
+  distritoId: string | null;
+  departamento: { id: string; nombre: string } | null;
+  provincia: { id: string; nombre: string } | null;
+  distrito: { id: string; nombre: string } | null;
   rutaId: number;
   activo: boolean;
   ruta: { nombre: string };
@@ -44,7 +54,9 @@ interface ClientForm {
   direccion: string;
   telefono: string;
   contacto: string;
-  ubigeo: string;
+  departamentoId: string;
+  provinciaId: string;
+  distritoId: string;
   rutaId: number | '';
 }
 
@@ -55,7 +67,9 @@ const EMPTY_FORM: ClientForm = {
   direccion: '',
   telefono: '',
   contacto: '',
-  ubigeo: '',
+  departamentoId: '',
+  provinciaId: '',
+  distritoId: '',
   rutaId: '',
 };
 
@@ -67,6 +81,10 @@ export default function ClientesPage() {
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState<ClientForm>(EMPTY_FORM);
+
+  const [departamentos, setDepartamentos] = useState<UbigeoOption[]>([]);
+  const [provinciasUbigeo, setProvinciasUbigeo] = useState<UbigeoOption[]>([]);
+  const [distritos, setDistritos] = useState<UbigeoOption[]>([]);
 
   const fetchItems = () => {
     setLoading(true);
@@ -81,11 +99,41 @@ export default function ClientesPage() {
     apiGet<Route[]>('/catalogs/routes')
       .then(setRoutes)
       .catch(() => toast.error('Error al cargar rutas'));
+    apiGet<UbigeoOption[]>('/ubigeo/departamentos')
+      .then(setDepartamentos)
+      .catch(() => toast.error('Error al cargar departamentos'));
   }, []);
+
+  const handleDepartamentoChange = (departamentoId: string) => {
+    setForm((prev) => ({ ...prev, departamentoId, provinciaId: '', distritoId: '' }));
+    setProvinciasUbigeo([]);
+    setDistritos([]);
+    if (departamentoId) {
+      apiGet<UbigeoOption[]>(`/ubigeo/provincias/${departamentoId}`)
+        .then(setProvinciasUbigeo)
+        .catch(() => {});
+    }
+  };
+
+  const handleProvinciaChange = (provinciaId: string) => {
+    setForm((prev) => ({ ...prev, provinciaId, distritoId: '' }));
+    setDistritos([]);
+    if (provinciaId) {
+      apiGet<UbigeoOption[]>(`/ubigeo/distritos/${provinciaId}`)
+        .then(setDistritos)
+        .catch(() => {});
+    }
+  };
+
+  const handleDistritoChange = (distritoId: string) => {
+    setForm((prev) => ({ ...prev, distritoId }));
+  };
 
   const openCreate = () => {
     setEditingId(null);
     setForm(EMPTY_FORM);
+    setProvinciasUbigeo([]);
+    setDistritos([]);
     setDialogOpen(true);
   };
 
@@ -98,9 +146,23 @@ export default function ClientesPage() {
       direccion: item.direccion,
       telefono: item.telefono ?? '',
       contacto: item.contacto ?? '',
-      ubigeo: item.ubigeo ?? '',
+      departamentoId: item.departamentoId ?? '',
+      provinciaId: item.provinciaId ?? '',
+      distritoId: item.distritoId ?? '',
       rutaId: item.rutaId,
     });
+    setProvinciasUbigeo([]);
+    setDistritos([]);
+    if (item.departamentoId) {
+      apiGet<UbigeoOption[]>(`/ubigeo/provincias/${item.departamentoId}`)
+        .then(setProvinciasUbigeo)
+        .catch(() => {});
+    }
+    if (item.provinciaId) {
+      apiGet<UbigeoOption[]>(`/ubigeo/distritos/${item.provinciaId}`)
+        .then(setDistritos)
+        .catch(() => {});
+    }
     setDialogOpen(true);
   };
 
@@ -114,7 +176,9 @@ export default function ClientesPage() {
       direccion: form.direccion,
       telefono: form.telefono || undefined,
       contacto: form.contacto || undefined,
-      ubigeo: form.ubigeo || undefined,
+      departamentoId: form.departamentoId || undefined,
+      provinciaId: form.provinciaId || undefined,
+      distritoId: form.distritoId || undefined,
       rutaId: Number(form.rutaId),
     };
     try {
@@ -151,6 +215,14 @@ export default function ClientesPage() {
     { key: 'ruc', label: 'RUC', className: 'w-32' },
     { key: 'direccion', label: 'Dirección' },
     {
+      key: 'ubicacion',
+      label: 'Ubicación',
+      render: (row) => {
+        const parts = [row.distrito?.nombre, row.provincia?.nombre].filter(Boolean);
+        return parts.length > 0 ? parts.join(', ') : '—';
+      },
+    },
+    {
       key: 'ruta',
       label: 'Ruta',
       className: 'w-36',
@@ -184,6 +256,9 @@ export default function ClientesPage() {
       ),
     },
   ];
+
+  const selectClassName =
+    'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring';
 
   return (
     <div className="space-y-6">
@@ -265,19 +340,55 @@ export default function ClientesPage() {
                   onChange={(e) => setForm({ ...form, contacto: e.target.value })}
                 />
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="ubigeo">Ubigeo</Label>
-                <Input
-                  id="ubigeo"
-                  value={form.ubigeo}
-                  onChange={(e) => setForm({ ...form, ubigeo: e.target.value })}
-                />
+              <div className="col-span-2 space-y-1.5">
+                <Label htmlFor="departamento">Departamento</Label>
+                <select
+                  id="departamento"
+                  className={selectClassName}
+                  value={form.departamentoId}
+                  onChange={(e) => handleDepartamentoChange(e.target.value)}
+                >
+                  <option value="">Seleccionar departamento</option>
+                  {departamentos.map((d) => (
+                    <option key={d.id} value={d.id}>{d.nombre}</option>
+                  ))}
+                </select>
               </div>
               <div className="space-y-1.5">
+                <Label htmlFor="provincia">Provincia</Label>
+                <select
+                  id="provincia"
+                  className={selectClassName}
+                  value={form.provinciaId}
+                  onChange={(e) => handleProvinciaChange(e.target.value)}
+                  disabled={!form.departamentoId}
+                >
+                  <option value="">Seleccionar provincia</option>
+                  {provinciasUbigeo.map((p) => (
+                    <option key={p.id} value={p.id}>{p.nombre}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="distrito">Distrito</Label>
+                <select
+                  id="distrito"
+                  className={selectClassName}
+                  value={form.distritoId}
+                  onChange={(e) => handleDistritoChange(e.target.value)}
+                  disabled={!form.provinciaId}
+                >
+                  <option value="">Seleccionar distrito</option>
+                  {distritos.map((d) => (
+                    <option key={d.id} value={d.id}>{d.nombre}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="col-span-2 space-y-1.5">
                 <Label htmlFor="rutaId">Ruta *</Label>
                 <select
                   id="rutaId"
-                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  className={selectClassName}
                   value={form.rutaId}
                   onChange={(e) => setForm({ ...form, rutaId: e.target.value === '' ? '' : Number(e.target.value) })}
                   required
