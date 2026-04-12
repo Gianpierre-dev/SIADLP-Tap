@@ -14,6 +14,7 @@ RUN pnpm install --frozen-lockfile
 # Copy source
 COPY packages/shared/ packages/shared/
 COPY apps/backend/ apps/backend/
+COPY scripts/ scripts/
 COPY .env .env
 
 # Build shared package first, then backend
@@ -24,4 +25,4 @@ RUN pnpm --filter backend build
 WORKDIR /app/apps/backend
 EXPOSE 4020
 
-CMD ["sh", "-c", "npx dotenv -e ../../.env -- npx prisma migrate deploy && npx dotenv -e ../../.env -- node dist/src/main"]
+CMD ["sh", "-c", "npx dotenv -e ../../.env -- npx prisma migrate deploy && pnpm prisma:seed && npx dotenv -e ../../.env -- node dist/src/main"]

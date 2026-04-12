@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip install:*)",
+      "Bash(python3 -c ':*)",
+      "Bash(python3 scripts/update-docx.py)",
+      "Bash(python3 scripts/update-docx-pass2.py)",
+      "Bash(python3)",
+      "Bash(pnpm --filter @siadlp/shared build)",
+      "Bash(pnpm --filter backend prisma:generate)",
+      "Bash(pnpm --filter backend build)",
+      "Bash(pnpm --filter backend lint)",
+      "Bash(rm -rf .next)",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm --filter frontend lint)",
+      "Bash(pnpm lint:*)",
+      "Bash(node -e ':*)",
+      "Bash(npx tsc:*)",
+      "Bash(echo \"Exit code: $?\")",
+      "Bash(npx dotenv:*)",
+      "Read(//tmp/**)",
+      "Bash(curl -s http://localhost:4020/api/auth/login -X POST -H 'Content-Type: application/json' -d '{\"correo\":\"admin@lacosecha.com\",\"contrasena\":\"Admin123!\"}')",
+      "Bash(curl -s http://localhost:4020/api/catalogs/clients -H \"Authorization: Bearer $\\(curl -s http://localhost:4020/api/auth/login -X POST -H 'Content-Type: application/json' -d '{\"correo\":\"admin@lacosecha.com\",\"contrasena\":\"Admin123!\"}')",
+      "Bash(python3 -c \"import sys; data=sys.stdin.read\\(\\); print\\(data[:500]\\)\")",
+      "Bash(sed:*)",
+      "WebSearch",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(pnpm --filter backend prisma:seed)"
+    ]
+  }
+}
