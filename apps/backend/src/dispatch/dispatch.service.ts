@@ -359,30 +359,58 @@ export class DispatchService {
     });
   }
 
-  async startRoute(id: number) {
-    const hoja = await this.prisma.hojaCarga.findUnique({
-      where: { id },
-    });
+  async startRoute(id: number, userId: number) {
+    return this.prisma.$transaction(async (tx) => {
+      const hoja = await tx.hojaCarga.findUnique({
+        where: { id },
+        include: { pedidos: { select: { id: true, estado: true } } },
+      });
 
-    if (!hoja) {
-      throw new NotFoundException('Hoja de carga no encontrada');
-    }
+      if (!hoja) {
+        throw new NotFoundException('Hoja de carga no encontrada');
+      }
 
-    if (hoja.estado !== DispatchStatus.DESPACHADO) {
-      throw new BadRequestException(
-        `Solo se puede iniciar ruta en estado DESPACHADO. Estado actual: ${hoja.estado}`,
-      );
-    }
+      if (hoja.estado !== DispatchStatus.DESPACHADO) {
+        throw new BadRequestException(
+          `Solo se puede iniciar ruta en estado DESPACHADO. Estado actual: ${hoja.estado}`,
+        );
+      }
 
-    return this.prisma.hojaCarga.update({
-      where: { id },
-      data: { estado: DispatchStatus.EN_RUTA },
-      include: {
-        ruta: { select: { id: true, nombre: true, zona: true } },
-        vehiculo: { select: { id: true, placa: true } },
-        chofer: { select: { id: true, nombre: true, apellido: true } },
-        _count: { select: { pedidos: true } },
-      },
+      for (const pedido of hoja.pedidos) {
+        if (
+          !canTransition(pedido.estado as OrderStatus, OrderStatus.ON_ROUTE)
+        ) {
+          throw new BadRequestException(
+            `Pedido ${pedido.id} no puede transicionar de ${pedido.estado} a ON_ROUTE`,
+          );
+        }
+      }
+
+      await tx.pedido.updateMany({
+        where: { hojaCargaId: id },
+        data: { estado: OrderStatus.ON_ROUTE },
+      });
+
+      await tx.estadoPedidoLog.createMany({
+        data: hoja.pedidos.map((p) => ({
+          pedidoId: p.id,
+          estadoAnterior: p.estado,
+          estadoNuevo: OrderStatus.ON_ROUTE,
+          motivo: `Inicio de ruta. Hoja de carga #${id}`,
+          usuarioId: userId,
+        })),
+      });
+
+      return tx.hojaCarga.update({
+        where: { id },
+        data: { estado: DispatchStatus.EN_RUTA },
+        include: {
+          ruta: { select: { id: true, nombre: true, zona: true } },
+          vehiculo: { select: { id: true, placa: true } },
+          chofer: { select: { id: true, nombre: true, apellido: true } },
+          _count: { select: { pedidos: true } },
+        },
+      });
     });
   }
 

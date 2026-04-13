@@ -54,8 +54,11 @@ export class DispatchController {
 
   @Post(':id/start-route')
   @RequirePermissions('despacho.editar')
-  startRoute(@Param('id', ParseIntPipe) id: number) {
-    return this.dispatchService.startRoute(id);
+  startRoute(
+    @Param('id', ParseIntPipe) id: number,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    return this.dispatchService.startRoute(id, req.user.id);
   }
 
   @Get(':id')
