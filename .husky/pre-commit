@@ -1,5 +1,1 @@
-# Pre-commit hook
-# Lint global está roto (32 errores en código preexistente: empresa.service.ts, ubigeo.service.ts)
-# Se va a arreglar en Fase 7 (CI/CD) y entonces re-habilitamos lint-staged aquí.
-# Por ahora, el pre-push corre los tests (suficiente protección durante Fase 2-6).
-exit 0
+pnpm exec lint-staged

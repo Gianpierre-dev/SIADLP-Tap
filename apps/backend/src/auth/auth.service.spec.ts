@@ -155,11 +155,15 @@ describe('AuthService', () => {
       prisma.usuario.findUnique.mockResolvedValueOnce(usuario);
       mockedBcrypt.compare.mockResolvedValue(false as never);
 
-      const errorPasswordWrong = await service.login(validDto).catch((e) => e);
+      const errorPasswordWrong = await service
+        .login(validDto)
+        .catch((e: Error) => e);
 
       // Arrange — caso "correo no existe"
       prisma.usuario.findUnique.mockResolvedValueOnce(null);
-      const errorEmailWrong = await service.login(validDto).catch((e) => e);
+      const errorEmailWrong = await service
+        .login(validDto)
+        .catch((e: Error) => e);
 
       // Assert — ambos errores son idénticos (no leak de info)
       expect(errorPasswordWrong.message).toBe(errorEmailWrong.message);

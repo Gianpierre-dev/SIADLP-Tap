@@ -211,13 +211,15 @@ describe('DispatchService — registerDelivery', () => {
 
     service = module.get<DispatchService>(DispatchService);
 
-    tx.pedido.findUnique.mockImplementation((args) => {
-      // findUniqueOrThrow path used in registerDelivery
-      if (args.where?.id) {
-        return Promise.resolve({ estado: OrderStatus.ON_ROUTE });
-      }
-      return Promise.resolve(null);
-    });
+    tx.pedido.findUnique.mockImplementation(
+      (args: { where?: { id?: number } }) => {
+        // findUniqueOrThrow path used in registerDelivery
+        if (args.where?.id) {
+          return Promise.resolve({ estado: OrderStatus.ON_ROUTE });
+        }
+        return Promise.resolve(null);
+      },
+    );
     // Mock for findUniqueOrThrow (Prisma calls findUnique under the hood for our mock)
     (
       tx.pedido as TxMock['pedido'] & {
