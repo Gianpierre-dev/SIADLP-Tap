@@ -7,9 +7,29 @@
     "dev:frontend": "pnpm --filter frontend dev",
     "build": "pnpm -r run build",
     "lint": "pnpm -r run lint",
-    "test": "pnpm --filter backend test"
+    "test": "pnpm -r run test",
+    "test:backend": "pnpm --filter backend test",
+    "test:backend:integration": "pnpm --filter backend test:integration",
+    "test:backend:e2e": "pnpm --filter backend test:e2e",
+    "test:frontend": "pnpm --filter frontend test",
+    "test:frontend:e2e": "pnpm --filter frontend test:e2e",
+    "test:cov": "pnpm -r run test:cov",
+    "test:all": "pnpm test && pnpm test:backend:integration && pnpm test:backend:e2e && pnpm test:frontend:e2e",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "apps/backend/src/**/*.ts": [
+      "pnpm --filter backend lint"
+    ],
+    "apps/frontend/src/**/*.{ts,tsx}": [
+      "pnpm --filter frontend lint"
+    ]
   },
   "engines": {
     "node": ">=20"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.2"
   }
 }

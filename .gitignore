@@ -8,3 +8,12 @@ dist/
 .superpowers/
 docs/superpowers/
 docs/Grupo_16_*
+
+# Testing artifacts
+coverage/
+playwright-report/
+test-results/
+.vitest-cache/
+
+# Local screenshots from chat sessions (not project assets)
+docs/[0-9]*.png
