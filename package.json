@@ -18,11 +18,14 @@
     "prepare": "husky"
   },
   "lint-staged": {
-    "apps/backend/src/**/*.ts": [
-      "pnpm --filter backend lint"
+    "apps/backend/**/*.ts": [
+      "eslint --fix --no-error-on-unmatched-pattern"
     ],
-    "apps/frontend/src/**/*.{ts,tsx}": [
-      "pnpm --filter frontend lint"
+    "apps/frontend/**/*.{ts,tsx}": [
+      "eslint --fix --no-error-on-unmatched-pattern"
+    ],
+    "packages/shared/**/*.ts": [
+      "tsc --noEmit -p packages/shared/tsconfig.json"
     ]
   },
   "engines": {
