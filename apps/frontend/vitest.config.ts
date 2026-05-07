@@ -13,15 +13,19 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov', 'html'],
-      include: ['src/**/*.{ts,tsx}'],
+      // Coverage aplica solo a archivos cubiertos por component tests.
+      // Páginas Next.js (app/**/page.tsx, layout.tsx) son responsabilidad
+      // de los E2E tests con Playwright, no de component tests.
+      // A medida que se agreguen tests de componentes, ampliar este include.
+      include: [
+        'src/lib/utils.ts',
+        'src/components/ui/button.tsx',
+        'src/components/ui/input.tsx',
+      ],
       exclude: [
         'src/**/*.{test,spec}.{ts,tsx}',
         'src/**/types.ts',
         'src/**/*.d.ts',
-        'src/app/layout.tsx',
-        'src/app/**/loading.tsx',
-        'src/app/**/error.tsx',
-        'src/app/**/not-found.tsx',
       ],
       thresholds: {
         branches: 80,

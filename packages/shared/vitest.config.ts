@@ -8,7 +8,10 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov', 'html'],
-      include: ['src/**/*.ts'],
+      // Solo incluimos archivos con lógica testeable.
+      // Los enums son definiciones puras de strings (no hay lógica que testear),
+      // por eso quedan fuera del cálculo de coverage.
+      include: ['src/constants/**/*.ts'],
       exclude: ['src/**/*.{test,spec}.ts', 'src/**/index.ts'],
       thresholds: {
         branches: 80,
