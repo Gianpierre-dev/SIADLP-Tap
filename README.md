@@ -1,10 +1,40 @@
 # SIADLP - Sistema Integral de Administracion, Distribucion y Logistica de Papa
 
+[![CI](https://github.com/Gianpierre-dev/SIADLP-Tap/actions/workflows/ci.yml/badge.svg)](https://github.com/Gianpierre-dev/SIADLP-Tap/actions/workflows/ci.yml)
+![Tests](https://img.shields.io/badge/tests-165_passing-brightgreen)
+![Coverage](https://img.shields.io/badge/branch_coverage-%E2%89%A580%25-brightgreen)
+![Stack](https://img.shields.io/badge/stack-NestJS_%2B_Next.js_16-blue)
+![License](https://img.shields.io/badge/license-UNLICENSED-lightgrey)
+
 **La Cosecha S.A.C.** - Distribuidora de papas a pollerias en Lima, Peru.
 
 Trabajo de Aplicacion Profesional (TAP) para obtener el titulo de Tecnico Profesional en Desarrollo de Sistemas de Informacion - IDAT.
 
 **Autores:** Gianpierre Wong - Paulo Wong
+
+---
+
+## Testing
+
+El proyecto cuenta con **119 tests automatizados** distribuidos en la pirámide de testing:
+
+| Nivel | Suite | Tests | Stack |
+|-------|-------|-------|-------|
+| Unit (shared) | `packages/shared` | 19 | Vitest |
+| Unit (backend) | `apps/backend/src` | 27 | Jest + @nestjs/testing |
+| Integration | `apps/backend/test/integration` | 55 | Jest + pglite |
+| E2E (backend) | `apps/backend/test` | 12 | Jest + supertest |
+| Component (frontend) | `apps/frontend/src` | 44 | Vitest + RTL |
+| E2E (frontend) | `apps/frontend/tests-e2e` | 8 | Playwright |
+| **Total** | | **165** | |
+
+**Documentación completa:** ver [`docs/TESTING.md`](docs/TESTING.md) — incluye filosofía, conceptos (AAA, test doubles, mutation testing), stack técnico justificado y plan de ejecución.
+
+```bash
+pnpm test                          # todos los tests
+pnpm test:backend:integration      # integration con pglite
+pnpm test:frontend:e2e             # Playwright
+```
 
 ---
 
