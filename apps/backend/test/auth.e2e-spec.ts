@@ -8,6 +8,7 @@ import { AuthController } from '../src/auth/auth.controller';
 import { AuthService } from '../src/auth/auth.service';
 import { JwtAuthGuard } from '../src/auth/guards/jwt-auth.guard';
 import { JwtStrategy } from '../src/auth/strategies/jwt.strategy';
+import { LoggerModule } from '../src/logger/logger.module';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { createTestApp } from './helpers/e2e-app';
 
@@ -67,6 +68,9 @@ describe('Auth E2E (POST /api/auth/login)', () => {
 
     app = await createTestApp({
       imports: [
+        // LoggerModule.register() provee PinoLogger (NODE_ENV=test → silent).
+        // Debe ser una llamada en runtime — ver comentario en logger/logger.module.ts.
+        LoggerModule.register(),
         JwtModule.register({
           secret: TEST_JWT_SECRET,
           signOptions: { expiresIn: '1h' },
@@ -258,6 +262,7 @@ describe('JwtAuthGuard E2E (rutas protegidas)', () => {
 
     app = await createTestApp({
       imports: [
+        LoggerModule.register(),
         JwtModule.register({
           secret: TEST_JWT_SECRET,
           signOptions: { expiresIn: '1h' },

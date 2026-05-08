@@ -1,7 +1,8 @@
 import helmet from 'helmet';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { ValidationPipe, Logger } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
+import { Logger } from 'nestjs-pino';
 import { json, urlencoded } from 'express';
 import { join } from 'path';
 import { AppModule } from './app.module';
@@ -33,14 +34,16 @@ function validateEnv(): void {
 async function bootstrap() {
   validateEnv();
 
+  // bufferLogs: true holds early framework logs until our nestjs-pino Logger is wired in,
+  // so module-init messages also flow through Pino (structured JSON in prod, pretty in dev).
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-    // Hide stack traces in production logs and responses (NestJS default exception filter
-    // already redacts internals, this just lowers logger verbosity).
-    logger:
-      process.env['NODE_ENV'] === 'production'
-        ? ['error', 'warn', 'log']
-        : ['error', 'warn', 'log', 'debug', 'verbose'],
+    bufferLogs: true,
   });
+
+  // Replace the default Nest logger with the Pino-based one. From this point on,
+  // every Logger call (including framework internals) uses structured logging
+  // with the redaction, serializers, and request-id correlation we configured.
+  app.useLogger(app.get(Logger));
 
   // Trust the first proxy hop so req.ip reflects X-Forwarded-For (Railway / reverse proxies).
   // Required for accurate audit logs and per-IP throttling.
@@ -139,6 +142,11 @@ async function bootstrap() {
 
   const port = process.env['API_PORT']!;
   await app.listen(port);
-  Logger.log(`Application running on port ${port}`, 'Bootstrap');
+
+  // Use the Pino logger directly (it implements the same `log` API as the
+  // built-in Logger). This message flows through Pino so it gets the JSON
+  // shape in prod and pretty colors in dev.
+  const logger = app.get(Logger);
+  logger.log(`Application running on port ${port}`, 'Bootstrap');
 }
 void bootstrap();
