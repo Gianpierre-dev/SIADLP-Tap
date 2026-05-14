@@ -3,6 +3,7 @@
 [![CI](https://github.com/Gianpierre-dev/SIADLP-Tap/actions/workflows/ci.yml/badge.svg)](https://github.com/Gianpierre-dev/SIADLP-Tap/actions/workflows/ci.yml)
 ![Tests](https://img.shields.io/badge/tests-362_passing-brightgreen)
 ![Coverage](https://img.shields.io/badge/branch_coverage-%E2%89%A580%25-brightgreen)
+![Mutation](https://img.shields.io/badge/mutation_score-99.11%25-brightgreen)
 ![Vulnerabilities](https://img.shields.io/badge/vulnerabilities-0-brightgreen)
 ![Lighthouse](https://img.shields.io/badge/lighthouse-96%E2%80%93100-brightgreen)
 ![Stack](https://img.shields.io/badge/stack-NestJS_%2B_Next.js_16-blue)
