@@ -17,3 +17,7 @@ test-results/
 
 # Local screenshots from chat sessions (not project assets)
 docs/[0-9]*.png
+
+# Stryker mutation testing reports
+apps/backend/stryker-report/
+apps/backend/.stryker-tmp/

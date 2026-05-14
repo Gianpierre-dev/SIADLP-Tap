@@ -8,10 +8,26 @@ import { AuthController } from '../src/auth/auth.controller';
 import { AuthService } from '../src/auth/auth.service';
 import { JwtAuthGuard } from '../src/auth/guards/jwt-auth.guard';
 import { JwtStrategy } from '../src/auth/strategies/jwt.strategy';
+import { LoggerModule } from '../src/logger/logger.module';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { createTestApp } from './helpers/e2e-app';
 
 const TEST_JWT_SECRET = 'test-jwt-secret-do-not-use-in-prod';
+
+interface LoginResponseBody {
+  accessToken: string;
+  usuario: {
+    id: number;
+    correo: string;
+    nombre: string;
+    permisos: string[];
+  };
+}
+
+interface ErrorResponseBody {
+  message: string | string[];
+  statusCode: number;
+}
 
 interface UsuarioRecord {
   id: number;
@@ -34,21 +50,27 @@ describe('Auth E2E (POST /api/auth/login)', () => {
 
     const prismaMock = {
       usuario: {
-        findUnique: jest.fn(({ where }: { where: { correo?: string; id?: number } }) => {
-          if (where.correo) return Promise.resolve(usuariosMock.get(where.correo) ?? null);
-          if (where.id) {
-            for (const u of usuariosMock.values()) {
-              if (u.id === where.id) return Promise.resolve(u);
+        findUnique: jest.fn(
+          ({ where }: { where: { correo?: string; id?: number } }) => {
+            if (where.correo)
+              return Promise.resolve(usuariosMock.get(where.correo) ?? null);
+            if (where.id) {
+              for (const u of usuariosMock.values()) {
+                if (u.id === where.id) return Promise.resolve(u);
+              }
             }
-          }
-          return Promise.resolve(null);
-        }),
+            return Promise.resolve(null);
+          },
+        ),
         update: jest.fn(),
       },
     };
 
     app = await createTestApp({
       imports: [
+        // LoggerModule.register() provee PinoLogger (NODE_ENV=test → silent).
+        // Debe ser una llamada en runtime — ver comentario en logger/logger.module.ts.
+        LoggerModule.register(),
         JwtModule.register({
           secret: TEST_JWT_SECRET,
           signOptions: { expiresIn: '1h' },
@@ -106,9 +128,10 @@ describe('Auth E2E (POST /api/auth/login)', () => {
         });
 
       expect(response.status).toBe(201);
-      expect(response.body).toHaveProperty('accessToken');
-      expect(response.body.accessToken).toMatch(/^eyJ/); // JWT empieza con eyJ
-      expect(response.body.usuario).toEqual({
+      const body = response.body as LoginResponseBody;
+      expect(body).toHaveProperty('accessToken');
+      expect(body.accessToken).toMatch(/^eyJ/); // JWT empieza con eyJ
+      expect(body.usuario).toEqual({
         id: 1,
         correo: 'admin@siadlp.test',
         nombre: 'Admin',
@@ -125,11 +148,12 @@ describe('Auth E2E (POST /api/auth/login)', () => {
         });
 
       const jwtService = new JwtService({ secret: TEST_JWT_SECRET });
+      const body = response.body as LoginResponseBody;
       const decoded = jwtService.verify<{
         sub: number;
         correo: string;
         rolId: number;
-      }>(response.body.accessToken);
+      }>(body.accessToken);
 
       expect(decoded.sub).toBe(1);
       expect(decoded.correo).toBe('admin@siadlp.test');
@@ -147,7 +171,8 @@ describe('Auth E2E (POST /api/auth/login)', () => {
         });
 
       expect(response.status).toBe(401);
-      expect(response.body.message).toBe('Credenciales inválidas');
+      const body = response.body as ErrorResponseBody;
+      expect(body.message).toBe('Credenciales inválidas');
     });
 
     it('POST /api/auth/login con usuario inactivo → 401', async () => {
@@ -180,7 +205,8 @@ describe('Auth E2E (POST /api/auth/login)', () => {
         .send({ contrasena: 'password123' });
 
       expect(response.status).toBe(400);
-      expect(response.body.message).toEqual(
+      const body = response.body as ErrorResponseBody;
+      expect(body.message).toEqual(
         expect.arrayContaining([expect.stringMatching(/correo/i)]),
       );
     });
@@ -236,6 +262,7 @@ describe('JwtAuthGuard E2E (rutas protegidas)', () => {
 
     app = await createTestApp({
       imports: [
+        LoggerModule.register(),
         JwtModule.register({
           secret: TEST_JWT_SECRET,
           signOptions: { expiresIn: '1h' },

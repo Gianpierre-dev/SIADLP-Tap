@@ -16,7 +16,8 @@ import {
 export async function createTestApp(
   metadata: ModuleMetadata,
 ): Promise<INestApplication> {
-  const module: TestingModule = await Test.createTestingModule(metadata).compile();
+  const module: TestingModule =
+    await Test.createTestingModule(metadata).compile();
   const app = module.createNestApplication();
   app.setGlobalPrefix('api');
   app.useGlobalPipes(
