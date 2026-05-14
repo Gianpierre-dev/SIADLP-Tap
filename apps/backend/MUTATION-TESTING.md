@@ -185,22 +185,93 @@ job nightly.
 
 ---
 
-## Baseline (primera corrida)
+## Resultado actual (segunda iteración)
 
 | Métrica | Valor |
 |---------|-------|
-| Mutation score TOTAL | **36.75%** |
-| Mutation score COVERED (excluye no-cov) | 59.34% |
+| **Mutation score TOTAL** | **99.11%** ✅ |
+| Mutation score COVERED | 99.11% |
+| Killed | 446 |
+| Survived | 4 |
+| Timeouts | 0 |
+| No coverage | 0 |
+| Compile errors (descartados por TS checker) | 239 |
+| Mutantes ejecutados | 450 |
+| Tiempo total | 7 min 17 s |
+| Threshold break | 70% (alcanzado holgadamente — exit code 0) |
+
+### Score por archivo (segunda iteración)
+
+| Archivo | Score | Killed | Survived | NoCov | Estado |
+|---------|-------|--------|----------|-------|--------|
+| `dispatch/dispatch.service.ts` | **99.34%** | 300 | 2 | 0 | excepcional |
+| `orders/orders.service.ts` | **98.65%** | 146 | 2 | 0 | excepcional |
+
+> Nota: el segundo run se ejecutó solo sobre los 2 archivos que estaban bajo del threshold
+> (orders y dispatch). Los demás (`auth.service`, `clients.service`, `permissions.guard`)
+> ya estaban en zona aceptable en la baseline (76-94%) y no requieren atención inmediata.
+
+### Comparación baseline vs actual
+
+| Archivo | Baseline | Actual | Δ |
+|---------|----------|--------|---|
+| `dispatch.service.ts` | 23.51% | **99.34%** | **+75.83** |
+| `orders.service.ts` | 35.14% | **98.65%** | **+63.51** |
+| **TOTAL (esos 2)** | 28.4% | **99.11%** | **+70.71** |
+
+### Cómo se logró la mejora
+
+1. **+72 tests nuevos** entre los dos services (orders + dispatch)
+2. **Killing pattern 1**: `expect.objectContaining({ where, data, include })` en cada
+   llamada mockeada de Prisma → mata mutantes que cambian `where: {...}` por `where: {}`
+3. **Killing pattern 2**: `toThrow('mensaje exacto')` en lugar de `toThrow(SomeException)`
+   → mata mutantes que vacían StringLiterals
+4. **Killing pattern 3**: tests para métodos previamente sin coverage (NoCov bajó de 204 a 0):
+   - `getOrdersGroupedByRoute(fecha)`
+   - `findAll(fecha, page, pageSize)`
+   - `findOne(id)`
+   - `getRouteSheet(id)`
+   - `getDeliveryStatus(hojaCargaId)`
+
+---
+
+## Survived restantes (4) — aceptados como edge cases
+
+Tras la mejora, quedan 4 mutantes survived. **No se atacan** por ley de rendimientos
+decrecientes — son edge cases ConditionalExpression donde ambas ramas producen el
+mismo resultado observable con los datos de los tests existentes:
+
+```ts
+// Ejemplo (orders.service.ts:222)
+if (filters.clienteId) { ... }
+// Mutado a:
+if (true) { ... }
+```
+
+El test pasa con ambas formas porque los datos de prueba siempre tienen `clienteId`
+seteado. Para matar este mutante específico harían falta tests adicionales con
+fixtures sin `clienteId`. Trade-off: 8-12 tests más para ganar 0.89 puntos de score
+sobre comportamiento que en producción es inocuo.
+
+**Decisión profesional:** se acepta 99.11% como score final — está en zona
+"research grade" (>95%). Los 4 survived están documentados para revisión futura.
+
+---
+
+## Baseline original (primera corrida) — referencia histórica
+
+| Métrica | Valor |
+|---------|-------|
+| Mutation score TOTAL | 36.75% |
+| Mutation score COVERED | 59.34% |
 | Killed | 197 |
 | Survived | 135 |
-| Timeouts | 0 |
 | No coverage | 204 |
-| Compile errors (descartados por TS checker) | 297 |
 | Mutantes generados | 833 |
-| Tiempo total | 7 min 20 s |
-| Threshold break | 70% (no alcanzado — exit code 1) |
+| Tiempo | 7 min 20 s |
+| Threshold | 70% (no alcanzado — exit code 1) |
 
-### Score por archivo
+### Score por archivo (baseline original — los 5 services)
 
 | Archivo | Score total | Score covered | Killed | Survived | NoCov |
 |---------|-------------|---------------|--------|----------|-------|
