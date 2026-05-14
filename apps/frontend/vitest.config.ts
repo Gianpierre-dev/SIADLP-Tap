@@ -19,8 +19,13 @@ export default defineConfig({
       // A medida que se agreguen tests de componentes, ampliar este include.
       include: [
         'src/lib/utils.ts',
+        'src/lib/api.ts',
+        'src/lib/auth.ts',
+        'src/lib/empresa.ts',
         'src/components/ui/button.tsx',
         'src/components/ui/input.tsx',
+        'src/components/ui/badge.tsx',
+        'src/components/ui/label.tsx',
       ],
       exclude: [
         'src/**/*.{test,spec}.{ts,tsx}',

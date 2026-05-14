@@ -100,6 +100,26 @@ export class DispatchService {
 
   async create(dto: CreateLoadSheetDto, userId: number) {
     return this.prisma.$transaction(async (tx) => {
+      // 1. Validate ruta exists and is active (immutable dependency, fail fast)
+      const ruta = await tx.ruta.findUnique({ where: { id: dto.rutaId } });
+      if (!ruta || !ruta.activa)
+        throw new BadRequestException('Ruta no encontrada o inactiva');
+
+      // 2. Validate vehiculo exists and is active
+      const vehiculo = await tx.vehiculo.findUnique({
+        where: { id: dto.vehiculoId },
+      });
+      if (!vehiculo || !vehiculo.activo)
+        throw new BadRequestException('Vehículo no encontrado o inactivo');
+
+      // 3. Validate chofer exists and is active
+      const chofer = await tx.chofer.findUnique({
+        where: { id: dto.choferId },
+      });
+      if (!chofer || !chofer.activo)
+        throw new BadRequestException('Chofer no encontrado o inactivo');
+
+      // 4. Fetch pedidos (after immutable dependencies are validated)
       const pedidos = await tx.pedido.findMany({
         where: { id: { in: dto.pedidoIds } },
         include: { detalles: true },
@@ -109,6 +129,7 @@ export class DispatchService {
         throw new NotFoundException('Uno o más pedidos no fueron encontrados');
       }
 
+      // 5. Validate pedidos are in CONFIRMED state and not already assigned
       const notConfirmed = pedidos.filter(
         (p) => p.estado !== OrderStatus.CONFIRMED,
       );
@@ -132,24 +153,7 @@ export class DispatchService {
         );
       }, 0);
 
-      // Validate ruta, vehiculo and chofer exist and are active
-      const ruta = await tx.ruta.findUnique({ where: { id: dto.rutaId } });
-      if (!ruta || !ruta.activa)
-        throw new BadRequestException('Ruta no encontrada o inactiva');
-
-      const vehiculo = await tx.vehiculo.findUnique({
-        where: { id: dto.vehiculoId },
-      });
-      if (!vehiculo || !vehiculo.activo)
-        throw new BadRequestException('Vehículo no encontrado o inactivo');
-
-      const chofer = await tx.chofer.findUnique({
-        where: { id: dto.choferId },
-      });
-      if (!chofer || !chofer.activo)
-        throw new BadRequestException('Chofer no encontrado o inactivo');
-
-      // Validate vehicle capacity
+      // 6. Validate vehicle capacity (depends on pedidos weight, runs last)
       if (totalKg > vehiculo.capacidadKg.toNumber()) {
         throw new BadRequestException(
           `El peso total (${totalKg.toFixed(2)} kg) excede la capacidad del vehículo (${vehiculo.capacidadKg.toNumber()} kg)`,

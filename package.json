@@ -31,5 +31,15 @@
   "devDependencies": {
     "husky": "^9.1.7",
     "lint-staged": "^17.0.2"
+  },
+  "pnpm": {
+    "overrides": {
+      "fast-uri@<3.1.2": ">=3.1.2",
+      "ip-address@<10.1.1": ">=10.1.1",
+      "hono@<4.12.18": ">=4.12.18",
+      "postcss@<8.5.10": ">=8.5.10",
+      "@hono/node-server@<1.19.13": ">=1.19.13",
+      "picomatch@>=4.0.0 <4.0.4": ">=4.0.4"
+    }
   }
 }

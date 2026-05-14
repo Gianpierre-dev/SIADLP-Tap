@@ -17,11 +17,8 @@
   "disableTypeChecks": false,
   "coverageAnalysis": "perTest",
   "mutate": [
-    "src/auth/auth.service.ts",
     "src/dispatch/dispatch.service.ts",
-    "src/orders/orders.service.ts",
-    "src/catalogs/clients/clients.service.ts",
-    "src/auth/guards/permissions.guard.ts"
+    "src/orders/orders.service.ts"
   ],
   "ignorePatterns": [
     "dist",

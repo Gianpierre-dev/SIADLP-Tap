@@ -1,9 +1,10 @@
 # SIADLP - Sistema Integral de Administracion, Distribucion y Logistica de Papa
 
 [![CI](https://github.com/Gianpierre-dev/SIADLP-Tap/actions/workflows/ci.yml/badge.svg)](https://github.com/Gianpierre-dev/SIADLP-Tap/actions/workflows/ci.yml)
-![Tests](https://img.shields.io/badge/tests-238_passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-362_passing-brightgreen)
 ![Coverage](https://img.shields.io/badge/branch_coverage-%E2%89%A580%25-brightgreen)
-![Mutation](https://img.shields.io/badge/mutation_score-baseline_36%25-yellow)
+![Vulnerabilities](https://img.shields.io/badge/vulnerabilities-0-brightgreen)
+![Lighthouse](https://img.shields.io/badge/lighthouse-96%E2%80%93100-brightgreen)
 ![Stack](https://img.shields.io/badge/stack-NestJS_%2B_Next.js_16-blue)
 ![License](https://img.shields.io/badge/license-UNLICENSED-lightgrey)
 
@@ -23,21 +24,22 @@ Trabajo de Aplicacion Profesional (TAP) para obtener el titulo de Tecnico Profes
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Arquitectura del sistema (C4 model, sequence, ER, state machines) |
 | [`docs/SECURITY-AUDIT.md`](docs/SECURITY-AUDIT.md) | Audit OWASP Top 10 con fixes aplicados |
 | [`docs/RUNBOOK.md`](docs/RUNBOOK.md) | Manual operacional ante incidentes (10 síntomas + 7 procedimientos) |
+| [`docs/LIGHTHOUSE.md`](docs/LIGHTHOUSE.md) | Lighthouse audit del frontend (Performance 96-100, A11y 100) |
 | [`docs/adr/`](docs/adr/) | 5 Architecture Decision Records |
 
 ## Testing
 
-**238 tests automatizados** distribuidos en la pirámide de testing:
+**362 tests automatizados** distribuidos en la pirámide de testing:
 
 | Nivel | Suite | Tests | Stack |
 |-------|-------|-------|-------|
 | Unit (shared) | `packages/shared` | 19 | Vitest |
-| Unit (backend) | `apps/backend/src` | 100 | Jest + @nestjs/testing |
+| Unit (backend) | `apps/backend/src` | 176 | Jest + @nestjs/testing |
 | Integration | `apps/backend/test/integration` | 55 | Jest + pglite |
 | E2E (backend) | `apps/backend/test` | 12 | Jest + supertest |
-| Component (frontend) | `apps/frontend/src` | 44 | Vitest + RTL |
+| Component (frontend) | `apps/frontend/src` | 92 | Vitest + RTL |
 | E2E (frontend) | `apps/frontend/tests-e2e` | 8 | Playwright |
-| **Total** | | **238** | |
+| **Total** | | **362** | |
 
 **Mutation testing:** Stryker configurado sobre 5 services críticos. Baseline 36.75% — ver [`apps/backend/MUTATION-TESTING.md`](apps/backend/MUTATION-TESTING.md).
 

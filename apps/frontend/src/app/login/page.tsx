@@ -74,8 +74,10 @@ export default function LoginPage() {
             alt={empresa?.razonSocial ?? 'La Cosecha S.A.C.'}
             width={160}
             height={160}
+            sizes="160px"
             className="mx-auto"
             priority
+            fetchPriority="high"
             unoptimized={!!empresa?.logoUrl}
           />
           <CardTitle className="text-2xl font-bold text-[#33691e]">SIADLP</CardTitle>

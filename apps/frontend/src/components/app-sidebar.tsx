@@ -121,6 +121,7 @@ export function AppSidebar() {
             alt={empresaNombre}
             width={56}
             height={56}
+            sizes="56px"
             className="rounded-md shrink-0"
             priority
             unoptimized={!!empresa?.logoUrl}

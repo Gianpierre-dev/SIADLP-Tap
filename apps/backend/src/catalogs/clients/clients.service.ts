@@ -1,5 +1,6 @@
 import {
   Injectable,
+  BadRequestException,
   ConflictException,
   NotFoundException,
 } from '@nestjs/common';
@@ -32,6 +33,41 @@ export class ClientsService {
 
       if (existing) {
         throw new ConflictException(`El RUC ${dto.ruc} ya está registrado`);
+      }
+    }
+
+    // Validate FKs explicitly to return user-friendly errors instead of P2003
+    const ruta = await this.prisma.ruta.findUnique({
+      where: { id: dto.rutaId },
+    });
+    if (!ruta || !ruta.activa) {
+      throw new BadRequestException('Ruta no encontrada o inactiva');
+    }
+
+    if (dto.departamentoId) {
+      const departamento = await this.prisma.departamento.findUnique({
+        where: { id: dto.departamentoId },
+      });
+      if (!departamento) {
+        throw new BadRequestException('Departamento no encontrado');
+      }
+    }
+
+    if (dto.provinciaId) {
+      const provincia = await this.prisma.provincia.findUnique({
+        where: { id: dto.provinciaId },
+      });
+      if (!provincia) {
+        throw new BadRequestException('Provincia no encontrada');
+      }
+    }
+
+    if (dto.distritoId) {
+      const distrito = await this.prisma.distrito.findUnique({
+        where: { id: dto.distritoId },
+      });
+      if (!distrito) {
+        throw new BadRequestException('Distrito no encontrado');
       }
     }
 
