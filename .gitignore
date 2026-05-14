@@ -14,6 +14,7 @@ coverage/
 playwright-report/
 test-results/
 .vitest-cache/
+.lighthouse/
 
 # Local screenshots from chat sessions (not project assets)
 docs/[0-9]*.png

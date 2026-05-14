@@ -373,7 +373,14 @@ describe('DispatchService — create (hoja de carga)', () => {
   });
 
   it('rechaza con NotFoundException si algún pedidoId no existe', async () => {
-    // Arrange — solo encuentra 1 de los 2 pedidos
+    // Arrange — ruta/vehículo/chofer válidos pero solo encuentra 1 de los 2 pedidos
+    tx.ruta.findUnique.mockResolvedValue({ id: 1, activa: true });
+    tx.vehiculo.findUnique.mockResolvedValue({
+      id: 2,
+      activo: true,
+      capacidadKg: dec(100),
+    });
+    tx.chofer.findUnique.mockResolvedValue({ id: 3, activo: true });
     tx.pedido.findMany.mockResolvedValue([
       buildPedidoForCreate(10, OrderStatus.CONFIRMED, [{ cantidad: 5 }]),
     ]);
@@ -386,7 +393,14 @@ describe('DispatchService — create (hoja de carga)', () => {
   });
 
   it('rechaza con BadRequestException si algún pedido no está en CONFIRMED', async () => {
-    // Arrange
+    // Arrange — ruta/vehículo/chofer válidos
+    tx.ruta.findUnique.mockResolvedValue({ id: 1, activa: true });
+    tx.vehiculo.findUnique.mockResolvedValue({
+      id: 2,
+      activo: true,
+      capacidadKg: dec(100),
+    });
+    tx.chofer.findUnique.mockResolvedValue({ id: 3, activo: true });
     tx.pedido.findMany.mockResolvedValue([
       buildPedidoForCreate(10, OrderStatus.CONFIRMED, [{ cantidad: 5 }]),
       buildPedidoForCreate(20, OrderStatus.REGISTERED, [{ cantidad: 3 }]),
@@ -401,7 +415,14 @@ describe('DispatchService — create (hoja de carga)', () => {
   });
 
   it('rechaza con BadRequestException si algún pedido ya está asignado a otra hoja', async () => {
-    // Arrange — pedido 20 ya tiene hojaCargaId
+    // Arrange — ruta/vehículo/chofer válidos; pedido 20 ya tiene hojaCargaId
+    tx.ruta.findUnique.mockResolvedValue({ id: 1, activa: true });
+    tx.vehiculo.findUnique.mockResolvedValue({
+      id: 2,
+      activo: true,
+      capacidadKg: dec(100),
+    });
+    tx.chofer.findUnique.mockResolvedValue({ id: 3, activo: true });
     tx.pedido.findMany.mockResolvedValue([
       buildPedidoForCreate(10, OrderStatus.CONFIRMED, [{ cantidad: 5 }]),
       buildPedidoForCreate(20, OrderStatus.CONFIRMED, [{ cantidad: 3 }], 999),

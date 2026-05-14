@@ -9,6 +9,7 @@ import { PERMISSIONS_KEY } from '../decorators/permissions.decorator';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { PrismaService } from '../../prisma/prisma.service';
 
+/** TTL del cache de permisos por rol: 5 minutos. */
 const CACHE_TTL_MS = 5 * 60 * 1_000;
 
 interface PermissionCacheEntry {
@@ -18,6 +19,14 @@ interface PermissionCacheEntry {
 
 @Injectable()
 export class PermissionsGuard implements CanActivate {
+  /**
+   * Cache de permisos por rolId, compartido entre requests.
+   *
+   * IMPORTANTE: asume que este guard se registra con scope SINGLETON
+   * (default de NestJS). NO cambiar a scope REQUEST sin reescribir esta
+   * lógica: con scope REQUEST se crearía una nueva instancia (y por ende
+   * un Map vacío) en cada request, anulando el beneficio del cache.
+   */
   private readonly cache = new Map<number, PermissionCacheEntry>();
 
   constructor(

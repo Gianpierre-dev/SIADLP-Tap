@@ -147,6 +147,7 @@ export default function ConfiguracionPage() {
                   alt="Logo"
                   width={160}
                   height={160}
+                  sizes="160px"
                   className="object-contain"
                 />
               )}

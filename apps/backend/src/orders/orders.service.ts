@@ -60,6 +60,7 @@ export class OrdersService {
         data: {
           clienteId: dto.clienteId,
           fechaEntrega: new Date(dto.fechaEntrega),
+          estado: OrderStatus.REGISTERED,
           observacion: dto.observacion,
           creadoPorId: userId,
           detalles: {

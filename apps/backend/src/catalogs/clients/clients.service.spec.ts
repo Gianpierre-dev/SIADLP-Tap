@@ -1,5 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 
 import { ClientsService } from './clients.service';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -14,6 +18,10 @@ type PrismaMock = {
     create: jest.Mock;
     update: jest.Mock;
   };
+  ruta: { findUnique: jest.Mock };
+  departamento: { findUnique: jest.Mock };
+  provincia: { findUnique: jest.Mock };
+  distrito: { findUnique: jest.Mock };
 };
 
 // Typed wrappers to keep TS strict-mode happy (jest's expect.* return `any`)
@@ -45,6 +53,20 @@ describe('ClientsService', () => {
         findMany: jest.fn(),
         create: jest.fn(),
         update: jest.fn(),
+      },
+      ruta: {
+        findUnique: jest.fn().mockResolvedValue({ id: 1, activa: true }),
+      },
+      departamento: {
+        findUnique: jest.fn().mockResolvedValue({ id: '15', nombre: 'Lima' }),
+      },
+      provincia: {
+        findUnique: jest.fn().mockResolvedValue({ id: '1501', nombre: 'Lima' }),
+      },
+      distrito: {
+        findUnique: jest
+          .fn()
+          .mockResolvedValue({ id: '150101', nombre: 'Lima' }),
       },
     };
 
@@ -115,21 +137,70 @@ describe('ClientsService', () => {
       expect(prisma.cliente.create).toHaveBeenCalledTimes(1);
     });
 
-    it('propaga el error de FK cuando rutaId/ubigeo no existe (delegado a Prisma)', async () => {
-      // Arrange — el servicio NO valida explícitamente la existencia de ruta/ubigeo,
-      // confía en las FK constraints de Postgres. Si la ruta no existe, Prisma lanza P2003.
+    it('lanza BadRequestException cuando la ruta no existe', async () => {
+      // Arrange
       const dto = buildCreateDto({ rutaId: 9999 });
       prisma.cliente.findUnique.mockResolvedValue(null);
-      const fkError = Object.assign(
-        new Error('Foreign key constraint failed on the field: `rutaId`'),
-        { code: 'P2003' },
-      );
-      prisma.cliente.create.mockRejectedValue(fkError);
+      prisma.ruta.findUnique.mockResolvedValue(null);
 
       // Act & Assert
-      await expect(service.create(dto)).rejects.toMatchObject({
-        code: 'P2003',
-      });
+      await expect(service.create(dto)).rejects.toThrow(BadRequestException);
+      await expect(service.create(dto)).rejects.toThrow(/Ruta no encontrada/i);
+      expect(prisma.cliente.create).not.toHaveBeenCalled();
+    });
+
+    it('lanza BadRequestException cuando la ruta está inactiva', async () => {
+      // Arrange
+      const dto = buildCreateDto();
+      prisma.cliente.findUnique.mockResolvedValue(null);
+      prisma.ruta.findUnique.mockResolvedValue({ id: 1, activa: false });
+
+      // Act & Assert
+      await expect(service.create(dto)).rejects.toThrow(BadRequestException);
+      await expect(service.create(dto)).rejects.toThrow(/Ruta/i);
+      expect(prisma.cliente.create).not.toHaveBeenCalled();
+    });
+
+    it('lanza BadRequestException cuando el departamento no existe', async () => {
+      // Arrange
+      const dto = buildCreateDto({ departamentoId: '99' });
+      prisma.cliente.findUnique.mockResolvedValue(null);
+      prisma.departamento.findUnique.mockResolvedValue(null);
+
+      // Act & Assert
+      await expect(service.create(dto)).rejects.toThrow(BadRequestException);
+      await expect(service.create(dto)).rejects.toThrow(
+        /Departamento no encontrado/i,
+      );
+      expect(prisma.cliente.create).not.toHaveBeenCalled();
+    });
+
+    it('lanza BadRequestException cuando la provincia no existe', async () => {
+      // Arrange
+      const dto = buildCreateDto({ provinciaId: '9999' });
+      prisma.cliente.findUnique.mockResolvedValue(null);
+      prisma.provincia.findUnique.mockResolvedValue(null);
+
+      // Act & Assert
+      await expect(service.create(dto)).rejects.toThrow(BadRequestException);
+      await expect(service.create(dto)).rejects.toThrow(
+        /Provincia no encontrada/i,
+      );
+      expect(prisma.cliente.create).not.toHaveBeenCalled();
+    });
+
+    it('lanza BadRequestException cuando el distrito no existe', async () => {
+      // Arrange
+      const dto = buildCreateDto({ distritoId: '999999' });
+      prisma.cliente.findUnique.mockResolvedValue(null);
+      prisma.distrito.findUnique.mockResolvedValue(null);
+
+      // Act & Assert
+      await expect(service.create(dto)).rejects.toThrow(BadRequestException);
+      await expect(service.create(dto)).rejects.toThrow(
+        /Distrito no encontrado/i,
+      );
+      expect(prisma.cliente.create).not.toHaveBeenCalled();
     });
   });
 

@@ -161,7 +161,7 @@ describe('OrdersService — create', () => {
     expect(prisma.$transaction).not.toHaveBeenCalled();
   });
 
-  it('crea el pedido con estado por defecto REGISTERED (Prisma usa default)', async () => {
+  it('crea el pedido con estado REGISTERED seteado explícitamente', async () => {
     // Arrange
     prisma.cliente.findUnique.mockResolvedValue({ id: 1, activo: true });
     prisma.producto.findMany.mockResolvedValue([
@@ -178,13 +178,15 @@ describe('OrdersService — create', () => {
     // Act
     const result = await service.create(buildCreateDto(), 1);
 
-    // Assert — el servicio NO setea explícitamente estado (lo hace el default de Prisma);
-    // verificamos que data NO incluye 'estado' (no lo sobreescribe).
-    const calls = tx.pedido.create.mock.calls as Array<
-      [{ data: Record<string, unknown> }]
-    >;
-    const callArg = calls[0][0];
-    expect(callArg.data).not.toHaveProperty('estado');
+    // Assert — el servicio setea explícitamente estado=REGISTERED para no
+    // depender del default del schema de Prisma.
+    expect(tx.pedido.create).toHaveBeenCalledWith(
+      objectMatching({
+        data: objectMatching({
+          estado: OrderStatus.REGISTERED,
+        }),
+      }),
+    );
     expect(result.estado).toBe(OrderStatus.REGISTERED);
   });
 
