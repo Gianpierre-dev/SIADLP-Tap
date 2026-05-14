@@ -6,6 +6,7 @@ dist/
 *.log
 .turbo/
 .superpowers/
+.claude/
 docs/superpowers/
 docs/Grupo_16_*
 

@@ -422,3 +422,123 @@ Ordenados por prioridad para el equipo:
 ---
 
 *Documento generado en el contexto de la sustentación TAP IDAT. La postura de seguridad de SIADLP es adecuada para un MVP académico y supera los estándares mínimos de OWASP en la mayoría de las categorías. Las limitaciones documentadas son explícitas y razonadas, no descuidos.*
+
+---
+
+## Audit posterior — pnpm audit (fecha: 2026-05-13)
+
+Auditoría focalizada en dependencias (OWASP A06 — Vulnerable and Outdated Components) ejecutada con `pnpm audit` (pnpm 10.30.3) sobre el monorepo completo.
+
+### Comandos ejecutados
+
+```bash
+pnpm audit --prod   # alcance: dependencies + optionalDependencies (runtime)
+pnpm audit          # alcance: incluye devDependencies (CI/CD + build)
+```
+
+> Nota: pnpm 10 audita todo el workspace (root + `apps/*` + `packages/*`) por defecto. El flag `--recursive` no es necesario y de hecho no es soportado por `pnpm audit`.
+
+### Resumen pre-fix
+
+| Alcance | Critical | High | Moderate | Low | Total |
+|---|---:|---:|---:|---:|---:|
+| `--prod` (runtime) | 0 | **10** | 17 | 3 | 30 |
+| `all` (incluye dev) | 0 | **10** | 18 | 3 | 31 |
+
+Workspace afectado: prácticamente todos los hallazgos se concentran en `apps/frontend` (`next` + transitivos de `shadcn > @modelcontextprotocol/sdk`) y `apps/backend` (transitivos de `@prisma/client > prisma > @prisma/dev`). El paquete `packages/shared` no introdujo vulnerabilidades.
+
+### Vulnerabilidades CRITICAL/HIGH (pre-fix)
+
+| Paquete | Severidad | Versión instalada | Patched | Workspace | Advisory | Acción |
+|---|---|---|---|---|---|---|
+| `next` | HIGH | 16.2.2 | >=16.2.6 | frontend | GHSA Next.js DoS Server Components | Bump aplicado |
+| `next` | HIGH | 16.2.2 | >=16.2.5 | frontend | DoS via connection exhaustion (Cache Components) | Bump aplicado |
+| `next` | HIGH | 16.2.2 | >=16.2.5 | frontend | SSRF via WebSocket upgrades | Bump aplicado |
+| `next` | HIGH | 16.2.2 | >=16.2.5 | frontend | Middleware/Proxy bypass via dynamic route param injection | Bump aplicado |
+| `next` | HIGH | 16.2.2 | >=16.2.5 | frontend | Middleware/Proxy bypass via segment-prefetch routes (App Router) | Bump aplicado |
+| `next` | HIGH | 16.2.2 | >=16.2.5 | frontend | Middleware/Proxy bypass via i18n (Pages Router) | Bump aplicado |
+| `next` | HIGH | 16.2.2 | >=16.2.6 | frontend | Middleware/Proxy bypass — incomplete-fix follow-up | Bump aplicado |
+| `next` | HIGH | 16.2.2 | >=16.2.3 | frontend | DoS Server Components (referenciado como GHSA-q4gf-8mx6-v5v3) | Bump aplicado |
+| `fast-uri` | HIGH | 3.1.0 | >=3.1.2 | backend (transitive via `@prisma/client > prisma > @prisma/dev > @prisma/streams-local > ajv > fast-uri`) | Path traversal via percent-encoded dot segments | `pnpm overrides` aplicado |
+| `fast-uri` | HIGH | 3.1.0 | >=3.1.2 | backend (mismo path transitive) | Host confusion via percent-encoded authority delimiters | `pnpm overrides` aplicado |
+| `picomatch` | HIGH | <4.0.4 | >=4.0.4 | backend devDep (transitive via `@nestjs/cli > @angular-devkit/core`) | ReDoS via extglob quantifiers | `pnpm overrides` aplicado |
+
+### Fixes aplicados
+
+#### 1. Bump directo de `next` (frontend)
+
+Bump `16.2.2 → 16.2.6` — patch dentro del mismo minor (16.2.x), **no breaking**:
+
+```diff
+- "next": "16.2.2",
+- "eslint-config-next": "16.2.2",
++ "next": "16.2.6",
++ "eslint-config-next": "16.2.6",
+```
+
+Aplicado con `pnpm --filter frontend up next@16.2.6 eslint-config-next@16.2.6`.
+
+Cobertura: resuelve **8 HIGH + 4 MODERATE + 2 LOW** de `next`, y `postcss` (transitivo de `next > postcss`) queda en `>=8.5.10` por la resolución del bump.
+
+#### 2. `pnpm overrides` (root) para transitivos no controlados
+
+Agregado al `package.json` raíz:
+
+```json
+"pnpm": {
+  "overrides": {
+    "fast-uri@<3.1.2": ">=3.1.2",
+    "ip-address@<10.1.1": ">=10.1.1",
+    "hono@<4.12.18": ">=4.12.18",
+    "postcss@<8.5.10": ">=8.5.10",
+    "@hono/node-server@<1.19.13": ">=1.19.13",
+    "picomatch@>=4.0.0 <4.0.4": ">=4.0.4"
+  }
+}
+```
+
+Sintaxis con condición de rango (`pkg@<X.Y.Z`) para no forzar versiones más allá de lo necesario y respetar a futuro las elecciones legítimas del package upstream.
+
+Cobertura: resuelve los hallazgos restantes en `fast-uri`, `ip-address`, `hono`, `@hono/node-server`, `postcss` y `picomatch` — todos transitivos donde no hay forma de bumpearlos sin override (provienen de `@prisma/client > prisma > @prisma/dev` y de `shadcn > @modelcontextprotocol/sdk`).
+
+### Resultado post-fix
+
+| Alcance | Critical | High | Moderate | Low | Total |
+|---|---:|---:|---:|---:|---:|
+| `--prod` | 0 | 0 | **0** | 0 | **0** |
+| `all` | 0 | 0 | **0** | 0 | **0** |
+
+**0 vulnerabilidades en todas las severidades**, tanto en runtime como en devDependencies.
+
+### Bumps NO aplicados
+
+Ninguno. Todos los fixes requeridos fueron alcanzables sin breaking changes — `next 16.2.2 → 16.2.6` es patch en el mismo minor, y los transitivos se resolvieron vía `pnpm overrides` sin tocar las versiones declaradas por los packages padre (Prisma 7, shadcn 4, @nestjs/cli 11).
+
+### Verificación post-fix
+
+| Suite | Resultado | Comando |
+|---|---|---|
+| Backend unit (Jest) | OK — 156/156 | `pnpm --filter backend test` |
+| Backend e2e (Jest + supertest) | OK — 12/12 | `pnpm --filter backend test:e2e` |
+| Frontend unit (Vitest) | OK — 92/92 | `pnpm --filter frontend test` |
+| Lockfile integrity | OK | `pnpm install --frozen-lockfile` |
+| CLI `next` post-bump | `Next.js v16.2.6` | `pnpm exec next --version` |
+
+**0 regresiones detectadas.** Los E2E de Playwright (`apps/frontend/tests-e2e/`) no fueron ejecutados aquí porque requieren el stack levantado (backend + DB + dev server); el bump es patch dentro del mismo minor de Next y no afecta `playwright.config.ts` ni el CLI `next dev`.
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---|---|
+| `apps/frontend/package.json` | `next` 16.2.2 → 16.2.6, `eslint-config-next` 16.2.2 → 16.2.6 |
+| `package.json` (root) | Bloque `pnpm.overrides` agregado con 6 entradas (`fast-uri`, `ip-address`, `hono`, `@hono/node-server`, `postcss`, `picomatch`) |
+| `pnpm-lock.yaml` | Re-generado por `pnpm install` con los nuevos resolvers |
+
+### Recomendaciones
+
+1. **Re-auditar mensualmente** con `pnpm audit --prod` (fail-fast en CI) y `pnpm audit` (incluye dev, no-fail).
+2. **Integrar en CI** un job `pnpm audit --prod --audit-level=high` que falle el build si aparecen HIGH/CRITICAL nuevos. El flag `--ignore-registry-errors` evita falsos positivos por flakiness del registry.
+3. **Revisar Prisma 7** — el paquete `@prisma/dev` arrastra una cadena pesada (Hono, fast-uri, ajv) sólo necesaria para el dev studio. Considerar mover `@prisma/client` a un patrón donde `@prisma/dev` sea opcional (Prisma soporta este flag desde 7.5). Esto eliminaría la necesidad de overrides en Hono.
+4. **`shadcn` como dependency de prod** en `apps/frontend/package.json` (línea 26) es inusual — `shadcn` es una CLI de scaffolding. Evaluar moverlo a `devDependencies` reduciría la superficie de prod en ~50 packages (entre ellos `@modelcontextprotocol/sdk` y `express-rate-limit`).
+5. **Revisar `pnpm.overrides`** trimestralmente: cuando los packages padre (Prisma, shadcn, NestJS CLI) publiquen versiones con los transitivos ya patcheados nativamente, eliminar la entrada correspondiente del override para no quedarse "atascado" en una versión.
+6. **GHSA-q4gf-8mx6-v5v3** mencionado en el brief no figura como advisory ID en la base de npm para este audit (probable que sea uno de los GHSAs renombrados — el contenido equivalente fue resuelto por el bump a 16.2.6, que cubre todos los DoS y Middleware bypass de la línea 16.2.x).
