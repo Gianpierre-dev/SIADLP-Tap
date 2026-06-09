@@ -104,20 +104,27 @@ git clone https://github.com/Gianpierre-dev/SIADLP-Tap.git
 cd SIADLP-Tap
 
 # 2. Instalar dependencias
+# (el postinstall compila automaticamente @siadlp/shared)
 pnpm install
 
-# 3. Crear la base de datos en PostgreSQL
-psql -U postgres -c "CREATE DATABASE siadlp_db;"
+# 3. Levantar PostgreSQL con Docker
+# (matchea las credenciales del .env: postgres / sql / siadlp_db)
+docker compose up -d db
 
-# 4. Correr migraciones
+# 4. Aplicar migraciones
 pnpm --filter backend prisma:migrate
 
-# 5. Levantar backend y frontend en paralelo
+# 5. Cargar datos demo (incluye usuario admin y catalogo completo)
+pnpm --filter backend prisma:seed
+
+# 6. Levantar backend y frontend en paralelo
 pnpm dev
 
-# 6. Abrir en el navegador
+# 7. Abrir en el navegador
 # http://localhost:3020
 ```
+
+> **Alternativa sin Docker para la base de datos:** instala PostgreSQL 15 localmente y crea la base con `psql -U postgres -c "CREATE DATABASE siadlp_db;"`. El usuario debe llamarse `postgres` y la contrasena `sql` para que coincida con el `.env`. Usar Docker es mas rapido y evita conflictos de credenciales.
 
 ---
 
@@ -207,6 +214,7 @@ pnpm --filter frontend lint       # Lint frontend
 
 # Base de datos
 pnpm --filter backend prisma:migrate   # Correr migraciones
+pnpm --filter backend prisma:seed      # Cargar datos demo (admin, catalogo, ubigeo)
 pnpm --filter backend prisma:studio    # Abrir Prisma Studio (GUI)
 pnpm --filter backend prisma:generate  # Regenerar cliente Prisma
 
