@@ -104,27 +104,28 @@ git clone https://github.com/Gianpierre-dev/SIADLP-Tap.git
 cd SIADLP-Tap
 
 # 2. Instalar dependencias
-# (el postinstall compila automaticamente @siadlp/shared)
+# (compila @siadlp/shared y genera el cliente de Prisma automaticamente)
 pnpm install
 
-# 3. Levantar PostgreSQL con Docker
-# (matchea las credenciales del .env: postgres / sql / siadlp_db)
-docker compose up -d db
+# 3. Levantar la base de datos, aplicar migraciones y cargar datos demo
+pnpm setup
 
-# 4. Aplicar migraciones
-pnpm --filter backend prisma:migrate
-
-# 5. Cargar datos demo (incluye usuario admin y catalogo completo)
-pnpm --filter backend prisma:seed
-
-# 6. Levantar backend y frontend en paralelo
+# 4. Arrancar backend y frontend
 pnpm dev
 
-# 7. Abrir en el navegador
+# 5. Abrir en el navegador
 # http://localhost:3020
 ```
 
-> **Alternativa sin Docker para la base de datos:** instala PostgreSQL 15 localmente y crea la base con `psql -U postgres -c "CREATE DATABASE siadlp_db;"`. El usuario debe llamarse `postgres` y la contrasena `sql` para que coincida con el `.env`. Usar Docker es mas rapido y evita conflictos de credenciales.
+### Si algo sale mal y queres empezar de cero
+
+```bash
+pnpm setup:fresh
+```
+
+Este comando **borra el volumen de la base de datos** y vuelve a correr migraciones + seed. Util cuando la DB quedo en un estado raro o queres descartar cambios manuales.
+
+> **Alternativa sin Docker para la base de datos:** instala PostgreSQL 15 localmente con usuario `postgres`, contrasena `sql` y base `siadlp_db` para que coincida con el `.env`. En ese caso saltate `pnpm setup` y ejecuta manualmente `pnpm --filter backend prisma:migrate` y `pnpm --filter backend prisma:seed`. Usar Docker es mas rapido y evita conflictos de credenciales.
 
 ---
 
@@ -199,6 +200,10 @@ SIADLP-Tap/
 ## Comandos utiles
 
 ```bash
+# Setup (bootstrap completo de la DB)
+pnpm setup                        # DB + migraciones + seed
+pnpm setup:fresh                  # Reset completo (borra y recrea la DB)
+
 # Desarrollo
 pnpm dev                          # Levantar todo (backend + frontend)
 pnpm --filter backend dev         # Solo backend

@@ -15,6 +15,8 @@
     "test:frontend:e2e": "pnpm --filter frontend test:e2e",
     "test:cov": "pnpm -r run test:cov",
     "test:all": "pnpm test && pnpm test:backend:integration && pnpm test:backend:e2e && pnpm test:frontend:e2e",
+    "setup": "docker compose up -d --wait db && pnpm --filter backend prisma:migrate && pnpm --filter backend prisma:seed",
+    "setup:fresh": "docker compose down -v && pnpm run setup",
     "postinstall": "pnpm --filter @siadlp/shared build && pnpm --filter backend prisma:generate",
     "prepare": "husky"
   },
