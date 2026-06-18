@@ -26,7 +26,7 @@
  *      - Uno por cada rol clave para la sustentación:
  *        admin, supervisor (Gerente), despachador (Jefe de Despacho),
  *        chofer y vendedor.
- *      - Password: `password123` (bcryptjs cost 12).
+ *      - Password: `Admin123!` (bcryptjs cost 12).
  *
  *  5. Catálogos operativos
  *      - 3 Rutas: Lima Norte, Lima Sur, Lima Este (con zonas de cobertura).
@@ -74,7 +74,7 @@ const prisma = new PrismaClient({ adapter });
 // Constantes de demo
 // ----------------------------------------------------------------------------
 
-const DEMO_PASSWORD = 'password123';
+const DEMO_PASSWORD = 'Admin123!';
 const BCRYPT_COST = 12;
 
 /** Suma `days` (positivo o negativo) a `base` y devuelve un nuevo Date. */
