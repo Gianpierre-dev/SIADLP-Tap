@@ -16,7 +16,15 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { PlusIcon, PencilIcon, Trash2Icon, Loader2Icon } from 'lucide-react';
+import {
+  PlusIcon,
+  PencilIcon,
+  Trash2Icon,
+  Loader2Icon,
+  KeyRoundIcon,
+  CopyIcon,
+  CheckIcon,
+} from 'lucide-react';
 
 interface User {
   id: number;
@@ -65,6 +73,11 @@ export default function UsuariosPage() {
   const [createForm, setCreateForm] = useState<CreateForm>(EMPTY_CREATE);
   const [editForm, setEditForm] = useState<EditForm>(EMPTY_EDIT);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
+  const [resetTarget, setResetTarget] = useState<User | null>(null);
+  const [contrasenaTemporal, setContrasenaTemporal] = useState<string | null>(null);
+  const [resetting, setResetting] = useState<number | null>(null);
+  const [copiado, setCopiado] = useState(false);
 
   const fetchItems = () => {
     setLoading(true);
@@ -160,6 +173,42 @@ export default function UsuariosPage() {
     }
   };
 
+  const handleResetPassword = async (user: User) => {
+    const confirmar = confirm(
+      `¿Resetear la contraseña de ${user.nombre}?\n\n` +
+        'Se generará una contraseña temporal que el usuario deberá cambiar al iniciar sesión.',
+    );
+    if (!confirmar) return;
+    setResetting(user.id);
+    try {
+      const res = await apiPost<{ contrasenaTemporal: string }>(
+        `/users/${user.id}/reset-password`,
+        {},
+      );
+      setResetTarget(user);
+      setContrasenaTemporal(res.contrasenaTemporal);
+      setResetDialogOpen(true);
+      setCopiado(false);
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : 'Error al resetear la contraseña',
+      );
+    } finally {
+      setResetting(null);
+    }
+  };
+
+  const handleCopiarTemporal = async () => {
+    if (!contrasenaTemporal) return;
+    try {
+      await navigator.clipboard.writeText(contrasenaTemporal);
+      setCopiado(true);
+      toast.success('Contraseña copiada al portapapeles');
+    } catch {
+      toast.error('No se pudo copiar. Selecciona y copia manualmente.');
+    }
+  };
+
   const isSelf = editingId !== null && editingId === currentUserId;
 
   const columns: Column<User>[] = [
@@ -188,11 +237,37 @@ export default function UsuariosPage() {
       className: 'w-24',
       render: (row) => (
         <div className="flex gap-1">
-          <Button variant="ghost" size="sm" onClick={() => openEdit(row)}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => openEdit(row)}
+            aria-label="Editar usuario"
+          >
             <PencilIcon className="h-4 w-4" />
           </Button>
           {row.activo && (
-            <Button variant="ghost" size="sm" onClick={() => handleDeactivate(row.id)}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleResetPassword(row)}
+              disabled={resetting === row.id}
+              aria-label="Resetear contraseña"
+              title="Resetear contraseña"
+            >
+              {resetting === row.id ? (
+                <Loader2Icon className="h-4 w-4 animate-spin" />
+              ) : (
+                <KeyRoundIcon className="h-4 w-4 text-amber-600" />
+              )}
+            </Button>
+          )}
+          {row.activo && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleDeactivate(row.id)}
+              aria-label="Desactivar usuario"
+            >
               <Trash2Icon className="h-4 w-4 text-destructive" />
             </Button>
           )}
@@ -347,6 +422,51 @@ export default function UsuariosPage() {
               </DialogFooter>
             </form>
           )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={resetDialogOpen} onOpenChange={setResetDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Contraseña temporal generada</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              {resetTarget?.nombre} debe usar esta contraseña para iniciar sesión.
+              Se le pedirá cambiarla inmediatamente.
+            </p>
+            <div className="flex items-center gap-2 rounded-md border border-input bg-muted/50 px-3 py-2">
+              <code className="flex-1 select-all font-mono text-sm">
+                {contrasenaTemporal}
+              </code>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleCopiarTemporal}
+                aria-label="Copiar contraseña"
+              >
+                {copiado ? (
+                  <CheckIcon className="h-4 w-4 text-[#33691e]" />
+                ) : (
+                  <CopyIcon className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+            <div
+              role="alert"
+              className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900"
+            >
+              <KeyRoundIcon className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              <p>
+                Esta contraseña solo se muestra una vez. Compártela por un canal
+                seguro y ciérrala una vez transmitida.
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setResetDialogOpen(false)}>Entendido</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

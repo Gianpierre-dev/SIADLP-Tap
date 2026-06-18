@@ -14,6 +14,7 @@ export interface LoginResponse {
     correo: string;
     nombre: string;
     permisos: string[];
+    debeCambiarContrasena: boolean;
   };
 }
 
@@ -97,6 +98,7 @@ export class AuthService {
         correo: usuario.correo,
         nombre: usuario.nombre,
         permisos,
+        debeCambiarContrasena: usuario.debeCambiarContrasena,
       },
     };
   }
@@ -126,7 +128,10 @@ export class AuthService {
 
     await this.prisma.usuario.update({
       where: { id: userId },
-      data: { contrasena: contrasenaHash },
+      data: {
+        contrasena: contrasenaHash,
+        debeCambiarContrasena: false,
+      },
     });
 
     return { message: 'Contraseña actualizada correctamente' };

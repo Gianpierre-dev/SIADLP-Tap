@@ -12,6 +12,7 @@ model Usuario {
   contrasena         String
   nombre             String
   activo             Boolean  @default(true)
+  debeCambiarContrasena Boolean @default(false) @map("debe_cambiar_contrasena")
   rolId              Int      @map("rol_id")
   fechaCreacion      DateTime @default(now()) @map("fecha_creacion")
   fechaActualizacion DateTime @updatedAt @map("fecha_actualizacion")

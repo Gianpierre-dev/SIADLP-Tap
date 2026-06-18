@@ -6,9 +6,16 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
+import { randomBytes } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
+import { AuditService } from '../audit/audit.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+
+function generarContrasenaTemporal(): string {
+  const random = randomBytes(6).toString('base64url');
+  return `Temp${random}1!`;
+}
 
 const USER_SELECT = {
   id: true,
@@ -21,7 +28,10 @@ const USER_SELECT = {
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly audit: AuditService,
+  ) {}
 
   async create(dto: CreateUserDto) {
     const existing = await this.prisma.usuario.findUnique({
@@ -114,5 +124,46 @@ export class UsersService {
       data: { activo: false },
       select: USER_SELECT,
     });
+  }
+
+  async resetPassword(
+    targetUserId: number,
+    currentUserId: number,
+  ): Promise<{ contrasenaTemporal: string }> {
+    const target = await this.prisma.usuario.findUnique({
+      where: { id: targetUserId },
+      select: { id: true, correo: true, activo: true },
+    });
+
+    if (!target) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+
+    if (!target.activo) {
+      throw new BadRequestException(
+        'No se puede resetear la contrasena de un usuario inactivo',
+      );
+    }
+
+    const contrasenaTemporal = generarContrasenaTemporal();
+    const contrasenaHash = await bcrypt.hash(contrasenaTemporal, 12);
+
+    await this.prisma.usuario.update({
+      where: { id: targetUserId },
+      data: {
+        contrasena: contrasenaHash,
+        debeCambiarContrasena: true,
+      },
+    });
+
+    await this.audit.log({
+      usuarioId: currentUserId,
+      accion: 'reset_password',
+      modulo: 'usuarios',
+      entidadId: targetUserId,
+      detalle: `Reset de contrasena para ${target.correo}`,
+    });
+
+    return { contrasenaTemporal };
   }
 }

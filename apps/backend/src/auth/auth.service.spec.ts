@@ -207,7 +207,10 @@ describe('AuthService', () => {
       expect(mockedBcrypt.hash).toHaveBeenCalledWith('newPassword456', 12);
       expect(prisma.usuario.update).toHaveBeenCalledWith({
         where: { id: 1 },
-        data: { contrasena: '$2a$12$newhashed' },
+        data: {
+          contrasena: '$2a$12$newhashed',
+          debeCambiarContrasena: false,
+        },
       });
       expect(result).toEqual({
         message: 'Contraseña actualizada correctamente',

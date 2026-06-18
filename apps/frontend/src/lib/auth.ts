@@ -7,6 +7,7 @@ interface User {
   correo: string;
   nombre: string;
   permisos: string[];
+  debeCambiarContrasena: boolean;
 }
 
 interface AuthState {
@@ -16,6 +17,7 @@ interface AuthState {
   logout: () => void;
   hasPermission: (permission: string) => boolean;
   hydrate: () => void;
+  marcarContrasenaActualizada: () => void;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -41,6 +43,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const { user } = get();
     if (!user) return false;
     return user.permisos.includes(permission);
+  },
+
+  marcarContrasenaActualizada: () => {
+    const { user } = get();
+    if (!user) return;
+    const actualizado: User = { ...user, debeCambiarContrasena: false };
+    localStorage.setItem('user', JSON.stringify(actualizado));
+    set({ user: actualizado });
   },
 
   hydrate: () => {

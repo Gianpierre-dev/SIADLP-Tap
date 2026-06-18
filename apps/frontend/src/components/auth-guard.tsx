@@ -7,7 +7,7 @@ import { useEmpresaStore } from '@/lib/empresa';
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { isAuthenticated, hydrate } = useAuthStore();
+  const { isAuthenticated, user, hydrate } = useAuthStore();
   const { fetchEmpresa } = useEmpresaStore();
   const [isReady, setIsReady] = useState(false);
 
@@ -19,12 +19,17 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   }, [hydrate, fetchEmpresa]);
 
   useEffect(() => {
-    if (isReady && !isAuthenticated) {
+    if (!isReady) return;
+    if (!isAuthenticated) {
       router.replace('/login');
+      return;
     }
-  }, [isReady, isAuthenticated, router]);
+    if (user?.debeCambiarContrasena) {
+      router.replace('/cambiar-contrasena');
+    }
+  }, [isReady, isAuthenticated, user, router]);
 
-  if (!isReady || !isAuthenticated) {
+  if (!isReady || !isAuthenticated || user?.debeCambiarContrasena) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />

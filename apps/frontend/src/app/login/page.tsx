@@ -8,6 +8,7 @@ import { useEmpresaStore } from '@/lib/empresa';
 import { apiPost } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LogInIcon, Loader2Icon } from 'lucide-react';
@@ -27,6 +28,7 @@ interface LoginResponse {
     correo: string;
     nombre: string;
     permisos: string[];
+    debeCambiarContrasena: boolean;
   };
 }
 
@@ -55,10 +57,23 @@ export default function LoginPage() {
     try {
       const res = await apiPost<LoginResponse>('/auth/login', { correo, contrasena });
       setUser(res.usuario, res.accessToken);
+      if (res.usuario.debeCambiarContrasena) {
+        toast.info('Debes cambiar tu contraseña antes de continuar');
+        router.replace('/cambiar-contrasena');
+        return;
+      }
       toast.success(`Bienvenido, ${res.usuario.nombre}`);
       router.replace('/');
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Error al iniciar sesión');
+      const statusCode =
+        err && typeof err === 'object' && 'statusCode' in err
+          ? (err as { statusCode: number }).statusCode
+          : null;
+      if (statusCode === 429) {
+        toast.error('Demasiados intentos. Espera un minuto antes de volver a intentar.');
+      } else {
+        toast.error(err instanceof Error ? err.message : 'Error al iniciar sesión');
+      }
     } finally {
       setLoading(false);
     }
@@ -99,9 +114,8 @@ export default function LoginPage() {
             </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="contrasena">Contraseña</Label>
-              <Input
+              <PasswordInput
                 id="contrasena"
-                type="password"
                 value={contrasena}
                 onChange={(e) => setContrasena(e.target.value)}
                 required

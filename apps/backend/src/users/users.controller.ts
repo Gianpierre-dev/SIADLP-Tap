@@ -51,4 +51,13 @@ export class UsersController {
   deactivate(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.deactivate(id);
   }
+
+  @Post(':id/reset-password')
+  @RequirePermissions('usuarios.editar')
+  resetPassword(
+    @Param('id', ParseIntPipe) id: number,
+    @Request() req: { user: { id: number } },
+  ) {
+    return this.usersService.resetPassword(id, req.user.id);
+  }
 }
