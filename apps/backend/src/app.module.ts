@@ -16,6 +16,7 @@ import { AuditModule } from './audit/audit.module';
 import { ReportsModule } from './reports/reports.module';
 import { UbigeoModule } from './ubigeo/ubigeo.module';
 import { EmpresaModule } from './empresa/empresa.module';
+import { SolicitudesResetModule } from './solicitudes-reset/solicitudes-reset.module';
 import { HealthModule } from './health/health.module';
 // LoggerModule comes AFTER all feature module imports — see the comment at the
 // top of this file for why import order matters.
@@ -46,6 +47,7 @@ import { PermissionsGuard } from './auth/guards/permissions.guard';
     ReportsModule,
     UbigeoModule,
     EmpresaModule,
+    SolicitudesResetModule,
     HealthModule,
   ],
   providers: [

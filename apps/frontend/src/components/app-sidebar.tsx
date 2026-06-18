@@ -1,9 +1,11 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthStore } from '@/lib/auth';
 import { useEmpresaStore } from '@/lib/empresa';
+import { apiGet } from '@/lib/api';
 import {
   Sidebar,
   SidebarContent,
@@ -31,6 +33,7 @@ import {
   UserIcon,
   LogOutIcon,
   SettingsIcon,
+  KeyRoundIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
@@ -47,6 +50,7 @@ interface NavItem {
   href: string;
   icon: React.ElementType;
   permission?: string;
+  badgeKey?: 'solicitudesPendientes';
 }
 
 const mainNav: NavItem[] = [
@@ -66,12 +70,27 @@ const catalogNav: NavItem[] = [
 const adminNav: NavItem[] = [
   { label: 'Usuarios', href: '/usuarios', icon: UsersIcon, permission: 'usuarios.leer' },
   { label: 'Roles', href: '/roles', icon: ShieldIcon, permission: 'roles.leer' },
+  {
+    label: 'Solicitudes',
+    href: '/solicitudes-reset',
+    icon: KeyRoundIcon,
+    permission: 'usuarios.editar',
+    badgeKey: 'solicitudesPendientes',
+  },
   { label: 'Reportes', href: '/reportes', icon: FileTextIcon, permission: 'reportes.exportar' },
   { label: 'Auditoría', href: '/auditoria', icon: ClipboardListIcon, permission: 'auditoria.leer' },
   { label: 'Configuración', href: '/configuracion', icon: SettingsIcon, permission: 'usuarios.editar' },
 ];
 
-function NavGroup({ label, items }: { label: string; items: NavItem[] }) {
+function NavGroup({
+  label,
+  items,
+  badges,
+}: {
+  label: string;
+  items: NavItem[];
+  badges: Record<string, number>;
+}) {
   const pathname = usePathname();
   const { hasPermission } = useAuthStore();
 
@@ -88,29 +107,68 @@ function NavGroup({ label, items }: { label: string; items: NavItem[] }) {
       </SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu>
-          {visibleItems.map((item) => (
-            <SidebarMenuItem key={item.href}>
-              <SidebarMenuButton
-                render={<Link href={item.href} />}
-                isActive={pathname === item.href}
-              >
-                <item.icon className="h-4 w-4" />
-                <span>{item.label}</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
+          {visibleItems.map((item) => {
+            const badge = item.badgeKey ? badges[item.badgeKey] : 0;
+            return (
+              <SidebarMenuItem key={item.href}>
+                <SidebarMenuButton
+                  render={<Link href={item.href} />}
+                  isActive={pathname === item.href}
+                >
+                  <item.icon className="h-4 w-4" />
+                  <span className="flex-1">{item.label}</span>
+                  {badge > 0 && (
+                    <span
+                      className="ml-auto rounded-full bg-[#c5a028] px-1.5 py-0.5 text-[0.65rem] font-bold leading-none text-[#1a3a0e]"
+                      aria-label={`${badge} pendientes`}
+                    >
+                      {badge > 99 ? '99+' : badge}
+                    </span>
+                  )}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })}
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>
   );
 }
 
+const POLL_INTERVAL_MS = 30_000;
+
 export function AppSidebar() {
-  const { user, logout } = useAuthStore();
+  const { user, logout, hasPermission } = useAuthStore();
   const { empresa } = useEmpresaStore();
+  const [solicitudesPendientes, setSolicitudesPendientes] = useState(0);
+
+  const puedeAdministrar = hasPermission('usuarios.editar');
+
+  useEffect(() => {
+    if (!puedeAdministrar) return;
+    let cancelado = false;
+    const cargar = () => {
+      apiGet<{ total: number }>('/solicitudes-reset/pendientes/contar')
+        .then((res) => {
+          if (!cancelado) setSolicitudesPendientes(res.total);
+        })
+        .catch(() => {
+          /* silenciar: el badge es accesorio */
+        });
+    };
+    cargar();
+    const id = setInterval(cargar, POLL_INTERVAL_MS);
+    return () => {
+      cancelado = true;
+      clearInterval(id);
+    };
+  }, [puedeAdministrar]);
 
   const logoSrc = getBackendUrl(empresa?.logoUrl);
   const empresaNombre = empresa?.nombreComercial ?? empresa?.razonSocial ?? 'Empresa';
+  const badges: Record<string, number> = {
+    solicitudesPendientes,
+  };
 
   return (
     <Sidebar>
@@ -130,9 +188,9 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
       <SidebarContent>
-        <NavGroup label="Principal" items={mainNav} />
-        <NavGroup label="Catálogos" items={catalogNav} />
-        <NavGroup label="Administración" items={adminNav} />
+        <NavGroup label="Principal" items={mainNav} badges={badges} />
+        <NavGroup label="Catálogos" items={catalogNav} badges={badges} />
+        <NavGroup label="Administración" items={adminNav} badges={badges} />
       </SidebarContent>
       <SidebarFooter className="border-t border-white/10 p-3">
         <div className="flex items-center gap-2.5">

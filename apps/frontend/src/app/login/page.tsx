@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LogInIcon, Loader2Icon } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 const getBackendUrl = (path: string | null | undefined): string => {
   if (!path) return '/LogoLaCosecha.png';
@@ -129,6 +130,12 @@ export default function LoginPage() {
               )}
               <span className="ml-2">{loading ? 'Ingresando...' : 'Ingresar'}</span>
             </Button>
+            <Link
+              href="/solicitar-reset"
+              className="text-center text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+            >
+              ¿Olvidaste tu contraseña?
+            </Link>
           </form>
         </CardContent>
       </Card>

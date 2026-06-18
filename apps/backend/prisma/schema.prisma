@@ -24,6 +24,8 @@ model Usuario {
   hojasCargaCreadoPor HojaCarga[]         @relation("HojaCargaCreadoPor")
   entregas            Entrega[]
   registrosAuditoria  RegistroAuditoria[]
+  solicitudesReset    SolicitudResetContrasena[] @relation("SolicitudResetUsuario")
+  solicitudesAprobadas SolicitudResetContrasena[] @relation("SolicitudResetAprobador")
 
   @@index([rolId])
   @@map("usuarios")
@@ -321,4 +323,22 @@ model Empresa {
   fechaActualizacion DateTime @updatedAt @map("fecha_actualizacion")
 
   @@map("empresa")
+}
+
+model SolicitudResetContrasena {
+  id                 Int       @id @default(autoincrement())
+  usuarioId          Int       @map("usuario_id")
+  motivo             String?
+  estado             String    @default("PENDIENTE")
+  aprobadorId        Int?      @map("aprobador_id")
+  motivoRechazo      String?   @map("motivo_rechazo")
+  fechaCreacion      DateTime  @default(now()) @map("fecha_creacion")
+  fechaProcesamiento DateTime? @map("fecha_procesamiento")
+
+  usuario   Usuario  @relation("SolicitudResetUsuario", fields: [usuarioId], references: [id], onDelete: Cascade)
+  aprobador Usuario? @relation("SolicitudResetAprobador", fields: [aprobadorId], references: [id], onDelete: SetNull)
+
+  @@index([estado])
+  @@index([usuarioId])
+  @@map("solicitudes_reset_contrasena")
 }
