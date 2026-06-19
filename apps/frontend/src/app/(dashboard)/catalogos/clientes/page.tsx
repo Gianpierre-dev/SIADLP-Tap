@@ -210,28 +210,42 @@ export default function ClientesPage() {
   };
 
   const columns: Column<Client>[] = [
-    { key: 'id', label: 'ID', className: 'w-16' },
-    { key: 'razonSocial', label: 'Razón Social' },
-    { key: 'ruc', label: 'RUC', className: 'w-32' },
-    { key: 'direccion', label: 'Dirección' },
+    { key: 'id', label: 'ID', className: 'w-12' },
     {
-      key: 'ubicacion',
-      label: 'Ubicación',
-      render: (row) => {
-        const parts = [row.distrito?.nombre, row.provincia?.nombre].filter(Boolean);
-        return parts.length > 0 ? parts.join(', ') : '—';
-      },
+      key: 'razonSocial',
+      label: 'Razón Social',
+      className: 'max-w-[11rem]',
+      render: (row) => (
+        <span className="block truncate text-sm" title={row.razonSocial}>
+          {row.razonSocial}
+        </span>
+      ),
+    },
+    { key: 'ruc', label: 'RUC', className: 'w-24 text-xs' },
+    {
+      key: 'direccion',
+      label: 'Dirección',
+      className: 'max-w-[10rem]',
+      render: (row) => (
+        <span className="block truncate text-xs" title={row.direccion ?? ''}>
+          {row.direccion ?? '—'}
+        </span>
+      ),
     },
     {
       key: 'ruta',
       label: 'Ruta',
-      className: 'w-36',
-      render: (row) => row.ruta?.nombre ?? '—',
+      className: 'w-24',
+      render: (row) => (
+        <span className="block truncate text-xs" title={row.ruta?.nombre ?? ''}>
+          {row.ruta?.nombre ?? '—'}
+        </span>
+      ),
     },
     {
       key: 'activo',
       label: 'Estado',
-      className: 'w-24',
+      className: 'w-20',
       render: (row) => (
         <Badge variant={row.activo ? 'default' : 'secondary'}>
           {row.activo ? 'Activo' : 'Inactivo'}
@@ -241,7 +255,7 @@ export default function ClientesPage() {
     {
       key: 'acciones',
       label: 'Acciones',
-      className: 'w-24',
+      className: 'w-20',
       render: (row) => (
         <div className="flex gap-1">
           <Button variant="ghost" size="sm" onClick={() => openEdit(row)}>

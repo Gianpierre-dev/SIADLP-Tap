@@ -111,17 +111,32 @@ export default function RutasPage() {
   };
 
   const columns: Column<Route>[] = [
-    { key: 'id', label: 'ID', className: 'w-16' },
-    { key: 'nombre', label: 'Nombre' },
-    { key: 'zona', label: 'Zona' },
+    { key: 'id', label: 'ID', className: 'w-12' },
+    { key: 'nombre', label: 'Nombre', className: 'w-32' },
+    {
+      key: 'zona',
+      label: 'Zona',
+      className: 'max-w-[12rem]',
+      render: (row) => (
+        <span className="block truncate text-sm" title={row.zona ?? ''}>
+          {row.zona ?? '—'}
+        </span>
+      ),
+    },
     {
       key: 'descripcion',
       label: 'Descripción',
-      render: (row) => row.descripcion ?? '—',
+      className: 'max-w-[16rem]',
+      render: (row) => (
+        <span className="block truncate text-xs text-muted-foreground" title={row.descripcion ?? ''}>
+          {row.descripcion ?? '—'}
+        </span>
+      ),
     },
     {
       key: 'activa',
       label: 'Estado',
+      className: 'w-20',
       render: (row) => (
         <Badge variant={row.activa ? 'default' : 'secondary'}>
           {row.activa ? 'Activa' : 'Inactiva'}
@@ -131,7 +146,7 @@ export default function RutasPage() {
     {
       key: 'acciones',
       label: 'Acciones',
-      className: 'w-24',
+      className: 'w-20',
       render: (row) => (
         <div className="flex gap-1">
           <Button variant="ghost" size="sm" onClick={() => openEdit(row)}>

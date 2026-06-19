@@ -860,34 +860,53 @@ export default function DespachoPage() {
   // ── Table columns ─────────────────────────────────────────────────────────
 
   const columns: Column<LoadSheet>[] = [
-    { key: 'id', label: 'ID', className: 'w-14' },
+    { key: 'id', label: 'ID', className: 'w-12' },
     {
       key: 'fecha',
       label: 'Fecha',
-      className: 'w-28',
-      render: (row) => formatDate(row.fecha),
+      className: 'w-24',
+      render: (row) => <span className="text-xs">{formatDate(row.fecha)}</span>,
     },
     {
       key: 'ruta',
       label: 'Ruta',
-      render: (row) => `${row.ruta.nombre} — ${row.ruta.zona}`,
+      className: 'max-w-[12rem]',
+      render: (row) => {
+        const txt = `${row.ruta.nombre} — ${row.ruta.zona}`;
+        return (
+          <span className="block truncate text-sm" title={txt}>
+            {txt}
+          </span>
+        );
+      },
     },
     {
       key: 'vehiculo',
       label: 'Vehículo',
-      className: 'w-36',
-      render: (row) => `${row.vehiculo.placa} (${row.vehiculo.marca})`,
+      className: 'w-28',
+      render: (row) => (
+        <span className="block truncate text-xs" title={`${row.vehiculo.placa} (${row.vehiculo.marca})`}>
+          {row.vehiculo.placa}
+        </span>
+      ),
     },
     {
       key: 'chofer',
       label: 'Chofer',
-      className: 'w-40',
-      render: (row) => `${row.chofer.nombre} ${row.chofer.apellido}`,
+      className: 'max-w-[7rem]',
+      render: (row) => {
+        const txt = `${row.chofer.nombre} ${row.chofer.apellido}`;
+        return (
+          <span className="block truncate text-sm" title={txt}>
+            {txt}
+          </span>
+        );
+      },
     },
     {
       key: 'estado',
       label: 'Estado',
-      className: 'w-32',
+      className: 'w-24',
       render: (row) => (
         <StateBadge estado={row.estado} map={stateLabels} colorMap={stateColors} />
       ),
@@ -895,13 +914,13 @@ export default function DespachoPage() {
     {
       key: 'pedidos',
       label: 'Pedidos',
-      className: 'w-20 text-center',
+      className: 'w-16 text-center',
       render: (row) => row._count?.pedidos ?? 0,
     },
     {
       key: 'acciones',
       label: 'Acciones',
-      className: 'w-20',
+      className: 'w-16',
       render: (row) => (
         <Button
           variant="ghost"

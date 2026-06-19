@@ -114,57 +114,61 @@ export default function AuditoriaPage() {
   };
 
   const columns: Column<AuditEntry>[] = [
-    { key: 'id', label: 'ID', className: 'w-16' },
+    { key: 'id', label: 'ID', className: 'w-12' },
     {
       key: 'fechaCreacion',
       label: 'Fecha',
-      className: 'w-44',
-      render: (row) =>
-        new Date(row.fechaCreacion).toLocaleString('es-PE', {
-          dateStyle: 'short',
-          timeStyle: 'short',
-        }),
+      className: 'w-24',
+      render: (row) => (
+        <span className="text-[0.65rem] leading-tight">
+          {new Date(row.fechaCreacion).toLocaleString('es-PE', {
+            dateStyle: 'short',
+            timeStyle: 'short',
+          })}
+        </span>
+      ),
     },
     {
       key: 'usuario',
       label: 'Usuario',
-      className: 'w-44',
+      className: 'max-w-[6rem]',
       render: (row) => (
-        <div className="flex flex-col">
-          <span className="font-medium leading-tight">{row.usuario.nombre}</span>
-          <span className="text-xs text-muted-foreground">{row.usuario.correo}</span>
-        </div>
+        <span className="block truncate text-sm font-medium" title={`${row.usuario.nombre} — ${row.usuario.correo}`}>
+          {row.usuario.nombre}
+        </span>
       ),
     },
     {
       key: 'accion',
       label: 'Acción',
-      className: 'w-28',
+      className: 'w-24',
       render: (row) => (
-        <Badge variant={actionVariant[row.accion] ?? 'secondary'}>
-          {actionLabels[row.accion] ?? row.accion}
-        </Badge>
+        <div className="flex flex-col">
+          <Badge variant={actionVariant[row.accion] ?? 'secondary'}>
+            {actionLabels[row.accion] ?? row.accion}
+          </Badge>
+          {row.entidadId !== null && row.entidadId !== undefined && (
+            <span className="mt-0.5 text-[0.6rem] text-muted-foreground">
+              #{row.entidadId}
+            </span>
+          )}
+        </div>
       ),
     },
     {
       key: 'modulo',
       label: 'Módulo',
-      className: 'w-32',
+      className: 'w-20',
       render: (row) => (
-        <span className="capitalize">{row.modulo}</span>
+        <span className="capitalize text-xs">{row.modulo}</span>
       ),
-    },
-    {
-      key: 'entidadId',
-      label: 'Entidad ID',
-      className: 'w-24',
-      render: (row) => row.entidadId ?? '—',
     },
     {
       key: 'detalle',
       label: 'Detalle',
+      className: 'max-w-[8rem]',
       render: (row) => (
-        <span className="max-w-xs truncate block text-sm text-muted-foreground" title={row.detalle ?? undefined}>
+        <span className="block truncate text-xs text-muted-foreground" title={row.detalle ?? undefined}>
           {row.detalle ?? '—'}
         </span>
       ),
@@ -172,8 +176,10 @@ export default function AuditoriaPage() {
     {
       key: 'ip',
       label: 'IP',
-      className: 'w-32',
-      render: (row) => row.ip ?? '—',
+      className: 'w-20',
+      render: (row) => (
+        <span className="text-[0.65rem] font-mono">{row.ip ?? '—'}</span>
+      ),
     },
   ];
 
