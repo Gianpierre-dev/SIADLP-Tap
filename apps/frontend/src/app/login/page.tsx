@@ -36,7 +36,7 @@ interface LoginResponse {
 
 export default function LoginPage() {
   const router = useRouter();
-  const { setUser, isAuthenticated, hydrate } = useAuthStore();
+  const { setUser, isAuthenticated, hydrate, user } = useAuthStore();
   const { empresa, fetchEmpresa } = useEmpresaStore();
   const [correo, setCorreo] = useState('');
   const [contrasena, setContrasena] = useState('');
@@ -49,10 +49,10 @@ export default function LoginPage() {
   }, [hydrate, fetchEmpresa]);
 
   useEffect(() => {
-    if (isAuthenticated) {
-      router.replace('/');
+    if (isAuthenticated && user) {
+      router.replace(resolverHomePorPermisos(user.permisos));
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, user, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -169,33 +169,39 @@ export default function SolicitudesResetPage() {
     {
       key: 'motivo',
       label: 'Motivo',
+      className: 'max-w-[14rem]',
       mostrarEn: ['PENDIENTE', 'APROBADA', 'RECHAZADA'],
-      render: (row) => row.motivo ?? <span className="text-muted-foreground">—</span>,
+      render: (row) =>
+        row.motivo ? (
+          <span className="line-clamp-2 text-sm" title={row.motivo}>
+            {row.motivo}
+          </span>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        ),
     },
     {
       key: 'fechaCreacion',
       label: 'Solicitado',
-      className: 'w-36',
+      className: 'w-28',
       mostrarEn: ['PENDIENTE', 'APROBADA', 'RECHAZADA'],
-      render: (row) => formatearFecha(row.fechaCreacion),
+      render: (row) => (
+        <span className="text-xs">{formatearFecha(row.fechaCreacion)}</span>
+      ),
     },
     {
       key: 'procesado',
       label: 'Procesado por',
+      className: 'w-40',
       mostrarEn: ['APROBADA', 'RECHAZADA'],
       render: (row) => {
         if (!row.aprobador) return <span className="text-muted-foreground">—</span>;
         return (
           <div className="flex flex-col">
-            <span>{row.aprobador.nombre}</span>
-            {row.fechaProcesamiento && (
-              <span className="text-xs text-muted-foreground">
-                {formatearFecha(row.fechaProcesamiento)}
-              </span>
-            )}
+            <span className="text-sm">{row.aprobador.nombre}</span>
             {row.motivoRechazo && (
-              <span className="text-xs text-[#c62828]">
-                Motivo: {row.motivoRechazo}
+              <span className="line-clamp-1 text-xs text-[#c62828]" title={row.motivoRechazo}>
+                {row.motivoRechazo}
               </span>
             )}
           </div>
