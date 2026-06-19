@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { apiGet, apiPost, apiPatch } from '@/lib/api';
+import { useAuthStore } from '@/lib/auth';
 import { PageHeader } from '@/components/page-header';
 import { DataTable, Column } from '@/components/data-table';
 import { Button } from '@/components/ui/button';
@@ -132,6 +133,9 @@ function StateBadge({ estado }: { estado: string }) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function PedidosPage() {
+  const { hasPermission } = useAuthStore();
+  const puedeCrear = hasPermission('pedidos.crear');
+
   // List state
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -178,6 +182,7 @@ export default function PedidosPage() {
   }, [page]);
 
   useEffect(() => {
+    if (!puedeCrear) return;
     apiGet<Client[]>('/catalogs/clients')
       .then(setClients)
       .catch(() => toast.error('Error al cargar clientes'));
@@ -185,7 +190,7 @@ export default function PedidosPage() {
     apiGet<Product[]>('/catalogs/products')
       .then(setProducts)
       .catch(() => toast.error('Error al cargar productos'));
-  }, []);
+  }, [puedeCrear]);
 
   // ── Create dialog ──────────────────────────────────────────────────────────
 
@@ -354,10 +359,12 @@ export default function PedidosPage() {
         title="Pedidos"
         description="Gestión de pedidos de clientes"
         action={
-          <Button onClick={openCreate}>
-            <PlusIcon className="h-4 w-4 mr-2" />
-            Nuevo Pedido
-          </Button>
+          puedeCrear ? (
+            <Button onClick={openCreate}>
+              <PlusIcon className="h-4 w-4 mr-2" />
+              Nuevo Pedido
+            </Button>
+          ) : undefined
         }
       />
 
