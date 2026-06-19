@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { useAuthStore } from '@/lib/auth';
 import { useEmpresaStore } from '@/lib/empresa';
 import { apiPost } from '@/lib/api';
+import { resolverHomePorPermisos } from '@/lib/home-route';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PasswordInput } from '@/components/ui/password-input';
@@ -40,6 +41,7 @@ export default function LoginPage() {
   const [correo, setCorreo] = useState('');
   const [contrasena, setContrasena] = useState('');
   const [loading, setLoading] = useState(false);
+  const [errorInline, setErrorInline] = useState<string | null>(null);
 
   useEffect(() => {
     hydrate();
@@ -55,6 +57,7 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setErrorInline(null);
     try {
       const res = await apiPost<LoginResponse>('/auth/login', { correo, contrasena });
       setUser(res.usuario, res.accessToken);
@@ -64,17 +67,22 @@ export default function LoginPage() {
         return;
       }
       toast.success(`Bienvenido, ${res.usuario.nombre}`);
-      router.replace('/');
+      router.replace(resolverHomePorPermisos(res.usuario.permisos));
     } catch (err) {
       const statusCode =
         err && typeof err === 'object' && 'statusCode' in err
           ? (err as { statusCode: number }).statusCode
           : null;
+      let mensaje: string;
       if (statusCode === 429) {
-        toast.error('Demasiados intentos. Espera un minuto antes de volver a intentar.');
+        mensaje = 'Demasiados intentos. Espera un minuto antes de volver a intentar.';
+      } else if (statusCode === 401) {
+        mensaje = 'Correo o contraseña incorrectos.';
       } else {
-        toast.error(err instanceof Error ? err.message : 'Error al iniciar sesión');
+        mensaje = err instanceof Error ? err.message : 'Error al iniciar sesión';
       }
+      setErrorInline(mensaje);
+      toast.error(mensaje);
     } finally {
       setLoading(false);
     }
@@ -101,6 +109,14 @@ export default function LoginPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            {errorInline && (
+              <div
+                role="alert"
+                className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+              >
+                <span>{errorInline}</span>
+              </div>
+            )}
             <div className="flex flex-col gap-2">
               <Label htmlFor="correo">Correo electrónico</Label>
               <Input
@@ -109,6 +125,7 @@ export default function LoginPage() {
                 placeholder="admin@lacosecha.com"
                 value={correo}
                 onChange={(e) => setCorreo(e.target.value)}
+                autoComplete="username"
                 required
                 autoFocus
               />
@@ -119,6 +136,7 @@ export default function LoginPage() {
                 id="contrasena"
                 value={contrasena}
                 onChange={(e) => setContrasena(e.target.value)}
+                autoComplete="current-password"
                 required
               />
             </div>

@@ -153,11 +153,12 @@ export default function SolicitudesResetPage() {
     }
   };
 
-  const columns: Column<Solicitud>[] = [
-    { key: 'id', label: 'ID', className: 'w-16' },
+  const todasLasColumnas: Array<Column<Solicitud> & { mostrarEn: EstadoSolicitud[] }> = [
+    { key: 'id', label: 'ID', className: 'w-12', mostrarEn: ['PENDIENTE', 'APROBADA', 'RECHAZADA'] },
     {
       key: 'usuario',
       label: 'Usuario',
+      mostrarEn: ['PENDIENTE', 'APROBADA', 'RECHAZADA'],
       render: (row) => (
         <div className="flex flex-col">
           <span className="font-medium">{row.usuario.nombre}</span>
@@ -168,27 +169,20 @@ export default function SolicitudesResetPage() {
     {
       key: 'motivo',
       label: 'Motivo',
+      mostrarEn: ['PENDIENTE', 'APROBADA', 'RECHAZADA'],
       render: (row) => row.motivo ?? <span className="text-muted-foreground">—</span>,
     },
     {
       key: 'fechaCreacion',
       label: 'Solicitado',
-      className: 'w-44',
+      className: 'w-36',
+      mostrarEn: ['PENDIENTE', 'APROBADA', 'RECHAZADA'],
       render: (row) => formatearFecha(row.fechaCreacion),
-    },
-    {
-      key: 'estado',
-      label: 'Estado',
-      className: 'w-32',
-      render: (row) => (
-        <Badge variant="outline" className={ESTADO_BADGE[row.estado]}>
-          {ESTADO_LABELS[row.estado]}
-        </Badge>
-      ),
     },
     {
       key: 'procesado',
       label: 'Procesado por',
+      mostrarEn: ['APROBADA', 'RECHAZADA'],
       render: (row) => {
         if (!row.aprobador) return <span className="text-muted-foreground">—</span>;
         return (
@@ -211,7 +205,8 @@ export default function SolicitudesResetPage() {
     {
       key: 'acciones',
       label: 'Acciones',
-      className: 'w-32',
+      className: 'w-28',
+      mostrarEn: ['PENDIENTE'],
       render: (row) =>
         row.estado === 'PENDIENTE' ? (
           <div className="flex gap-1">
@@ -244,6 +239,10 @@ export default function SolicitudesResetPage() {
         ),
     },
   ];
+
+  const columns: Column<Solicitud>[] = todasLasColumnas.filter((c) =>
+    c.mostrarEn.includes(filtroEstado),
+  );
 
   const filtros: EstadoSolicitud[] = ['PENDIENTE', 'APROBADA', 'RECHAZADA'];
 

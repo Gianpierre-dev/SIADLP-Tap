@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useAuthStore } from '@/lib/auth';
 import { apiPatch } from '@/lib/api';
+import { resolverHomePorPermisos } from '@/lib/home-route';
 import { Button } from '@/components/ui/button';
 import { PasswordInput } from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
@@ -78,7 +79,7 @@ export default function CambiarContrasenaPage() {
       });
       marcarContrasenaActualizada();
       toast.success('Contraseña actualizada correctamente');
-      router.replace('/');
+      router.replace(resolverHomePorPermisos(user.permisos));
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : 'No se pudo actualizar la contraseña',
@@ -92,7 +93,7 @@ export default function CambiarContrasenaPage() {
     <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center items-center">
-          <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-[#e8f5e9] text-[#33691e]">
+          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-[#e8f5e9] text-[#33691e]">
             <KeyIcon className="h-5 w-5" />
           </div>
           <CardTitle className="text-xl">Cambiar contraseña</CardTitle>

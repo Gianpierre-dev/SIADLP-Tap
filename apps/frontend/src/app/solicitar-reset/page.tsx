@@ -54,7 +54,7 @@ export default function SolicitarResetPage() {
     <div className="flex min-h-screen items-center justify-center bg-[#1a3a0e] px-4">
       <Card className="w-full max-w-sm shadow-2xl">
         <CardHeader className="text-center items-center">
-          <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-[#e8f5e9] text-[#33691e]">
+          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-[#e8f5e9] text-[#33691e]">
             <KeyRoundIcon className="h-5 w-5" />
           </div>
           <CardTitle className="text-xl">Recuperar contraseña</CardTitle>
