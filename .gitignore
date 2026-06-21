@@ -1,7 +1,12 @@
 node_modules/
 dist/
 .next/
-.env.local
+
+# Variables de entorno (NUNCA versionar secretos)
+.env
+.env.*
+!.env.example
+
 .DS_Store
 *.log
 .turbo/

@@ -1,243 +1,229 @@
-# SIADLP - Sistema Integral de Administracion, Distribucion y Logistica de Papa
+# SIADLP — Sistema Integrado de Administración y Distribución Logística de Papas
 
 [![CI](https://github.com/Gianpierre-dev/SIADLP-Tap/actions/workflows/ci.yml/badge.svg)](https://github.com/Gianpierre-dev/SIADLP-Tap/actions/workflows/ci.yml)
 ![Tests](https://img.shields.io/badge/tests-362_passing-brightgreen)
-![Coverage](https://img.shields.io/badge/branch_coverage-%E2%89%A580%25-brightgreen)
-![Mutation](https://img.shields.io/badge/mutation_score-99.11%25-brightgreen)
-![Vulnerabilities](https://img.shields.io/badge/vulnerabilities-0-brightgreen)
-![Lighthouse](https://img.shields.io/badge/lighthouse-96%E2%80%93100-brightgreen)
-![Stack](https://img.shields.io/badge/stack-NestJS_%2B_Next.js_16-blue)
+![Stack](https://img.shields.io/badge/stack-NestJS_11_%2B_Next.js_16-blue)
 ![License](https://img.shields.io/badge/license-UNLICENSED-lightgrey)
 
-**La Cosecha S.A.C.** - Distribuidora de papas a pollerias en Lima, Peru.
+Sistema web que automatiza el proceso de **distribución logística** de la empresa **La Cosecha S.A.C.** (distribuidora de papa procesada a pollerías de Lima): registro de pedidos, armado de hojas de carga por ruta, asignación de vehículos y choferes, registro de entregas en campo, dashboard ejecutivo y auditoría.
 
-Trabajo de Aplicacion Profesional (TAP) para obtener el titulo de Tecnico Profesional en Desarrollo de Sistemas de Informacion - IDAT.
-
-**Autores:** Gianpierre Wong - Paulo Wong
+> Trabajo de Aplicación Profesional (TAP) — Técnico en Desarrollo de Sistemas de Información, IDAT.
+> **Autores:** Anthony Gianpierre Terrazas Tello · Paulo Cesar Wong Diaz
 
 ---
 
-## Documentación técnica
+## 🧱 Stack Tecnológico
 
-| Documento | Descripción |
-|-----------|-------------|
-| [`docs/TESTING.md`](docs/TESTING.md) | Estrategia de testing (pirámide, AAA, test doubles, mutation testing) |
-| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Arquitectura del sistema (C4 model, sequence, ER, state machines) |
-| [`docs/SECURITY-AUDIT.md`](docs/SECURITY-AUDIT.md) | Audit OWASP Top 10 con fixes aplicados |
-| [`docs/RUNBOOK.md`](docs/RUNBOOK.md) | Manual operacional ante incidentes (10 síntomas + 7 procedimientos) |
-| [`docs/LIGHTHOUSE.md`](docs/LIGHTHOUSE.md) | Lighthouse audit del frontend (Performance 96-100, A11y 100) |
-| [`docs/adr/`](docs/adr/) | 5 Architecture Decision Records |
+| Capa | Tecnologías |
+|------|-------------|
+| **Frontend** | Next.js 16 (App Router) · React 19 · Tailwind CSS 4 · shadcn/ui · Zustand 5 |
+| **Backend** | NestJS 11 · TypeScript · JWT · class-validator · RBAC con permisos granulares |
+| **Base de datos** | PostgreSQL 15 · Prisma ORM 7 |
+| **Infraestructura** | Monorepo pnpm workspaces · Docker · Docker Compose |
+| **Calidad** | Jest · Vitest · Playwright · pglite · Stryker (mutation testing) · GitHub Actions |
 
-## Testing
+---
 
-**362 tests automatizados** distribuidos en la pirámide de testing:
+## ✅ Requisitos Previos
 
-| Nivel | Suite | Tests | Stack |
-|-------|-------|-------|-------|
-| Unit (shared) | `packages/shared` | 19 | Vitest |
-| Unit (backend) | `apps/backend/src` | 176 | Jest + @nestjs/testing |
-| Integration | `apps/backend/test/integration` | 55 | Jest + pglite |
-| E2E (backend) | `apps/backend/test` | 12 | Jest + supertest |
-| Component (frontend) | `apps/frontend/src` | 92 | Vitest + RTL |
-| E2E (frontend) | `apps/frontend/tests-e2e` | 8 | Playwright |
-| **Total** | | **362** | |
+Antes de empezar, asegurate de tener instalado:
 
-**Mutation testing:** Stryker configurado sobre 5 services críticos. Baseline 36.75% — ver [`apps/backend/MUTATION-TESTING.md`](apps/backend/MUTATION-TESTING.md).
+| Herramienta | Versión mínima | Verificar con |
+|-------------|----------------|---------------|
+| **Node.js** | 20 LTS | `node -v` |
+| **pnpm** | 9+ | `pnpm -v` |
+| **Docker Desktop** | reciente | `docker -v` |
+| **Git** | reciente | `git --version` |
+
+> ¿No tenés pnpm? Instalalo con: `npm install -g pnpm`
+
+---
+
+## 🚀 Instalación y Puesta en Marcha
+
+### 1. Clonar el repositorio
 
 ```bash
-pnpm test                          # todos los tests
-pnpm test:backend:integration      # integration con pglite
-pnpm test:frontend:e2e             # Playwright
-pnpm --filter backend test:mutation # mutation testing (~7 min)
-```
-
-## Observability
-
-- **Health endpoints:**
-  - `GET /api/health` — liveness probe (Railway/K8s)
-  - `GET /api/health/ready` — readiness con check de DB
-  - `GET /api/health/deep` — DB + memory + disk (dashboards)
-- **Logs estructurados** con Pino: JSON en producción, pretty en development, redacción de campos sensibles
-- **Audit log** en `registro_auditoria` con interceptor global
-
----
-
-## Requisitos
-
-### Opcion A: Docker (recomendado)
-
-Solo necesitas:
-
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-
-### Opcion B: Desarrollo local
-
-- [Node.js](https://nodejs.org/) v20 o superior
-- [pnpm](https://pnpm.io/) v9 o superior (`npm install -g pnpm`)
-- [PostgreSQL](https://www.postgresql.org/) 15
-
----
-
-## Inicio rapido con Docker
-
-```bash
-# 1. Clonar el repositorio
 git clone https://github.com/Gianpierre-dev/SIADLP-Tap.git
 cd SIADLP-Tap
-
-# 2. Levantar todo (DB + Backend + Frontend)
-docker compose up --build
-
-# 3. Abrir en el navegador
-# http://localhost:3020
 ```
 
-Eso es todo. Docker levanta PostgreSQL, corre las migraciones automaticamente, y arranca ambos servidores.
-
----
-
-## Inicio rapido local (desarrollo)
+### 2. Instalar dependencias (todo el monorepo)
 
 ```bash
-# 1. Clonar el repositorio
-git clone https://github.com/Gianpierre-dev/SIADLP-Tap.git
-cd SIADLP-Tap
-
-# 2. Instalar dependencias
-# (compila @siadlp/shared y genera el cliente de Prisma automaticamente)
 pnpm install
-
-# 3. Levantar la base de datos, aplicar migraciones y cargar datos demo
-pnpm setup
-
-# 4. Arrancar backend y frontend
-pnpm dev
-
-# 5. Abrir en el navegador
-# http://localhost:3020
 ```
 
-### Si algo sale mal y queres empezar de cero
+### 3. Configurar variables de entorno
+
+Copiá el archivo de ejemplo y completá los valores:
 
 ```bash
-pnpm setup:fresh
+cp .env.example .env
 ```
 
-Este comando **borra el volumen de la base de datos** y vuelve a correr migraciones + seed. Util cuando la DB quedo en un estado raro o queres descartar cambios manuales.
+Contenido del `.env` (raíz del proyecto):
 
-> **Alternativa sin Docker para la base de datos:** instala PostgreSQL 15 localmente con usuario `postgres`, contrasena `sql` y base `siadlp_db` para que coincida con el `.env`. En ese caso saltate `pnpm setup` y ejecuta manualmente `pnpm --filter backend prisma:migrate` y `pnpm --filter backend prisma:seed`. Usar Docker es mas rapido y evita conflictos de credenciales.
+```env
+# Base de datos (coincide con docker-compose.yml)
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/siadlp_db"
+
+# Autenticación — GENERÁ UN SECRETO PROPIO de 32+ caracteres
+JWT_SECRET="cambia-esto-por-un-secreto-seguro-de-32-o-mas-caracteres"
+JWT_EXPIRES_IN="2h"
+
+# Servidor
+API_PORT=4020
+CORS_ORIGINS=http://localhost:3020
+
+# Frontend
+NEXT_PUBLIC_API_URL=http://localhost:4020/api
+```
+
+> 🔐 **Seguridad:** generá tu propio `JWT_SECRET`. En Git Bash / Linux / Mac:
+> `openssl rand -hex 32`
+
+### 4. Levantar la base de datos, migrar y poblar
+
+**Opción rápida (todo en un comando):**
+
+```bash
+pnpm setup
+```
+
+Esto levanta PostgreSQL en Docker, aplica las migraciones y ejecuta el seed.
+
+**Opción manual (paso a paso):**
+
+```bash
+# a) Levantar PostgreSQL en Docker
+docker compose up -d db
+
+# b) Generar el cliente de Prisma
+pnpm --filter backend prisma:generate
+
+# c) Aplicar las migraciones
+pnpm --filter backend prisma:migrate
+
+# d) Poblar la base con datos iniciales (roles, permisos, usuarios demo, ubigeo)
+pnpm --filter backend prisma:seed
+```
+
+### 5. Iniciar la aplicación (modo desarrollo)
+
+```bash
+pnpm dev
+```
+
+Esto levanta **backend y frontend en paralelo**:
+
+| Servicio | URL |
+|----------|-----|
+| 🖥️ **Frontend** | http://localhost:3020 |
+| ⚙️ **Backend (API)** | http://localhost:4020/api |
+
+### 6. Iniciar sesión
+
+El seed crea usuarios de demostración. Contraseña para todos: **`Admin123!`**
+
+| Rol | Correo |
+|-----|--------|
+| Administrador | `admin@lacosecha.com` |
+| Gerente (Supervisor) | `supervisor@lacosecha.com` |
+| Jefe de Despacho | `despacho@lacosecha.com` |
+| Vendedor | `vendedor@lacosecha.com` |
+| Chofer | `chofer@lacosecha.com` |
 
 ---
 
-## Credenciales de acceso
+## 🐳 Ejecutar todo con Docker (opcional)
 
-| Campo | Valor |
-|-------|-------|
-| Correo | `admin@lacosecha.com` |
-| Contrasena | `Admin123!` |
-| Rol | Administrador (acceso completo) |
+Para levantar base de datos + backend + frontend en contenedores:
 
----
+```bash
+docker compose up -d --build
+```
 
-## Puertos
+Para detener y eliminar todo (incluyendo datos):
 
-| Servicio | Puerto |
-|----------|--------|
-| Frontend | http://localhost:3020 |
-| Backend API | http://localhost:4020/api |
-| PostgreSQL | localhost:5432 |
+```bash
+docker compose down -v
+```
 
 ---
 
-## Estructura del proyecto
+## 📜 Comandos Disponibles
+
+### Desarrollo
+
+| Comando | Descripción |
+|---------|-------------|
+| `pnpm dev` | Levanta backend + frontend en paralelo |
+| `pnpm dev:backend` | Solo el backend |
+| `pnpm dev:frontend` | Solo el frontend |
+| `pnpm build` | Compila todo el monorepo |
+| `pnpm lint` | Linter en todos los paquetes |
+
+### Base de datos (Prisma)
+
+| Comando | Descripción |
+|---------|-------------|
+| `pnpm --filter backend prisma:generate` | Genera el cliente de Prisma |
+| `pnpm --filter backend prisma:migrate` | Aplica/crea migraciones |
+| `pnpm --filter backend prisma:seed` | Puebla la base con datos iniciales |
+| `pnpm --filter backend prisma:studio` | Abre Prisma Studio (explorador visual de la BD) |
+| `pnpm setup:fresh` | Reinicia la BD desde cero (borra datos + migra + seed) |
+
+### Pruebas
+
+| Comando | Descripción |
+|---------|-------------|
+| `pnpm test` | Pruebas unitarias (backend + frontend) |
+| `pnpm test:backend:integration` | Pruebas de integración (pglite) |
+| `pnpm test:backend:e2e` | Pruebas E2E del backend (supertest) |
+| `pnpm test:frontend:e2e` | Pruebas E2E del frontend (Playwright) |
+| `pnpm test:cov` | Pruebas con reporte de cobertura |
+| `pnpm test:all` | **Toda la suite** (362 pruebas) |
+| `pnpm --filter backend test:mutation` | Mutation testing con Stryker |
+
+---
+
+## 📁 Estructura del Proyecto
 
 ```
 SIADLP-Tap/
-+-- apps/
-|   +-- backend/          # NestJS 11 + Prisma 7 + PostgreSQL
-|   |   +-- src/
-|   |   |   +-- auth/         # JWT + RBAC con permisos granulares
-|   |   |   +-- catalogs/     # Clientes, proveedores, productos, rutas, vehiculos, choferes
-|   |   |   +-- orders/       # Pedidos con calculo de precios
-|   |   |   +-- purchases/    # Ordenes de compra + recepcion
-|   |   |   +-- production/   # Produccion con rendimiento y merma
-|   |   |   +-- inventory/    # Inventario dual (MP/PT) + kardex
-|   |   |   +-- dispatch/     # Despacho, entregas y cobros
-|   |   |   +-- reports/      # Dashboard + exports Excel
-|   |   |   +-- audit/        # Log de auditoria
-|   |   +-- prisma/           # Schema y migraciones
-|   +-- frontend/         # Next.js 16 + React 19 + Tailwind 4 + shadcn/ui
-|       +-- src/
-|           +-- app/          # 18 paginas (App Router)
-|           +-- components/   # DataTable, Sidebar, AuthGuard
-|           +-- lib/          # API wrapper, auth store (Zustand)
-+-- packages/
-|   +-- shared/           # Enums y constantes compartidas
-+-- docker-compose.yml    # Levanta DB + Backend + Frontend
-+-- .env                  # Variables de entorno (committeado)
-+-- README.md
+├── apps/
+│   ├── backend/          # API NestJS 11 (módulos por dominio)
+│   │   ├── prisma/       # schema.prisma, migraciones y seed
+│   │   └── src/          # auth, users, roles, catalogs, orders,
+│   │                     # dispatch, reports, audit, empresa, ubigeo
+│   └── frontend/         # App Next.js 16 (App Router)
+│       └── src/app/      # rutas: /login, /pedidos, /despacho, etc.
+├── packages/
+│   └── shared/           # Tipos y enums compartidos (máquina de estados)
+├── docs/                 # ADRs, ARCHITECTURE, TESTING, RUNBOOK, SECURITY-AUDIT
+├── scripts/              # Datos de ubigeo del Perú (seed)
+├── docker-compose.yml
+└── pnpm-workspace.yaml
 ```
 
 ---
 
-## Modulos del sistema
+## 📚 Documentación Técnica
 
-| Modulo | Descripcion |
-|--------|-------------|
-| **Dashboard** | KPIs del dia: pedidos, produccion, inventario, despacho, cobros |
-| **Pedidos** | Crear, confirmar, cancelar. Precio = base + tarifa de ruta |
-| **Compras** | Ordenes de compra -> confirmar -> en camino -> recepcion con stock automatico |
-| **Produccion** | Lotes con insumos MP -> productos PT. Metricas: rendimiento, merma, costo/kg |
-| **Inventario** | Stock MP y PT, kardex de movimientos, alertas de stock bajo, ajustes |
-| **Despacho** | Hojas de carga por ruta, confirmar, iniciar ruta, registrar entregas y cobros |
-| **Catalogos** | CRUD de clientes, proveedores, productos, rutas, vehiculos, choferes |
-| **Usuarios** | CRUD con roles RBAC y permisos granulares (modulo.accion) |
-| **Reportes** | Exportacion a Excel: pedidos, produccion, inventario, despachos |
-| **Auditoria** | Log de todas las operaciones de escritura con usuario, IP y detalle |
+| Documento | Contenido |
+|-----------|-----------|
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Arquitectura del sistema (C4, secuencia, ER, máquinas de estado) |
+| [`docs/TESTING.md`](docs/TESTING.md) | Estrategia de testing (pirámide, AAA, test doubles, mutation) |
+| [`docs/SECURITY-AUDIT.md`](docs/SECURITY-AUDIT.md) | Auditoría de seguridad |
+| [`docs/RUNBOOK.md`](docs/RUNBOOK.md) | Operación y despliegue |
+| [`docs/adr/`](docs/adr/) | Architecture Decision Records (decisiones de diseño) |
 
 ---
 
-## Comandos utiles
+## 👥 Autores
 
-```bash
-# Setup (bootstrap completo de la DB)
-pnpm setup                        # DB + migraciones + seed
-pnpm setup:fresh                  # Reset completo (borra y recrea la DB)
+- **Anthony Gianpierre Terrazas Tello** — Scrum Master · Backend · Líder Técnico
+- **Paulo Cesar Wong Diaz** — Frontend · QA
 
-# Desarrollo
-pnpm dev                          # Levantar todo (backend + frontend)
-pnpm --filter backend dev         # Solo backend
-pnpm --filter frontend dev        # Solo frontend
-
-# Build
-pnpm --filter backend build       # Compilar backend
-pnpm --filter frontend build      # Compilar frontend
-
-# Lint
-pnpm --filter backend lint        # Lint backend
-pnpm --filter frontend lint       # Lint frontend
-
-# Base de datos
-pnpm --filter backend prisma:migrate   # Correr migraciones
-pnpm --filter backend prisma:seed      # Cargar datos demo (admin, catalogo, ubigeo)
-pnpm --filter backend prisma:studio    # Abrir Prisma Studio (GUI)
-pnpm --filter backend prisma:generate  # Regenerar cliente Prisma
-
-# Docker
-docker compose up --build         # Levantar todo con Docker
-docker compose down               # Detener todo
-docker compose down -v            # Detener y borrar datos de la BD
-```
-
----
-
-## Stack tecnologico
-
-| Capa | Tecnologia |
-|------|------------|
-| Backend | NestJS 11 - Prisma 7 - PostgreSQL 15 - JWT - bcryptjs |
-| Frontend | Next.js 16 - React 19 - Tailwind CSS 4 - shadcn/ui - Zustand |
-| Validacion | class-validator (backend) - HTML5 + client-side (frontend) |
-| Reportes | ExcelJS |
-| Monorepo | pnpm workspaces |
-| Contenedores | Docker - Docker Compose |
+Proyecto desarrollado para **La Cosecha S.A.C.** · Lima, Perú · 2026
