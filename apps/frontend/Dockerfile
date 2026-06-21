@@ -30,4 +30,5 @@ RUN pnpm --filter frontend build
 WORKDIR /app/apps/frontend
 EXPOSE 3020
 
-CMD ["pnpm", "start", "-p", "3020"]
+# Railway inyecta PORT; localmente cae a 3020.
+CMD ["sh", "-c", "pnpm start -p ${PORT:-3020}"]

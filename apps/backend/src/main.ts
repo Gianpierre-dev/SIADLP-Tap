@@ -11,7 +11,6 @@ function validateEnv(): void {
   const required = [
     'DATABASE_URL',
     'JWT_SECRET',
-    'API_PORT',
     'CORS_ORIGINS',
   ] as const;
   const missing = required.filter((key) => !process.env[key]);
@@ -140,7 +139,8 @@ async function bootstrap() {
     maxAge: 86_400, // cache preflight 24h
   });
 
-  const port = process.env['API_PORT']!;
+  // Railway (y otros PaaS) inyectan PORT; localmente cae a API_PORT o 4020.
+  const port = process.env['PORT'] ?? process.env['API_PORT'] ?? '4020';
   await app.listen(port);
 
   // Use the Pino logger directly (it implements the same `log` API as the

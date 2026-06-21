@@ -15,14 +15,16 @@ RUN pnpm install --frozen-lockfile
 COPY packages/shared/ packages/shared/
 COPY apps/backend/ apps/backend/
 COPY scripts/ scripts/
-COPY .env .env
 
 # Build shared package first, then backend
+# (las variables de entorno vienen de la plataforma: Railway o docker-compose)
 RUN pnpm --filter @siadlp/shared build
-RUN pnpm --filter backend prisma:generate
+RUN pnpm --filter backend exec prisma generate
 RUN pnpm --filter backend build
 
 WORKDIR /app/apps/backend
 EXPOSE 4020
 
-CMD ["sh", "-c", "npx dotenv -e ../../.env -- npx prisma migrate deploy && pnpm prisma:seed && npx dotenv -e ../../.env -- node dist/src/main"]
+# En Railway/compose las variables vienen del entorno (no de un archivo .env).
+# Aplica migraciones, ejecuta el seed (idempotente) y arranca la API.
+CMD ["sh", "-c", "npx prisma migrate deploy && npx ts-node prisma/seed.ts && node dist/src/main"]
