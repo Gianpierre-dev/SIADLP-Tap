@@ -65,8 +65,8 @@ cp .env.example .env
 Contenido del `.env` (raíz del proyecto):
 
 ```env
-# Base de datos (coincide con docker-compose.yml)
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/siadlp_db"
+# Base de datos — la password (sql) debe coincidir con la de docker-compose.yml
+DATABASE_URL="postgresql://postgres:sql@localhost:5432/siadlp_db"
 
 # Autenticación — GENERÁ UN SECRETO PROPIO de 32+ caracteres
 JWT_SECRET="cambia-esto-por-un-secreto-seguro-de-32-o-mas-caracteres"
@@ -96,18 +96,26 @@ Esto levanta PostgreSQL en Docker, aplica las migraciones y ejecuta el seed.
 **Opción manual (paso a paso):**
 
 ```bash
-# a) Levantar PostgreSQL en Docker
+# a) Levantar el servidor PostgreSQL y CREAR la base de datos "siadlp_db"
 docker compose up -d db
 
-# b) Generar el cliente de Prisma
+# b) Generar el cliente de Prisma (solo genera el código, NO crea tablas)
 pnpm --filter backend prisma:generate
 
-# c) Aplicar las migraciones
+# c) CREAR LAS TABLAS en la base de datos (aplica las migraciones)
 pnpm --filter backend prisma:migrate
 
 # d) Poblar la base con datos iniciales (roles, permisos, usuarios demo, ubigeo)
 pnpm --filter backend prisma:seed
 ```
+
+> **¿Qué comando crea la base de datos?**
+> - `docker compose up -d db` → levanta PostgreSQL y crea la base vacía `siadlp_db`.
+> - `pnpm --filter backend prisma:migrate` → crea las **tablas** dentro de esa base.
+> - `prisma:generate` **no** toca la base: solo genera el cliente TypeScript.
+>
+> Si NO usás Docker, necesitás un PostgreSQL propio (instalado o en la nube) con una base
+> `siadlp_db` creada, y apuntar `DATABASE_URL` a él antes del paso (c).
 
 ### 5. Iniciar la aplicación (modo desarrollo)
 
