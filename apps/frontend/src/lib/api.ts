@@ -1,4 +1,5 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL!;
+// Usa la variable de entorno si está definida; si no, cae al backend local por defecto.
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4020/api';
 
 interface ApiError {
   statusCode: number;

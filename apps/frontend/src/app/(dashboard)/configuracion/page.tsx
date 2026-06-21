@@ -14,7 +14,7 @@ import { Loader2Icon, UploadIcon } from 'lucide-react';
 
 const getBackendUrl = (path: string | null | undefined): string => {
   if (!path) return '';
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? '';
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4020/api';
   const baseUrl = apiUrl.replace(/\/api$/, '');
   return `${baseUrl}${path}`;
 };
@@ -93,7 +93,7 @@ export default function ConfiguracionPage() {
       formData.append('logo', file);
 
       const token = localStorage.getItem('access_token');
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? '';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4020/api';
       const res = await fetch(`${apiUrl}/empresa/logo`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },

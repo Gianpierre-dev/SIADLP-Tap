@@ -40,7 +40,7 @@ import Image from 'next/image';
 
 const getBackendUrl = (path: string | null | undefined): string => {
   if (!path) return '/LogoLaCosecha.png';
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? '';
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4020/api';
   const baseUrl = apiUrl.replace(/\/api$/, '');
   return `${baseUrl}${path}`;
 };
