@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { apiGet, apiPost } from '@/lib/api';
+import { useAuthStore } from '@/lib/auth';
 import { PageHeader } from '@/components/page-header';
 import { DataTable, Column } from '@/components/data-table';
 import { Button } from '@/components/ui/button';
@@ -800,6 +801,7 @@ export default function DespachoPage() {
 
   // Dialogs
   const [createOpen, setCreateOpen] = useState(false);
+  const { hasPermission } = useAuthStore();
   const [detailSheetId, setDetailSheetId] = useState<number | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
 
@@ -837,6 +839,10 @@ export default function DespachoPage() {
   }, [page, fetchSheets]);
 
   useEffect(() => {
+    // Estos catálogos solo los necesita quien arma hojas de carga (Jefe de
+    // Despacho). El Chofer solo registra entregas y no tiene permiso sobre
+    // ellos, así que evitamos las llamadas que le devolverían 403.
+    if (!hasPermission('rutas.leer')) return;
     Promise.all([
       apiGet<Route[]>('/catalogs/routes'),
       apiGet<Vehicle[]>('/catalogs/vehicles'),
@@ -848,7 +854,7 @@ export default function DespachoPage() {
         setDrivers(d);
       })
       .catch(() => toast.error('Error al cargar catálogos'));
-  }, []);
+  }, [hasPermission]);
 
   // ── Open detail ───────────────────────────────────────────────────────────
 
@@ -941,10 +947,12 @@ export default function DespachoPage() {
         title="Despacho"
         description="Gestión de hojas de carga y entregas"
         action={
-          <Button onClick={() => setCreateOpen(true)}>
-            <PlusIcon className="h-4 w-4 mr-2" />
-            Nueva Hoja de Carga
-          </Button>
+          hasPermission('despacho.crear') ? (
+            <Button onClick={() => setCreateOpen(true)}>
+              <PlusIcon className="h-4 w-4 mr-2" />
+              Nueva Hoja de Carga
+            </Button>
+          ) : undefined
         }
       />
 
