@@ -264,6 +264,10 @@ export default function PedidosPage() {
       toast.error('Ingresá la fecha de entrega');
       return;
     }
+    if (fechaEntrega < new Date().toLocaleDateString('en-CA')) {
+      toast.error('La fecha de entrega no puede ser anterior a hoy');
+      return;
+    }
 
     setSaving(true);
     try {
@@ -474,6 +478,7 @@ export default function PedidosPage() {
                   id="fechaEntrega"
                   type="date"
                   value={fechaEntrega}
+                  min={new Date().toLocaleDateString('en-CA')}
                   onChange={(e) => setFechaEntrega(e.target.value)}
                   required
                 />

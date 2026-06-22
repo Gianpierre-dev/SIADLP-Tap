@@ -30,6 +30,18 @@ export class OrdersService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(dto: CreateOrderDto, userId: number) {
+    // La fecha de entrega no puede ser anterior a hoy. Se evalúa en la zona horaria
+    // de Perú (UTC-5) porque el servidor corre en UTC: sin el ajuste, un pedido
+    // creado de noche en Perú podría rechazarse o aceptarse por el día equivocado.
+    const hoyPeru = new Date(Date.now() - 5 * 60 * 60 * 1000)
+      .toISOString()
+      .slice(0, 10);
+    if (dto.fechaEntrega.slice(0, 10) < hoyPeru) {
+      throw new BadRequestException(
+        'La fecha de entrega no puede ser anterior a la fecha actual',
+      );
+    }
+
     const cliente = await this.prisma.cliente.findUnique({
       where: { id: dto.clienteId },
     });
