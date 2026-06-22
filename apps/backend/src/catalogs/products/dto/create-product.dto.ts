@@ -6,15 +6,11 @@ import {
   IsIn,
 } from 'class-validator';
 
-// Unidades de medida válidas para los productos de La Cosecha.
-// Fuente única de verdad: el frontend ofrece la misma lista en su selector.
-export const UNIDADES_MEDIDA = [
-  'kg',
-  'saco',
-  'bolsa',
-  'jaba',
-  'unidad',
-] as const;
+// El sistema estandariza la cantidad de los productos en KILOGRAMOS: la
+// distribución se gestiona por peso (capacidad de los vehículos en kg).
+// La gestión de otras presentaciones/empaques con conversión a kg queda
+// documentada como trabajo futuro.
+export const UNIDADES_MEDIDA = ['kg'] as const;
 
 export class CreateProductDto {
   @IsString()

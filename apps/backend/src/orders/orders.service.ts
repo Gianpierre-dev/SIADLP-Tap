@@ -12,6 +12,7 @@ const PRODUCTO_SELECT = {
   id: true,
   nombre: true,
   codigoSku: true,
+  unidadMedida: true,
 } as const;
 
 const CLIENTE_SELECT = {

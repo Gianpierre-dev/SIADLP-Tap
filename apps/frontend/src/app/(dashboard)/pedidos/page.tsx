@@ -43,7 +43,7 @@ interface OrderDetail {
   id: number;
   productoId: number;
   cantidad: string;
-  producto: { id: number; nombre: string; codigoSku: string };
+  producto: { id: number; nombre: string; codigoSku: string; unidadMedida: string };
 }
 
 interface OrderFull extends Omit<Order, '_count'> {
@@ -566,7 +566,9 @@ export default function PedidosPage() {
                             {d.producto.codigoSku}
                           </td>
                           <td className="px-3 py-2">{d.producto.nombre}</td>
-                          <td className="px-3 py-2 text-right">{d.cantidad}</td>
+                          <td className="px-3 py-2 text-right">
+                            {d.cantidad} {d.producto.unidadMedida}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
