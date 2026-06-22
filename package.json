@@ -1,7 +1,6 @@
 {
   "name": "siadlp",
   "private": true,
-  "packageManager": "pnpm@11.1.2",
   "scripts": {
     "dev": "pnpm --filter @siadlp/shared build && pnpm --parallel -r run dev",
     "dev:backend": "pnpm --filter @siadlp/shared build && pnpm --filter backend dev",
