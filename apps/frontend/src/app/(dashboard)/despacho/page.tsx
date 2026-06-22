@@ -561,6 +561,7 @@ function DetailDialog({ sheetId, open, onClose, onSuccess }: DetailDialogProps) 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deliveryPedidoId, setDeliveryPedidoId] = useState<number | null>(null);
   const [deliveryOpen, setDeliveryOpen] = useState(false);
+  const { hasPermission } = useAuthStore();
 
   const fetchDetail = useCallback(() => {
     if (!sheetId) return;
@@ -720,7 +721,8 @@ function DetailDialog({ sheetId, open, onClose, onSuccess }: DetailDialogProps) 
                             {sheet.estado === 'EN_RUTA' && (
                               <td className="px-3 py-2 text-center">
                                 {(!entry.entrega ||
-                                  entry.entrega.estado === 'PENDIENTE') && (
+                                  entry.entrega.estado === 'PENDIENTE') &&
+                                  hasPermission('despacho.registrar_entrega') && (
                                   <Button
                                     variant="default"
                                     size="sm"
@@ -742,13 +744,15 @@ function DetailDialog({ sheetId, open, onClose, onSuccess }: DetailDialogProps) 
 
               {/* Action buttons */}
               <DialogFooter className="gap-2">
-                {sheet.estado === 'PREPARANDO' && (
+                {sheet.estado === 'PREPARANDO' &&
+                  hasPermission('despacho.editar') && (
                   <Button onClick={() => setConfirmOpen(true)}>
                     <TruckIcon className="h-4 w-4 mr-2" />
                     Confirmar Despacho
                   </Button>
                 )}
-                {sheet.estado === 'DESPACHADO' && (
+                {sheet.estado === 'DESPACHADO' &&
+                  hasPermission('despacho.editar') && (
                   <Button onClick={handleStartRoute} disabled={routeSaving}>
                     {routeSaving ? (
                       <Loader2Icon className="h-4 w-4 animate-spin mr-2" />
