@@ -119,6 +119,17 @@ function formatDate(iso: string): string {
   return iso.slice(0, 10);
 }
 
+// Fecha + hora en la zona horaria local del operador (Perú en su navegador).
+function formatDateTime(iso: string): string {
+  return new Date(iso).toLocaleString('es-PE', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
 function nativeSelectClass(): string {
   return 'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring';
 }
@@ -713,6 +724,11 @@ function DetailDialog({ sheetId, open, onClose, onSuccess }: DetailDialogProps) 
                                   map={deliveryStateLabels}
                                   colorMap={deliveryStateColors}
                                 />
+                              )}
+                              {entry.entrega?.fechaEntrega && (
+                                <span className="block text-xs text-muted-foreground mt-1">
+                                  {formatDateTime(entry.entrega.fechaEntrega)}
+                                </span>
                               )}
                             </td>
                             <td className="px-3 py-2 text-muted-foreground">

@@ -124,6 +124,17 @@ function formatDate(iso: string): string {
   return iso.slice(0, 10);
 }
 
+// Fecha + hora en la zona horaria local del operador (Perú en su navegador).
+function formatDateTime(iso: string): string {
+  return new Date(iso).toLocaleString('es-PE', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 function StateBadge({ estado }: { estado: string }) {
@@ -534,8 +545,8 @@ export default function PedidosPage() {
                   <p>{formatDate(selectedOrder.fechaEntrega)}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Fecha de Creación</p>
-                  <p>{formatDate(selectedOrder.fechaCreacion)}</p>
+                  <p className="text-muted-foreground">Fecha y hora del pedido</p>
+                  <p>{formatDateTime(selectedOrder.fechaCreacion)}</p>
                 </div>
                 {selectedOrder.observacion && (
                   <div className="col-span-2">
