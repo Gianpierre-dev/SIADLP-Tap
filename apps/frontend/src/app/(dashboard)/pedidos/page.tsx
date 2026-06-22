@@ -58,6 +58,10 @@ interface OrderFull extends Omit<Order, '_count'> {
   cliente: {
     id: number;
     razonSocial: string;
+    ruc: string | null;
+    direccion: string;
+    telefono: string | null;
+    distrito: { nombre: string } | null;
     ruta?: { id: number; nombre: string };
   };
 }
@@ -545,6 +549,29 @@ export default function PedidosPage() {
                     <p>{selectedOrder.observacion}</p>
                   </div>
                 )}
+              </div>
+
+              {/* Datos del cliente / entrega */}
+              <div className="rounded-md border bg-muted/30 p-3 text-sm">
+                <p className="text-sm font-medium mb-2">Datos del cliente</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-muted-foreground">RUC</p>
+                    <p>{selectedOrder.cliente.ruc ?? '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Teléfono</p>
+                    <p>{selectedOrder.cliente.telefono ?? '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Distrito</p>
+                    <p>{selectedOrder.cliente.distrito?.nombre ?? '—'}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-muted-foreground">Dirección de entrega</p>
+                    <p>{selectedOrder.cliente.direccion}</p>
+                  </div>
+                </div>
               </div>
 
               {/* Line items */}

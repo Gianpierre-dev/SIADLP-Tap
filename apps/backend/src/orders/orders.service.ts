@@ -18,6 +18,10 @@ const PRODUCTO_SELECT = {
 const CLIENTE_SELECT = {
   id: true,
   razonSocial: true,
+  ruc: true,
+  direccion: true,
+  telefono: true,
+  distrito: { select: { nombre: true } },
 } as const;
 
 @Injectable()
