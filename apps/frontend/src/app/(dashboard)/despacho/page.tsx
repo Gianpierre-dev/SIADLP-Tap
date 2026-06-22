@@ -686,6 +686,7 @@ function DetailDialog({ sheetId, open, onClose, onSuccess }: DetailDialogProps) 
                           <th className="text-left px-3 py-2">Pedido</th>
                           <th className="text-left px-3 py-2">Cliente</th>
                           <th className="text-left px-3 py-2">Estado</th>
+                          <th className="text-left px-3 py-2">Observación</th>
                           {sheet.estado === 'EN_RUTA' && (
                             <th className="text-center px-3 py-2">Acciones</th>
                           )}
@@ -713,28 +714,22 @@ function DetailDialog({ sheetId, open, onClose, onSuccess }: DetailDialogProps) 
                                 />
                               )}
                             </td>
+                            <td className="px-3 py-2 text-muted-foreground">
+                              {entry.entrega?.observacion || '—'}
+                            </td>
                             {sheet.estado === 'EN_RUTA' && (
                               <td className="px-3 py-2 text-center">
-                                <div className="flex items-center justify-center gap-1">
-                                  {(!entry.entrega || entry.entrega.estado === 'PENDIENTE') && (
-                                    <Button
-                                      variant="default"
-                                      size="sm"
-                                      onClick={() => openDelivery(entry.pedidoId)}
-                                    >
-                                      <TruckIcon className="h-4 w-4 mr-1" />
-                                      Registrar Entrega
-                                    </Button>
-                                  )}
-                                  {entry.entrega?.observacion && (
-                                    <span
-                                      className="text-xs text-muted-foreground truncate max-w-[120px]"
-                                      title={entry.entrega.observacion}
-                                    >
-                                      {entry.entrega.observacion}
-                                    </span>
-                                  )}
-                                </div>
+                                {(!entry.entrega ||
+                                  entry.entrega.estado === 'PENDIENTE') && (
+                                  <Button
+                                    variant="default"
+                                    size="sm"
+                                    onClick={() => openDelivery(entry.pedidoId)}
+                                  >
+                                    <TruckIcon className="h-4 w-4 mr-1" />
+                                    Registrar Entrega
+                                  </Button>
+                                )}
                               </td>
                             )}
                           </tr>
