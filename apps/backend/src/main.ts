@@ -82,9 +82,12 @@ async function bootstrap() {
           upgradeInsecureRequests: [],
         },
       },
-      // Cross-Origin-Resource-Policy: same-site so /uploads/ logos can be fetched by the
-      // frontend on the same eTLD+1 but not from arbitrary attacker pages.
-      crossOriginResourcePolicy: { policy: 'same-site' },
+      // Cross-Origin-Resource-Policy: cross-origin so /uploads/ logos can be fetched by the
+      // frontend. On Railway the front and back live on different subdomains of
+      // up.railway.app, which is a public suffix — so each subdomain is a SEPARATE site and
+      // 'same-site' would block the logo (ERR_BLOCKED_BY_RESPONSE.NotSameSite). The uploaded
+      // logo is a public image, so cross-origin exposure is acceptable.
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
     }),
   );
 
