@@ -7,9 +7,11 @@ COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY packages/shared/package.json packages/shared/
 COPY apps/backend/package.json apps/backend/
 
-# Install all dependencies (including devDependencies for build)
+# Install all dependencies (including devDependencies for build).
+# --ignore-scripts: el postinstall compila el código, pero acá todavía no está
+# (solo los package.json); el build explícito se hace más abajo tras copiar el source.
 ENV NODE_ENV=development
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
 # Copy source
 COPY packages/shared/ packages/shared/
