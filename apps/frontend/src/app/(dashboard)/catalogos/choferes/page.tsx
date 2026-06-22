@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/dialog';
 import { PlusIcon, PencilIcon, Trash2Icon, Loader2Icon } from 'lucide-react';
 import { useConfirm } from '@/components/confirm-dialog';
+import { useAuthStore } from '@/lib/auth';
 
 // Categorías de licencia de conducir vigentes en Perú (MTC), agrupadas por clase.
 const CATEGORIAS_POR_CLASE: Record<string, string[]> = {
@@ -80,9 +81,11 @@ export default function ChoferesPage() {
       .finally(() => setLoading(false));
   };
 
+  const { hasPermission } = useAuthStore();
+
   useEffect(() => {
-    fetchItems();
-  }, []);
+    if (hasPermission('choferes.leer')) fetchItems();
+  }, [hasPermission]);
 
   const openCreate = () => {
     setEditingId(null);

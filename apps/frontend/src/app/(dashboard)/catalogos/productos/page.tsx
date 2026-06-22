@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/dialog';
 import { PlusIcon, PencilIcon, Trash2Icon, Loader2Icon } from 'lucide-react';
 import { useConfirm } from '@/components/confirm-dialog';
+import { useAuthStore } from '@/lib/auth';
 
 interface Product {
   id: number;
@@ -59,9 +60,11 @@ export default function ProductosPage() {
       .finally(() => setLoading(false));
   };
 
+  const { hasPermission } = useAuthStore();
+
   useEffect(() => {
-    fetchItems();
-  }, []);
+    if (hasPermission('productos.leer')) fetchItems();
+  }, [hasPermission]);
 
   const openCreate = () => {
     setEditingId(null);

@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/dialog';
 import { PlusIcon, PencilIcon, Trash2Icon, Loader2Icon } from 'lucide-react';
 import { useConfirm } from '@/components/confirm-dialog';
+import { useAuthStore } from '@/lib/auth';
 
 interface Route {
   id: number;
@@ -56,9 +57,11 @@ export default function RutasPage() {
       .finally(() => setLoading(false));
   };
 
+  const { hasPermission } = useAuthStore();
+
   useEffect(() => {
-    fetchItems();
-  }, []);
+    if (hasPermission('rutas.leer')) fetchItems();
+  }, [hasPermission]);
 
   const openCreate = () => {
     setEditingId(null);
