@@ -718,10 +718,11 @@ function DetailDialog({ sheetId, open, onClose, onSuccess }: DetailDialogProps) 
                                 <div className="flex items-center justify-center gap-1">
                                   {(!entry.entrega || entry.entrega.estado === 'PENDIENTE') && (
                                     <Button
-                                      variant="ghost"
+                                      variant="default"
                                       size="sm"
                                       onClick={() => openDelivery(entry.pedidoId)}
                                     >
+                                      <TruckIcon className="h-4 w-4 mr-1" />
                                       Registrar Entrega
                                     </Button>
                                   )}
