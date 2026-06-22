@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/dialog';
 import { PlusIcon, PencilIcon, Trash2Icon, Loader2Icon } from 'lucide-react';
 import { useConfirm } from '@/components/confirm-dialog';
+import { useAuthStore } from '@/lib/auth';
 
 interface Route {
   id: number;
@@ -83,6 +84,8 @@ export default function ClientesPage() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState<ClientForm>(EMPTY_FORM);
   const askConfirm = useConfirm();
+  const { hasPermission } = useAuthStore();
+  const puedeCrear = hasPermission('clientes.crear');
 
   const [departamentos, setDepartamentos] = useState<UbigeoOption[]>([]);
   const [provinciasUbigeo, setProvinciasUbigeo] = useState<UbigeoOption[]>([]);
@@ -98,13 +101,18 @@ export default function ClientesPage() {
 
   useEffect(() => {
     fetchItems();
-    apiGet<Route[]>('/catalogs/routes')
-      .then(setRoutes)
-      .catch(() => toast.error('Error al cargar rutas'));
+    // Las rutas solo se usan en el formulario de alta/edición. Un rol de solo
+    // lectura (ej. Chofer) no tiene permiso sobre rutas, así que evitamos la
+    // llamada que devolvería 403.
+    if (hasPermission('rutas.leer')) {
+      apiGet<Route[]>('/catalogs/routes')
+        .then(setRoutes)
+        .catch(() => toast.error('Error al cargar rutas'));
+    }
     apiGet<UbigeoOption[]>('/ubigeo/departamentos')
       .then(setDepartamentos)
       .catch(() => toast.error('Error al cargar departamentos'));
-  }, []);
+  }, [hasPermission]);
 
   const handleDepartamentoChange = (departamentoId: string) => {
     setForm((prev) => ({ ...prev, departamentoId, provinciaId: '', distritoId: '' }));
@@ -289,10 +297,12 @@ export default function ClientesPage() {
         title="Clientes"
         description="Gestión del catálogo de clientes"
         action={
-          <Button onClick={openCreate}>
-            <PlusIcon className="h-4 w-4 mr-2" />
-            Nuevo Cliente
-          </Button>
+          puedeCrear ? (
+            <Button onClick={openCreate}>
+              <PlusIcon className="h-4 w-4 mr-2" />
+              Nuevo Cliente
+            </Button>
+          ) : undefined
         }
       />
       <DataTable columns={columns} data={items} loading={loading} />
