@@ -86,7 +86,7 @@ export class ReportsService {
       }),
       this.prisma.cliente.count({ where: { activo: true } }),
       this.prisma.producto.count({ where: { activo: true } }),
-      this.prisma.ruta.count({ where: { activo: true } }),
+      this.prisma.ruta.count({ where: { activa: true } }),
       this.prisma.vehiculo.count({ where: { activo: true } }),
       this.prisma.chofer.count({ where: { activo: true } }),
       this.prisma.pedido.count({ where: { estado: OrderStatus.REGISTERED } }),
