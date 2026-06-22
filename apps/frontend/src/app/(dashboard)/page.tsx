@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { apiGet } from '@/lib/api';
 import { PageHeader } from '@/components/page-header';
@@ -44,6 +45,20 @@ interface DashboardData {
   tendencia: { fecha: string; total: number }[];
 }
 
+type Periodo = 'dia' | 'semana' | 'mes';
+
+const PERIODOS: { key: Periodo; label: string }[] = [
+  { key: 'dia', label: 'Hoy' },
+  { key: 'semana', label: 'Semana' },
+  { key: 'mes', label: 'Mes' },
+];
+
+const PERIODO_DESC: Record<Periodo, string> = {
+  dia: 'Resumen operativo del día',
+  semana: 'Resumen de los últimos 7 días',
+  mes: 'Resumen de los últimos 30 días',
+};
+
 const ESTADO_ORDER = [
   'REGISTERED',
   'CONFIRMED',
@@ -74,18 +89,49 @@ const stateBarColors: Record<string, string> = {
   CANCELLED: 'bg-[#c62828]',
 };
 
+function Segmented<T extends string>({
+  value,
+  onChange,
+  options,
+}: {
+  value: T;
+  onChange: (v: T) => void;
+  options: { key: T; label: string }[];
+}) {
+  return (
+    <div className="inline-flex rounded-md border bg-muted/40 p-0.5">
+      {options.map((o) => (
+        <button
+          key={o.key}
+          type="button"
+          onClick={() => onChange(o.key)}
+          className={`rounded px-3 py-1 text-sm font-medium transition-colors ${
+            value === o.key
+              ? 'bg-background text-foreground shadow-sm'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function KpiCard({
   title,
   value,
   description,
   icon: Icon,
   accent = 'default',
+  onClick,
 }: {
   title: string;
   value: string | number;
   description?: string;
   icon: React.ElementType;
   accent?: 'default' | 'blue' | 'green' | 'gold' | 'amber' | 'red';
+  onClick?: () => void;
 }) {
   const accentStyles: Record<string, string> = {
     default: 'bg-muted text-muted-foreground',
@@ -97,7 +143,10 @@ function KpiCard({
   };
 
   return (
-    <Card>
+    <Card
+      onClick={onClick}
+      className={onClick ? 'cursor-pointer transition-colors hover:bg-muted/30' : ''}
+    >
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
           {title}
@@ -122,6 +171,7 @@ function ActionCard({
   caption,
   icon: Icon,
   tone,
+  onClick,
   children,
 }: {
   title: string;
@@ -129,6 +179,7 @@ function ActionCard({
   caption: string;
   icon: React.ElementType;
   tone: 'blue' | 'gold' | 'red';
+  onClick?: () => void;
   children?: React.ReactNode;
 }) {
   const active = value > 0;
@@ -144,7 +195,12 @@ function ActionCard({
   };
 
   return (
-    <Card className={`border-l-4 ${active ? borders[tone] : 'border-l-border'}`}>
+    <Card
+      onClick={onClick}
+      className={`border-l-4 ${active ? borders[tone] : 'border-l-border'} ${
+        onClick ? 'cursor-pointer transition-colors hover:bg-muted/30' : ''
+      }`}
+    >
       <CardContent className="pt-6">
         <div className="flex items-start justify-between">
           <div>
@@ -166,13 +222,19 @@ function ResourceChip({
   icon: Icon,
   label,
   value,
+  onClick,
 }: {
   icon: React.ElementType;
   label: string;
   value: number;
+  onClick?: () => void;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-lg border p-3">
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex items-center gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-muted/40"
+    >
       <div className="rounded-md bg-muted p-2 text-muted-foreground">
         <Icon className="h-4 w-4" />
       </div>
@@ -180,11 +242,17 @@ function ResourceChip({
         <p className="text-xl font-bold leading-none">{value}</p>
         <p className="mt-1 text-xs text-muted-foreground">{label}</p>
       </div>
-    </div>
+    </button>
   );
 }
 
-function EstadoBarChart({ porEstado }: { porEstado: Record<string, number> }) {
+function EstadoBarChart({
+  porEstado,
+  onSelect,
+}: {
+  porEstado: Record<string, number>;
+  onSelect: (estado: string) => void;
+}) {
   const entries = ESTADO_ORDER.map((estado) => ({
     estado,
     count: porEstado[estado] ?? 0,
@@ -194,7 +262,7 @@ function EstadoBarChart({ porEstado }: { porEstado: Record<string, number> }) {
     return (
       <div className="flex flex-col items-center justify-center py-8 text-center">
         <ShoppingCartIcon className="h-8 w-8 text-muted-foreground/50" />
-        <p className="mt-2 text-sm font-medium">Sin pedidos hoy</p>
+        <p className="mt-2 text-sm font-medium">Sin pedidos en el período</p>
         <p className="text-xs text-muted-foreground">
           Los pedidos aparecerán aquí conforme se registren
         </p>
@@ -207,7 +275,12 @@ function EstadoBarChart({ porEstado }: { porEstado: Record<string, number> }) {
   return (
     <div className="space-y-3">
       {entries.map(({ estado, count }) => (
-        <div key={estado} className="flex items-center gap-3">
+        <button
+          key={estado}
+          type="button"
+          onClick={() => onSelect(estado)}
+          className="flex w-full items-center gap-3 rounded p-1 text-left transition-colors hover:bg-muted/40"
+        >
           <span className="w-24 shrink-0 text-xs font-medium">
             {stateLabels[estado] ?? estado}
           </span>
@@ -218,7 +291,7 @@ function EstadoBarChart({ porEstado }: { porEstado: Record<string, number> }) {
             />
           </div>
           <span className="w-6 text-right text-sm font-semibold">{count}</span>
-        </div>
+        </button>
       ))}
     </div>
   );
@@ -232,24 +305,30 @@ function TendenciaChart({ data }: { data: { fecha: string; total: number }[] }) 
     return (
       <div className="flex flex-col items-center justify-center py-8 text-center">
         <TriangleAlertIcon className="h-8 w-8 text-muted-foreground/40" />
-        <p className="mt-2 text-sm font-medium">Sin pedidos en los últimos 7 días</p>
+        <p className="mt-2 text-sm font-medium">Sin pedidos en el rango</p>
       </div>
     );
   }
 
+  // With 30 days, drop the per-day weekday label (too dense) — show endpoints only.
+  const showLabels = data.length <= 14;
+
   return (
     <div className="space-y-2">
-      <div className="flex h-40 items-end gap-2">
+      <div className="flex h-40 items-end gap-1">
         {data.map((d) => {
           const pct = (d.total / max) * 100;
           return (
             <div
               key={d.fecha}
+              title={`${d.fecha}: ${d.total}`}
               className="flex h-full flex-1 flex-col items-center justify-end gap-1"
             >
-              <span className="text-xs font-medium text-muted-foreground">
-                {d.total}
-              </span>
+              {showLabels && (
+                <span className="text-xs font-medium text-muted-foreground">
+                  {d.total}
+                </span>
+              )}
               <div
                 className="w-full rounded-t-md bg-[#1565c0]/85"
                 style={{ height: `${d.total > 0 ? Math.max(pct, 4) : 0}%` }}
@@ -258,7 +337,7 @@ function TendenciaChart({ data }: { data: { fecha: string; total: number }[] }) 
           );
         })}
       </div>
-      <div className="flex gap-2">
+      <div className="flex gap-1">
         {data.map((d, i) => (
           <span
             key={d.fecha}
@@ -268,9 +347,16 @@ function TendenciaChart({ data }: { data: { fecha: string; total: number }[] }) 
                 : 'text-muted-foreground'
             }`}
           >
-            {new Date(`${d.fecha}T00:00:00`).toLocaleDateString('es-PE', {
-              weekday: 'short',
-            })}
+            {showLabels
+              ? new Date(`${d.fecha}T00:00:00`).toLocaleDateString('es-PE', {
+                  weekday: 'short',
+                })
+              : i === 0 || i === data.length - 1
+                ? new Date(`${d.fecha}T00:00:00`).toLocaleDateString('es-PE', {
+                    day: '2-digit',
+                    month: '2-digit',
+                  })
+                : ''}
           </span>
         ))}
       </div>
@@ -279,21 +365,35 @@ function TendenciaChart({ data }: { data: { fecha: string; total: number }[] }) 
 }
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [periodo, setPeriodo] = useState<Periodo>('dia');
+  const [tendenciaDias, setTendenciaDias] = useState<7 | 30>(7);
 
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
-    apiGet<DashboardData>(`/reports/dashboard?fecha=${today}`)
+    setLoading(true);
+    apiGet<DashboardData>(
+      `/reports/dashboard?fecha=${today}&periodo=${periodo}&tendenciaDias=${tendenciaDias}`,
+    )
       .then(setData)
       .catch(() => toast.error('Error al cargar el dashboard'))
       .finally(() => setLoading(false));
-  }, []);
+  }, [periodo, tendenciaDias]);
+
+  const periodSelector = (
+    <Segmented value={periodo} onChange={setPeriodo} options={PERIODOS} />
+  );
 
   if (loading) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Dashboard" description="Resumen operativo del día" />
+        <PageHeader
+          title="Dashboard"
+          description={PERIODO_DESC[periodo]}
+          action={periodSelector}
+        />
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <Skeleton key={i} className="h-28" />
@@ -311,7 +411,11 @@ export default function DashboardPage() {
   if (!data) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Dashboard" description="Resumen operativo del día" />
+        <PageHeader
+          title="Dashboard"
+          description={PERIODO_DESC[periodo]}
+          action={periodSelector}
+        />
         <p className="text-muted-foreground">No se pudieron cargar los datos.</p>
       </div>
     );
@@ -320,23 +424,31 @@ export default function DashboardPage() {
   const { pedidos, despacho, recursos, pendientes, alertasChoferes, tendencia } =
     data;
 
+  const go = (href: string) => router.push(href);
+
   return (
     <div className="space-y-6">
-      <PageHeader title="Dashboard" description="Resumen operativo del día" />
+      <PageHeader
+        title="Dashboard"
+        description={PERIODO_DESC[periodo]}
+        action={periodSelector}
+      />
 
-      {/* KPIs del día */}
+      {/* KPIs del período */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard
-          title="Pedidos del día"
+          title="Pedidos"
           value={pedidos.total}
           icon={ShoppingCartIcon}
           accent="blue"
+          onClick={() => go('/pedidos')}
         />
         <KpiCard
-          title="Despachos del día"
+          title="Despachos"
           value={despacho.hojasDelDia}
           icon={TruckIcon}
           accent="gold"
+          onClick={() => go('/despacho')}
         />
         <KpiCard
           title="Entregas completadas"
@@ -344,12 +456,14 @@ export default function DashboardPage() {
           description={`${despacho.entregasPendientes} pendientes`}
           icon={CircleCheckIcon}
           accent="green"
+          onClick={() => go('/despacho')}
         />
         <KpiCard
           title="Entregas con novedad"
           value={despacho.entregasConNovedad}
           icon={TriangleAlertIcon}
           accent="amber"
+          onClick={() => go('/despacho')}
         />
       </div>
 
@@ -365,6 +479,7 @@ export default function DashboardPage() {
             caption="Registrados esperando confirmación"
             icon={ClipboardCheckIcon}
             tone="blue"
+            onClick={() => go('/pedidos?estado=REGISTERED')}
           />
           <ActionCard
             title="Listos para despacho"
@@ -372,6 +487,7 @@ export default function DashboardPage() {
             caption="Confirmados a la espera de ruta"
             icon={PackageCheckIcon}
             tone="gold"
+            onClick={() => go('/pedidos?estado=CONFIRMED')}
           />
           <ActionCard
             title="Licencias por revalidar"
@@ -379,6 +495,7 @@ export default function DashboardPage() {
             caption="Choferes con revalidación ≤ 30 días"
             icon={CalendarClockIcon}
             tone="red"
+            onClick={() => go('/catalogos/choferes')}
           >
             {alertasChoferes.length > 0 && (
               <div className="mt-3 space-y-1 border-t pt-3">
@@ -415,16 +532,27 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Pedidos del día por estado</CardTitle>
+            <CardTitle className="text-base">Pedidos por estado</CardTitle>
           </CardHeader>
           <CardContent>
-            <EstadoBarChart porEstado={pedidos.porEstado} />
+            <EstadoBarChart
+              porEstado={pedidos.porEstado}
+              onSelect={(estado) => go(`/pedidos?estado=${estado}`)}
+            />
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Pedidos · últimos 7 días</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="text-base">Tendencia de pedidos</CardTitle>
+            <Segmented
+              value={String(tendenciaDias)}
+              onChange={(v) => setTendenciaDias(Number(v) as 7 | 30)}
+              options={[
+                { key: '7', label: '7 días' },
+                { key: '30', label: '30 días' },
+              ]}
+            />
           </CardHeader>
           <CardContent>
             <TendenciaChart data={tendencia} />
@@ -443,26 +571,31 @@ export default function DashboardPage() {
               icon={UsersIcon}
               label="Clientes activos"
               value={recursos.clientesActivos}
+              onClick={() => go('/catalogos/clientes')}
             />
             <ResourceChip
               icon={PackageIcon}
               label="Productos activos"
               value={recursos.productosActivos}
+              onClick={() => go('/catalogos/productos')}
             />
             <ResourceChip
               icon={MapIcon}
               label="Rutas activas"
               value={recursos.rutasActivas}
+              onClick={() => go('/catalogos/rutas')}
             />
             <ResourceChip
               icon={TruckIcon}
               label="Vehículos activos"
               value={recursos.vehiculosActivos}
+              onClick={() => go('/catalogos/vehiculos')}
             />
             <ResourceChip
               icon={UserCheckIcon}
               label="Choferes activos"
               value={recursos.choferesActivos}
+              onClick={() => go('/catalogos/choferes')}
             />
           </div>
         </CardContent>

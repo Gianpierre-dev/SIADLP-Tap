@@ -38,14 +38,29 @@ export interface DashboardData {
 export class ReportsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getDashboard(fecha: string): Promise<DashboardData> {
+  async getDashboard(opts: {
+    fecha: string;
+    periodo: string;
+    tendenciaDias: number;
+  }): Promise<DashboardData> {
+    const { fecha, periodo, tendenciaDias } = opts;
     const day = new Date(fecha);
     const nextDay = new Date(day);
     nextDay.setDate(nextDay.getDate() + 1);
 
-    // 7-day trend window: today and the previous 6 days
-    const desde7d = new Date(day);
-    desde7d.setDate(desde7d.getDate() - 6);
+    // Snapshot range for pedidos/despacho/entregas, driven by the period filter.
+    // 'dia' = sólo hoy; 'semana' = últimos 7 días; 'mes' = últimos 30 días.
+    const rangeStart = new Date(day);
+    if (periodo === 'semana') {
+      rangeStart.setDate(rangeStart.getDate() - 6);
+    } else if (periodo === 'mes') {
+      rangeStart.setDate(rangeStart.getDate() - 29);
+    }
+
+    // Trend window: `tendenciaDias` days ending today (inclusive)
+    const dias = tendenciaDias > 0 ? tendenciaDias : 7;
+    const trendStart = new Date(day);
+    trendStart.setDate(trendStart.getDate() - (dias - 1));
 
     // Driver licence revalidation alert window: next 30 days
     const limiteRevalidacion = new Date(day);
@@ -69,17 +84,17 @@ export class ReportsService {
     ] = await Promise.all([
       this.prisma.pedido.groupBy({
         by: ['estado'],
-        where: { fechaCreacion: { gte: day, lt: nextDay } },
+        where: { fechaCreacion: { gte: rangeStart, lt: nextDay } },
         _count: { id: true },
       }),
       this.prisma.hojaCarga.count({
-        where: { fecha: { gte: day, lt: nextDay } },
+        where: { fecha: { gte: rangeStart, lt: nextDay } },
       }),
       this.prisma.entrega.groupBy({
         by: ['estado'],
         where: {
           pedido: {
-            hojaCarga: { fecha: { gte: day, lt: nextDay } },
+            hojaCarga: { fecha: { gte: rangeStart, lt: nextDay } },
           },
         },
         _count: { id: true },
@@ -98,7 +113,7 @@ export class ReportsService {
         },
       }),
       this.prisma.pedido.findMany({
-        where: { fechaCreacion: { gte: desde7d, lt: nextDay } },
+        where: { fechaCreacion: { gte: trendStart, lt: nextDay } },
         select: { fechaCreacion: true },
       }),
       this.prisma.chofer.findMany({
@@ -137,8 +152,8 @@ export class ReportsService {
 
     // Bucket the 7-day order trend by ISO date (zero-filled)
     const buckets = new Map<string, number>();
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(desde7d);
+    for (let i = 0; i < dias; i++) {
+      const d = new Date(trendStart);
       d.setDate(d.getDate() + i);
       buckets.set(d.toISOString().split('T')[0], 0);
     }

@@ -157,10 +157,12 @@ export class OrdersService {
     return updated;
   }
 
-  async findAll(page = 1, pageSize = 20) {
+  async findAll(page = 1, pageSize = 20, estado?: string) {
     const skip = (page - 1) * pageSize;
+    const where = estado ? { estado } : {};
     const [data, total] = await Promise.all([
       this.prisma.pedido.findMany({
+        where,
         include: {
           cliente: { select: { id: true, razonSocial: true } },
           _count: { select: { detalles: true } },
@@ -169,7 +171,7 @@ export class OrdersService {
         skip,
         take: pageSize,
       }),
-      this.prisma.pedido.count(),
+      this.prisma.pedido.count({ where }),
     ]);
     return { data, total, page, pageSize };
   }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { apiGet, apiPost, apiPatch } from '@/lib/api';
 import { useAuthStore } from '@/lib/auth';
@@ -152,11 +153,19 @@ export default function PedidosPage() {
   const { hasPermission } = useAuthStore();
   const puedeCrear = hasPermission('pedidos.crear');
 
+  const router = useRouter();
+
   // List state
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
+  // Filtro por estado, inicializado desde el query param (?estado=) sin useSearchParams
+  const [estadoFilter, setEstadoFilter] = useState<string>(() =>
+    typeof window !== 'undefined'
+      ? (new URLSearchParams(window.location.search).get('estado') ?? '')
+      : '',
+  );
 
   // Catalog data
   const [clients, setClients] = useState<Client[]>([]);
@@ -184,7 +193,10 @@ export default function PedidosPage() {
 
   const fetchOrders = (targetPage: number) => {
     setLoading(true);
-    apiGet<PaginatedResponse>(`/orders?page=${targetPage}&pageSize=${PAGE_SIZE}`)
+    const qs =
+      `page=${targetPage}&pageSize=${PAGE_SIZE}` +
+      (estadoFilter ? `&estado=${estadoFilter}` : '');
+    apiGet<PaginatedResponse>(`/orders?${qs}`)
       .then((res) => {
         setOrders(res.data);
         setTotal(res.total);
@@ -193,9 +205,17 @@ export default function PedidosPage() {
       .finally(() => setLoading(false));
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchOrders(page);
-  }, [page]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, estadoFilter]);
+
+  const onEstadoChange = (value: string) => {
+    setEstadoFilter(value);
+    setPage(1);
+    router.replace(`/pedidos${value ? `?estado=${value}` : ''}`);
+  };
 
   useEffect(() => {
     if (!puedeCrear) return;
@@ -383,6 +403,30 @@ export default function PedidosPage() {
           ) : undefined
         }
       />
+
+      <div className="flex items-center gap-2">
+        <Label htmlFor="estadoFilter" className="text-sm text-muted-foreground">
+          Estado:
+        </Label>
+        <select
+          id="estadoFilter"
+          value={estadoFilter}
+          onChange={(e) => onEstadoChange(e.target.value)}
+          className="flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+        >
+          <option value="">Todos</option>
+          {Object.entries(STATE_LABELS).map(([key, label]) => (
+            <option key={key} value={key}>
+              {label}
+            </option>
+          ))}
+        </select>
+        {estadoFilter && (
+          <Button variant="ghost" size="sm" onClick={() => onEstadoChange('')}>
+            Limpiar
+          </Button>
+        )}
+      </div>
 
       <DataTable
         columns={columns}

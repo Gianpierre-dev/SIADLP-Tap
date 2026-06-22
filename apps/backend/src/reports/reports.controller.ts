@@ -9,9 +9,17 @@ export class ReportsController {
 
   @Get('dashboard')
   @RequirePermissions('reportes.leer')
-  getDashboard(@Query('fecha') fecha?: string): Promise<DashboardData> {
+  getDashboard(
+    @Query('fecha') fecha?: string,
+    @Query('periodo') periodo?: string,
+    @Query('tendenciaDias') tendenciaDias?: string,
+  ): Promise<DashboardData> {
     const today = new Date().toISOString().split('T')[0];
-    return this.reportsService.getDashboard(fecha ?? today);
+    return this.reportsService.getDashboard({
+      fecha: fecha ?? today,
+      periodo: periodo ?? 'dia',
+      tendenciaDias: tendenciaDias ? Number(tendenciaDias) : 7,
+    });
   }
 
   @Get('export/orders')

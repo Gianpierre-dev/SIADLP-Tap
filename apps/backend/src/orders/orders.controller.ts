@@ -58,10 +58,15 @@ export class OrdersController {
 
   @Get()
   @RequirePermissions('pedidos.leer')
-  findAll(@Query('page') page?: string, @Query('pageSize') pageSize?: string) {
+  findAll(
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+    @Query('estado') estado?: string,
+  ) {
     return this.ordersService.findAll(
       page ? Number(page) : undefined,
       pageSize ? Number(pageSize) : undefined,
+      estado,
     );
   }
 
