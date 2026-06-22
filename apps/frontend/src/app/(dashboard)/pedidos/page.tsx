@@ -344,9 +344,9 @@ export default function PedidosPage() {
     },
     {
       key: 'fechaCreacion',
-      label: 'Fecha Creación',
-      className: 'w-32',
-      render: (row) => formatDate(row.fechaCreacion),
+      label: 'Fecha y hora',
+      className: 'w-44',
+      render: (row) => formatDateTime(row.fechaCreacion),
     },
     {
       key: 'acciones',
