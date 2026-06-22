@@ -36,16 +36,13 @@ const modules = [
   'usuarios',
   'roles',
   'clientes',
-  'proveedores',
   'productos',
   'rutas',
   'vehiculos',
   'choferes',
   'pedidos',
-  'compras',
-  'produccion',
-  'inventario',
   'despacho',
+  'empresa',
   'auditoria',
 ];
 
