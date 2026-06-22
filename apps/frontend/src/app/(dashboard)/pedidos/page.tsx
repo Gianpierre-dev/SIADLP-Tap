@@ -72,6 +72,7 @@ interface Product {
   id: number;
   nombre: string;
   codigoSku: string;
+  unidadMedida: string;
   activo: boolean;
 }
 
@@ -461,7 +462,7 @@ export default function PedidosPage() {
                           ))}
                       </select>
                     </div>
-                    <div className="w-28">
+                    <div className="w-36 flex items-center gap-2">
                       <Input
                         type="number"
                         min={1}
@@ -471,6 +472,9 @@ export default function PedidosPage() {
                           updateLine(idx, 'cantidad', Number(e.target.value))
                         }
                       />
+                      <span className="text-sm text-muted-foreground w-12 shrink-0">
+                        {products.find((p) => p.id === line.productoId)?.unidadMedida ?? ''}
+                      </span>
                     </div>
                     <Button
                       type="button"

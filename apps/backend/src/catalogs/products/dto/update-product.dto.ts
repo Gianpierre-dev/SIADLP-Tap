@@ -1,4 +1,11 @@
-import { IsString, IsOptional, MinLength, MaxLength } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  MinLength,
+  MaxLength,
+  IsIn,
+} from 'class-validator';
+import { UNIDADES_MEDIDA } from './create-product.dto';
 
 export class UpdateProductDto {
   @IsOptional()
@@ -18,7 +25,8 @@ export class UpdateProductDto {
   descripcion?: string;
 
   @IsOptional()
-  @IsString()
-  @MinLength(1)
+  @IsIn(UNIDADES_MEDIDA as unknown as string[], {
+    message: 'Unidad de medida inválida',
+  })
   unidadMedida?: string;
 }

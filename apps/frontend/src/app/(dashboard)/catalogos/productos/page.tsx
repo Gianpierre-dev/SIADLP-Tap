@@ -39,8 +39,14 @@ const EMPTY_FORM: ProductForm = {
   nombre: '',
   codigoSku: '',
   descripcion: '',
-  unidadMedida: '',
+  unidadMedida: 'kg',
 };
+
+// Unidades de medida válidas (misma lista que valida el backend).
+const UNIDADES_MEDIDA = ['kg', 'saco', 'bolsa', 'jaba', 'unidad'];
+
+const UM_SELECT_CLASS =
+  'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring';
 
 export default function ProductosPage() {
   const [items, setItems] = useState<Product[]>([]);
@@ -200,13 +206,19 @@ export default function ProductosPage() {
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="unidadMedida">Unidad de Medida *</Label>
-                <Input
+                <select
                   id="unidadMedida"
+                  className={UM_SELECT_CLASS}
                   value={form.unidadMedida}
                   onChange={(e) => setForm({ ...form, unidadMedida: e.target.value })}
-                  placeholder="ej. kg, und, lt"
                   required
-                />
+                >
+                  {UNIDADES_MEDIDA.map((u) => (
+                    <option key={u} value={u}>
+                      {u}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="col-span-2 space-y-1.5">
                 <Label htmlFor="descripcion">Descripción</Label>
