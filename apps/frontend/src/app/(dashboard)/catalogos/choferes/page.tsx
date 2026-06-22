@@ -18,12 +18,24 @@ import {
 } from '@/components/ui/dialog';
 import { PlusIcon, PencilIcon, Trash2Icon, Loader2Icon } from 'lucide-react';
 
+// Categorías de licencia de conducir vigentes en Perú (MTC), agrupadas por clase.
+const CATEGORIAS_POR_CLASE: Record<string, string[]> = {
+  A: ['A-I', 'A-IIa', 'A-IIb', 'A-IIIa', 'A-IIIb', 'A-IIIc'],
+  B: ['B-I', 'B-IIa', 'B-IIb', 'B-IIc'],
+};
+
+const SELECT_CLASS =
+  'flex h-9 w-full rounded-lg border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:opacity-50';
+
 interface Driver {
   id: number;
   nombre: string;
   apellido: string;
   dni: string;
-  licencia: string | null;
+  licencia: string;
+  licenciaClase: string;
+  licenciaCategoria: string;
+  fechaRevalidacion: string;
   telefono: string | null;
   activo: boolean;
 }
@@ -33,6 +45,9 @@ interface DriverForm {
   apellido: string;
   dni: string;
   licencia: string;
+  licenciaClase: string;
+  licenciaCategoria: string;
+  fechaRevalidacion: string;
   telefono: string;
 }
 
@@ -41,6 +56,9 @@ const EMPTY_FORM: DriverForm = {
   apellido: '',
   dni: '',
   licencia: '',
+  licenciaClase: 'A',
+  licenciaCategoria: 'A-IIb',
+  fechaRevalidacion: '',
   telefono: '',
 };
 
@@ -77,9 +95,24 @@ export default function ChoferesPage() {
       apellido: item.apellido,
       dni: item.dni,
       licencia: item.licencia ?? '',
+      licenciaClase: item.licenciaClase ?? 'A',
+      licenciaCategoria: item.licenciaCategoria ?? 'A-IIb',
+      fechaRevalidacion: item.fechaRevalidacion
+        ? item.fechaRevalidacion.slice(0, 10)
+        : '',
       telefono: item.telefono ?? '',
     });
     setDialogOpen(true);
+  };
+
+  // Al cambiar la clase, ajusta la categoría a la primera válida de esa clase.
+  const handleClaseChange = (clase: string) => {
+    const categorias = CATEGORIAS_POR_CLASE[clase] ?? [];
+    setForm({
+      ...form,
+      licenciaClase: clase,
+      licenciaCategoria: categorias[0] ?? '',
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -89,7 +122,10 @@ export default function ChoferesPage() {
       nombre: form.nombre,
       apellido: form.apellido,
       dni: form.dni,
-      ...(form.licencia ? { licencia: form.licencia } : {}),
+      licencia: form.licencia.toUpperCase(),
+      licenciaClase: form.licenciaClase,
+      licenciaCategoria: form.licenciaCategoria,
+      fechaRevalidacion: new Date(form.fechaRevalidacion).toISOString(),
       ...(form.telefono ? { telefono: form.telefono } : {}),
     };
     try {
@@ -134,9 +170,19 @@ export default function ChoferesPage() {
       render: (row) => row.licencia ?? '—',
     },
     {
-      key: 'telefono',
-      label: 'Teléfono',
-      render: (row) => row.telefono ?? '—',
+      key: 'licenciaCategoria',
+      label: 'Categoría',
+      render: (row) => (
+        <Badge variant="secondary">{row.licenciaCategoria}</Badge>
+      ),
+    },
+    {
+      key: 'fechaRevalidacion',
+      label: 'Revalidación',
+      render: (row) =>
+        row.fechaRevalidacion
+          ? new Date(row.fechaRevalidacion).toLocaleDateString('es-PE')
+          : '—',
     },
     {
       key: 'activo',
@@ -165,6 +211,13 @@ export default function ChoferesPage() {
       ),
     },
   ];
+
+  const dniInvalido = form.dni.length > 0 && form.dni.length !== 8;
+  const licenciaInvalida =
+    form.licencia.length > 0 && form.licencia.length !== 9;
+  const telefonoInvalido =
+    form.telefono.length > 0 &&
+    (form.telefono.length !== 9 || !form.telefono.startsWith('9'));
 
   return (
     <div className="space-y-6">
@@ -218,19 +271,72 @@ export default function ChoferesPage() {
                 inputMode="numeric"
                 required
               />
-              {form.dni && form.dni.length !== 8 && (
+              {dniInvalido && (
                 <p className="text-xs text-destructive mt-1">
-                  El DNI debe tener 8 dígitos ({8 - form.dni.length > 0 ? `faltan ${8 - form.dni.length}` : `sobran ${form.dni.length - 8}`})
+                  El DNI debe tener 8 dígitos
                 </p>
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="licencia">Licencia</Label>
+              <Label htmlFor="licencia">N° de Licencia (Brevete) *</Label>
               <Input
                 id="licencia"
                 value={form.licencia}
-                onChange={(e) => setForm({ ...form, licencia: e.target.value })}
-                placeholder="Número de licencia"
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    licencia: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 9),
+                  })
+                }
+                placeholder="Q12345678"
+                maxLength={9}
+                required
+              />
+              {licenciaInvalida && (
+                <p className="text-xs text-destructive mt-1">
+                  La licencia debe tener 9 caracteres
+                </p>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="clase">Clase *</Label>
+                <select
+                  id="clase"
+                  className={SELECT_CLASS}
+                  value={form.licenciaClase}
+                  onChange={(e) => handleClaseChange(e.target.value)}
+                  required
+                >
+                  <option value="A">A (autos y camiones)</option>
+                  <option value="B">B (motos / menores)</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="categoria">Categoría *</Label>
+                <select
+                  id="categoria"
+                  className={SELECT_CLASS}
+                  value={form.licenciaCategoria}
+                  onChange={(e) => setForm({ ...form, licenciaCategoria: e.target.value })}
+                  required
+                >
+                  {(CATEGORIAS_POR_CLASE[form.licenciaClase] ?? []).map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="fechaRevalidacion">Fecha de Revalidación *</Label>
+              <Input
+                id="fechaRevalidacion"
+                type="date"
+                value={form.fechaRevalidacion}
+                onChange={(e) => setForm({ ...form, fechaRevalidacion: e.target.value })}
+                required
               />
             </div>
             <div className="space-y-2">
@@ -245,11 +351,9 @@ export default function ChoferesPage() {
                 pattern="9[0-9]{8}"
                 placeholder="987654321"
               />
-              {form.telefono && (form.telefono.length !== 9 || !form.telefono.startsWith('9')) && (
+              {telefonoInvalido && (
                 <p className="text-xs text-destructive mt-1">
-                  {!form.telefono.startsWith('9') && form.telefono.length > 0
-                    ? 'El teléfono debe empezar con 9'
-                    : `El teléfono debe tener 9 dígitos (faltan ${9 - form.telefono.length})`}
+                  El teléfono debe tener 9 dígitos y empezar con 9
                 </p>
               )}
             </div>
