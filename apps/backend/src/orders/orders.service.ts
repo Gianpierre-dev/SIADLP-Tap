@@ -22,6 +22,7 @@ const CLIENTE_SELECT = {
   direccion: true,
   telefono: true,
   distrito: { select: { nombre: true } },
+  ruta: { select: { nombre: true } },
 } as const;
 
 @Injectable()

@@ -537,12 +537,6 @@ export default function PedidosPage() {
                   <p className="text-muted-foreground">Fecha de Creación</p>
                   <p>{formatDate(selectedOrder.fechaCreacion)}</p>
                 </div>
-                {selectedOrder.cliente.ruta && (
-                  <div>
-                    <p className="text-muted-foreground">Ruta</p>
-                    <p>{selectedOrder.cliente.ruta.nombre}</p>
-                  </div>
-                )}
                 {selectedOrder.observacion && (
                   <div className="col-span-2">
                     <p className="text-muted-foreground">Observación</p>
@@ -566,6 +560,12 @@ export default function PedidosPage() {
                   <div>
                     <p className="text-muted-foreground">Distrito</p>
                     <p>{selectedOrder.cliente.distrito?.nombre ?? '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Ruta de reparto</p>
+                    <p className="font-medium">
+                      {selectedOrder.cliente.ruta?.nombre ?? '—'}
+                    </p>
                   </div>
                   <div className="col-span-2">
                     <p className="text-muted-foreground">Dirección de entrega</p>
