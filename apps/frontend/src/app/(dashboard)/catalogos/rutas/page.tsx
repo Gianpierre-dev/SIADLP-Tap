@@ -17,6 +17,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { PlusIcon, PencilIcon, Trash2Icon, Loader2Icon } from 'lucide-react';
+import { useConfirm } from '@/components/confirm-dialog';
 
 interface Route {
   id: number;
@@ -45,6 +46,7 @@ export default function RutasPage() {
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState<RouteForm>(EMPTY_FORM);
+  const askConfirm = useConfirm();
 
   const fetchItems = () => {
     setLoading(true);
@@ -100,7 +102,14 @@ export default function RutasPage() {
   };
 
   const handleDeactivate = async (id: number) => {
-    if (!confirm('¿Está seguro de desactivar esta ruta?')) return;
+    if (
+      !(await askConfirm({
+        description: '¿Está seguro de desactivar esta ruta?',
+        confirmText: 'Desactivar',
+        destructive: true,
+      }))
+    )
+      return;
     try {
       await apiDelete(`/catalogs/routes/${id}`);
       toast.success('Ruta desactivada correctamente');

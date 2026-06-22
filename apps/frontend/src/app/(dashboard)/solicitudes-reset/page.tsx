@@ -22,6 +22,7 @@ import {
   KeyRoundIcon,
   Loader2Icon,
 } from 'lucide-react';
+import { useConfirm } from '@/components/confirm-dialog';
 
 type EstadoSolicitud = 'PENDIENTE' | 'APROBADA' | 'RECHAZADA';
 
@@ -72,6 +73,7 @@ export default function SolicitudesResetPage() {
   const [solicitudARechazar, setSolicitudARechazar] = useState<Solicitud | null>(null);
   const [motivoRechazo, setMotivoRechazo] = useState('');
   const [rechazando, setRechazando] = useState(false);
+  const askConfirm = useConfirm();
 
   const fetchItems = (estado: EstadoSolicitud) => {
     setLoading(true);
@@ -86,10 +88,13 @@ export default function SolicitudesResetPage() {
   }, [filtroEstado]);
 
   const handleAprobar = async (solicitud: Solicitud) => {
-    const confirmar = confirm(
-      `¿Aprobar la solicitud de ${solicitud.usuario.nombre}?\n\n` +
+    const confirmar = await askConfirm({
+      title: 'Aprobar solicitud',
+      description:
+        `¿Aprobar la solicitud de ${solicitud.usuario.nombre}?\n\n` +
         'Se generará una contraseña temporal que debes transmitirle por canal seguro.',
-    );
+      confirmText: 'Aprobar',
+    });
     if (!confirmar) return;
     setAprobando(solicitud.id);
     try {

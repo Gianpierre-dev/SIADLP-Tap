@@ -1,6 +1,7 @@
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/app-sidebar';
 import { AuthGuard } from '@/components/auth-guard';
+import { ConfirmProvider } from '@/components/confirm-dialog';
 import { Separator } from '@/components/ui/separator';
 
 export default function DashboardLayout({
@@ -10,6 +11,7 @@ export default function DashboardLayout({
 }) {
   return (
     <AuthGuard>
+      <ConfirmProvider>
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset>
@@ -25,6 +27,7 @@ export default function DashboardLayout({
           <main className="flex-1 p-6 @container">{children}</main>
         </SidebarInset>
       </SidebarProvider>
+      </ConfirmProvider>
     </AuthGuard>
   );
 }

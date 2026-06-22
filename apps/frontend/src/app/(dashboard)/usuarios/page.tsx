@@ -25,6 +25,7 @@ import {
   CopyIcon,
   CheckIcon,
 } from 'lucide-react';
+import { useConfirm } from '@/components/confirm-dialog';
 
 interface User {
   id: number;
@@ -78,6 +79,7 @@ export default function UsuariosPage() {
   const [contrasenaTemporal, setContrasenaTemporal] = useState<string | null>(null);
   const [resetting, setResetting] = useState<number | null>(null);
   const [copiado, setCopiado] = useState(false);
+  const askConfirm = useConfirm();
 
   const fetchItems = () => {
     setLoading(true);
@@ -163,7 +165,14 @@ export default function UsuariosPage() {
   };
 
   const handleDeactivate = async (id: number) => {
-    if (!confirm('¿Está seguro de desactivar este usuario?')) return;
+    if (
+      !(await askConfirm({
+        description: '¿Está seguro de desactivar este usuario?',
+        confirmText: 'Desactivar',
+        destructive: true,
+      }))
+    )
+      return;
     try {
       await apiDelete(`/users/${id}`);
       toast.success('Usuario desactivado correctamente');
@@ -174,10 +183,13 @@ export default function UsuariosPage() {
   };
 
   const handleResetPassword = async (user: User) => {
-    const confirmar = confirm(
-      `¿Resetear la contraseña de ${user.nombre}?\n\n` +
+    const confirmar = await askConfirm({
+      title: 'Resetear contraseña',
+      description:
+        `¿Resetear la contraseña de ${user.nombre}?\n\n` +
         'Se generará una contraseña temporal que el usuario deberá cambiar al iniciar sesión.',
-    );
+      confirmText: 'Resetear',
+    });
     if (!confirmar) return;
     setResetting(user.id);
     try {

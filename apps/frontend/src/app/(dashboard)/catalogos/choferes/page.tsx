@@ -17,6 +17,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { PlusIcon, PencilIcon, Trash2Icon, Loader2Icon } from 'lucide-react';
+import { useConfirm } from '@/components/confirm-dialog';
 
 // Categorías de licencia de conducir vigentes en Perú (MTC), agrupadas por clase.
 const CATEGORIAS_POR_CLASE: Record<string, string[]> = {
@@ -69,6 +70,7 @@ export default function ChoferesPage() {
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState<DriverForm>(EMPTY_FORM);
+  const askConfirm = useConfirm();
 
   const fetchItems = () => {
     setLoading(true);
@@ -146,7 +148,14 @@ export default function ChoferesPage() {
   };
 
   const handleDeactivate = async (id: number) => {
-    if (!confirm('¿Está seguro de desactivar este chofer?')) return;
+    if (
+      !(await askConfirm({
+        description: '¿Está seguro de desactivar este chofer?',
+        confirmText: 'Desactivar',
+        destructive: true,
+      }))
+    )
+      return;
     try {
       await apiDelete(`/catalogs/drivers/${id}`);
       toast.success('Chofer desactivado correctamente');
