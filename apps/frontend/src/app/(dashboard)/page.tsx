@@ -6,18 +6,73 @@ import { apiGet } from '@/lib/api';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
 import {
   ShoppingCartIcon,
   TruckIcon,
   CircleCheckIcon,
   TriangleAlertIcon,
+  ClipboardCheckIcon,
+  PackageCheckIcon,
+  CalendarClockIcon,
+  UsersIcon,
+  PackageIcon,
+  MapIcon,
+  UserCheckIcon,
 } from 'lucide-react';
 
 interface DashboardData {
   pedidos: { total: number; porEstado: Record<string, number> };
-  despacho: { hojasDelDia: number; entregasCompletadas: number; entregasPendientes: number; entregasConNovedad: number };
+  despacho: {
+    hojasDelDia: number;
+    entregasCompletadas: number;
+    entregasPendientes: number;
+    entregasConNovedad: number;
+  };
+  recursos: {
+    clientesActivos: number;
+    productosActivos: number;
+    rutasActivas: number;
+    vehiculosActivos: number;
+    choferesActivos: number;
+  };
+  pendientes: {
+    porConfirmar: number;
+    porDespachar: number;
+    choferesPorRevalidar: number;
+  };
+  alertasChoferes: { nombre: string; fechaRevalidacion: string; dias: number }[];
+  tendencia: { fecha: string; total: number }[];
 }
+
+const ESTADO_ORDER = [
+  'REGISTERED',
+  'CONFIRMED',
+  'DISPATCHED',
+  'ON_ROUTE',
+  'DELIVERED',
+  'ISSUE',
+  'CANCELLED',
+];
+
+const stateLabels: Record<string, string> = {
+  REGISTERED: 'Registrado',
+  CONFIRMED: 'Confirmado',
+  DISPATCHED: 'Despachado',
+  ON_ROUTE: 'En Ruta',
+  DELIVERED: 'Entregado',
+  ISSUE: 'Novedad',
+  CANCELLED: 'Cancelado',
+};
+
+const stateBarColors: Record<string, string> = {
+  REGISTERED: 'bg-[#1565c0]',
+  CONFIRMED: 'bg-[#33691e]',
+  DISPATCHED: 'bg-[#8a6914]',
+  ON_ROUTE: 'bg-[#4338ca]',
+  DELIVERED: 'bg-[#245216]',
+  ISSUE: 'bg-[#d97706]',
+  CANCELLED: 'bg-[#c62828]',
+};
 
 function KpiCard({
   title,
@@ -61,34 +116,164 @@ function KpiCard({
   );
 }
 
-function StateSummary({ porEstado }: { porEstado: Record<string, number> }) {
-  const stateColors: Record<string, string> = {
-    REGISTERED: 'bg-[#e3f2fd] text-[#1565c0]',
-    CONFIRMED: 'bg-[#e8f5e9] text-[#33691e]',
-    DISPATCHED: 'bg-[#fff3c4] text-[#8a6914]',
-    ON_ROUTE: 'bg-[#e0e7ff] text-[#4338ca]',
-    DELIVERED: 'bg-[#e8f5e9] text-[#245216]',
-    CANCELLED: 'bg-[#fee2e2] text-[#c62828]',
-    ISSUE: 'bg-[#fef3c7] text-[#d97706]',
+function ActionCard({
+  title,
+  value,
+  caption,
+  icon: Icon,
+  tone,
+  children,
+}: {
+  title: string;
+  value: number;
+  caption: string;
+  icon: React.ElementType;
+  tone: 'blue' | 'gold' | 'red';
+  children?: React.ReactNode;
+}) {
+  const active = value > 0;
+  const borders: Record<string, string> = {
+    blue: 'border-l-[#1565c0]',
+    gold: 'border-l-[#8a6914]',
+    red: 'border-l-[#c62828]',
   };
-
-  const stateLabels: Record<string, string> = {
-    REGISTERED: 'Registrado',
-    CONFIRMED: 'Confirmado',
-    DISPATCHED: 'Despachado',
-    ON_ROUTE: 'En Ruta',
-    DELIVERED: 'Entregado',
-    CANCELLED: 'Cancelado',
-    ISSUE: 'Novedad',
+  const iconStyles: Record<string, string> = {
+    blue: 'bg-[#e3f2fd] text-[#1565c0]',
+    gold: 'bg-[#fff3c4] text-[#8a6914]',
+    red: 'bg-[#fee2e2] text-[#c62828]',
   };
 
   return (
-    <div className="flex flex-wrap gap-2">
-      {Object.entries(porEstado).map(([estado, count]) => (
-        <Badge key={estado} variant="outline" className={stateColors[estado] ?? ''}>
-          {stateLabels[estado] ?? estado}: {count}
-        </Badge>
+    <Card className={`border-l-4 ${active ? borders[tone] : 'border-l-border'}`}>
+      <CardContent className="pt-6">
+        <div className="flex items-start justify-between">
+          <div>
+            <div className="text-3xl font-bold tracking-tight">{value}</div>
+            <p className="mt-1 text-sm font-medium">{title}</p>
+            <p className="text-xs text-muted-foreground">{caption}</p>
+          </div>
+          <div className={`rounded-md p-2 ${iconStyles[tone]}`}>
+            <Icon className="h-4 w-4" />
+          </div>
+        </div>
+        {children}
+      </CardContent>
+    </Card>
+  );
+}
+
+function ResourceChip({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: number;
+}) {
+  return (
+    <div className="flex items-center gap-3 rounded-lg border p-3">
+      <div className="rounded-md bg-muted p-2 text-muted-foreground">
+        <Icon className="h-4 w-4" />
+      </div>
+      <div>
+        <p className="text-xl font-bold leading-none">{value}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{label}</p>
+      </div>
+    </div>
+  );
+}
+
+function EstadoBarChart({ porEstado }: { porEstado: Record<string, number> }) {
+  const entries = ESTADO_ORDER.map((estado) => ({
+    estado,
+    count: porEstado[estado] ?? 0,
+  })).filter((e) => e.count > 0);
+
+  if (entries.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-8 text-center">
+        <ShoppingCartIcon className="h-8 w-8 text-muted-foreground/50" />
+        <p className="mt-2 text-sm font-medium">Sin pedidos hoy</p>
+        <p className="text-xs text-muted-foreground">
+          Los pedidos aparecerán aquí conforme se registren
+        </p>
+      </div>
+    );
+  }
+
+  const max = Math.max(...entries.map((e) => e.count));
+
+  return (
+    <div className="space-y-3">
+      {entries.map(({ estado, count }) => (
+        <div key={estado} className="flex items-center gap-3">
+          <span className="w-24 shrink-0 text-xs font-medium">
+            {stateLabels[estado] ?? estado}
+          </span>
+          <div className="h-6 flex-1 overflow-hidden rounded bg-muted">
+            <div
+              className={`h-full rounded ${stateBarColors[estado] ?? 'bg-primary'}`}
+              style={{ width: `${(count / max) * 100}%` }}
+            />
+          </div>
+          <span className="w-6 text-right text-sm font-semibold">{count}</span>
+        </div>
       ))}
+    </div>
+  );
+}
+
+function TendenciaChart({ data }: { data: { fecha: string; total: number }[] }) {
+  const max = Math.max(1, ...data.map((d) => d.total));
+  const total = data.reduce((acc, d) => acc + d.total, 0);
+
+  if (total === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-8 text-center">
+        <TriangleAlertIcon className="h-8 w-8 text-muted-foreground/40" />
+        <p className="mt-2 text-sm font-medium">Sin pedidos en los últimos 7 días</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="flex h-40 items-end gap-2">
+        {data.map((d) => {
+          const pct = (d.total / max) * 100;
+          return (
+            <div
+              key={d.fecha}
+              className="flex h-full flex-1 flex-col items-center justify-end gap-1"
+            >
+              <span className="text-xs font-medium text-muted-foreground">
+                {d.total}
+              </span>
+              <div
+                className="w-full rounded-t-md bg-[#1565c0]/85"
+                style={{ height: `${d.total > 0 ? Math.max(pct, 4) : 0}%` }}
+              />
+            </div>
+          );
+        })}
+      </div>
+      <div className="flex gap-2">
+        {data.map((d, i) => (
+          <span
+            key={d.fecha}
+            className={`flex-1 text-center text-xs capitalize ${
+              i === data.length - 1
+                ? 'font-bold text-foreground'
+                : 'text-muted-foreground'
+            }`}
+          >
+            {new Date(`${d.fecha}T00:00:00`).toLocaleDateString('es-PE', {
+              weekday: 'short',
+            })}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
@@ -108,10 +293,15 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Dashboard" description="Resumen del día" />
+        <PageHeader title="Dashboard" description="Resumen operativo del día" />
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <Skeleton key={i} className="h-28" />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-32" />
           ))}
         </div>
       </div>
@@ -121,93 +311,162 @@ export default function DashboardPage() {
   if (!data) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Dashboard" description="Resumen del día" />
+        <PageHeader title="Dashboard" description="Resumen operativo del día" />
         <p className="text-muted-foreground">No se pudieron cargar los datos.</p>
       </div>
     );
   }
 
+  const { pedidos, despacho, recursos, pendientes, alertasChoferes, tendencia } =
+    data;
+
   return (
     <div className="space-y-6">
       <PageHeader title="Dashboard" description="Resumen operativo del día" />
 
+      {/* KPIs del día */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard
           title="Pedidos del día"
-          value={data.pedidos.total}
+          value={pedidos.total}
           icon={ShoppingCartIcon}
           accent="blue"
         />
         <KpiCard
           title="Despachos del día"
-          value={data.despacho.hojasDelDia}
+          value={despacho.hojasDelDia}
           icon={TruckIcon}
           accent="gold"
         />
         <KpiCard
           title="Entregas completadas"
-          value={data.despacho.entregasCompletadas}
-          description={`${data.despacho.entregasPendientes} pendientes`}
+          value={despacho.entregasCompletadas}
+          description={`${despacho.entregasPendientes} pendientes`}
           icon={CircleCheckIcon}
           accent="green"
         />
         <KpiCard
           title="Entregas con novedad"
-          value={data.despacho.entregasConNovedad}
+          value={despacho.entregasConNovedad}
           icon={TriangleAlertIcon}
           accent="amber"
         />
       </div>
 
+      {/* Acciones pendientes */}
+      <div>
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+          Requiere atención
+        </h2>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          <ActionCard
+            title="Pedidos por confirmar"
+            value={pendientes.porConfirmar}
+            caption="Registrados esperando confirmación"
+            icon={ClipboardCheckIcon}
+            tone="blue"
+          />
+          <ActionCard
+            title="Listos para despacho"
+            value={pendientes.porDespachar}
+            caption="Confirmados a la espera de ruta"
+            icon={PackageCheckIcon}
+            tone="gold"
+          />
+          <ActionCard
+            title="Licencias por revalidar"
+            value={pendientes.choferesPorRevalidar}
+            caption="Choferes con revalidación ≤ 30 días"
+            icon={CalendarClockIcon}
+            tone="red"
+          >
+            {alertasChoferes.length > 0 && (
+              <div className="mt-3 space-y-1 border-t pt-3">
+                {alertasChoferes.map((c) => (
+                  <div
+                    key={c.nombre}
+                    className="flex items-center justify-between text-xs"
+                  >
+                    <span className="truncate pr-2">{c.nombre}</span>
+                    <span
+                      className={
+                        c.dias < 0
+                          ? 'shrink-0 font-medium text-[#c62828]'
+                          : c.dias <= 7
+                            ? 'shrink-0 font-medium text-[#d97706]'
+                            : 'shrink-0 text-muted-foreground'
+                      }
+                    >
+                      {c.dias < 0
+                        ? `Vencida hace ${Math.abs(c.dias)}d`
+                        : c.dias === 0
+                          ? 'Vence hoy'
+                          : `Vence en ${c.dias}d`}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </ActionCard>
+        </div>
+      </div>
+
+      {/* Gráficos */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Pedidos por estado</CardTitle>
+            <CardTitle className="text-base">Pedidos del día por estado</CardTitle>
           </CardHeader>
           <CardContent>
-            {data.pedidos.total === 0 ? (
-              <div className="flex flex-col items-center justify-center py-6 text-center">
-                <ShoppingCartIcon className="h-8 w-8 text-muted-foreground/50" />
-                <p className="mt-2 text-sm font-medium">Sin pedidos hoy</p>
-                <p className="text-xs text-muted-foreground">
-                  Los pedidos aparecerán aquí conforme se registren
-                </p>
-              </div>
-            ) : (
-              <StateSummary porEstado={data.pedidos.porEstado} />
-            )}
+            <EstadoBarChart porEstado={pedidos.porEstado} />
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Entregas del día</CardTitle>
+            <CardTitle className="text-base">Pedidos · últimos 7 días</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="h-2.5 w-2.5 rounded-full bg-[#33691e]" />
-                <span>Completadas</span>
-              </div>
-              <span className="text-base font-semibold">{data.despacho.entregasCompletadas}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="h-2.5 w-2.5 rounded-full bg-[#1565c0]" />
-                <span>Pendientes</span>
-              </div>
-              <span className="text-base font-semibold">{data.despacho.entregasPendientes}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="h-2.5 w-2.5 rounded-full bg-[#d97706]" />
-                <span>Con novedad</span>
-              </div>
-              <span className="text-base font-semibold text-[#d97706]">{data.despacho.entregasConNovedad}</span>
-            </div>
+          <CardContent>
+            <TendenciaChart data={tendencia} />
           </CardContent>
         </Card>
       </div>
+
+      {/* Recursos operativos */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Recursos operativos</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+            <ResourceChip
+              icon={UsersIcon}
+              label="Clientes activos"
+              value={recursos.clientesActivos}
+            />
+            <ResourceChip
+              icon={PackageIcon}
+              label="Productos activos"
+              value={recursos.productosActivos}
+            />
+            <ResourceChip
+              icon={MapIcon}
+              label="Rutas activas"
+              value={recursos.rutasActivas}
+            />
+            <ResourceChip
+              icon={TruckIcon}
+              label="Vehículos activos"
+              value={recursos.vehiculosActivos}
+            />
+            <ResourceChip
+              icon={UserCheckIcon}
+              label="Choferes activos"
+              value={recursos.choferesActivos}
+            />
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
