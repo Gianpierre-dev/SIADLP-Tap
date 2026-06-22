@@ -33,6 +33,7 @@ interface Order {
   id: number;
   clienteId: number;
   fechaEntrega: string;
+  horaEntrega: string | null;
   estado: string;
   observacion: string | null;
   fechaCreacion: string;
@@ -176,6 +177,7 @@ export default function PedidosPage() {
   const [saving, setSaving] = useState(false);
   const [clienteId, setClienteId] = useState<number | ''>('');
   const [fechaEntrega, setFechaEntrega] = useState('');
+  const [horaEntrega, setHoraEntrega] = useState('');
   const [observacion, setObservacion] = useState('');
   const [lines, setLines] = useState<OrderLine[]>([{ ...EMPTY_LINE }]);
 
@@ -233,6 +235,7 @@ export default function PedidosPage() {
   const openCreate = () => {
     setClienteId('');
     setFechaEntrega('');
+    setHoraEntrega('');
     setObservacion('');
     setLines([{ ...EMPTY_LINE }]);
     setCreateOpen(true);
@@ -268,12 +271,17 @@ export default function PedidosPage() {
       toast.error('La fecha de entrega no puede ser anterior a hoy');
       return;
     }
+    if (!horaEntrega) {
+      toast.error('Ingresá la hora de entrega');
+      return;
+    }
 
     setSaving(true);
     try {
       await apiPost('/orders', {
         clienteId: Number(clienteId),
         fechaEntrega,
+        horaEntrega,
         observacion: observacion || undefined,
         detalles: validLines.map((l) => ({
           productoId: l.productoId,
@@ -357,8 +365,11 @@ export default function PedidosPage() {
     {
       key: 'fechaEntrega',
       label: 'Fecha Entrega',
-      className: 'w-32',
-      render: (row) => formatDate(row.fechaEntrega),
+      className: 'w-36',
+      render: (row) =>
+        row.horaEntrega
+          ? `${formatDate(row.fechaEntrega)} · ${row.horaEntrega}`
+          : formatDate(row.fechaEntrega),
     },
     {
       key: 'estado',
@@ -485,6 +496,17 @@ export default function PedidosPage() {
               </div>
 
               <div className="space-y-1.5">
+                <Label htmlFor="horaEntrega">Hora de Entrega *</Label>
+                <Input
+                  id="horaEntrega"
+                  type="time"
+                  value={horaEntrega}
+                  onChange={(e) => setHoraEntrega(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-1.5">
                 <Label htmlFor="observacion">Observación</Label>
                 <Input
                   id="observacion"
@@ -591,7 +613,11 @@ export default function PedidosPage() {
                 </div>
                 <div>
                   <p className="text-muted-foreground">Fecha de Entrega</p>
-                  <p>{formatDate(selectedOrder.fechaEntrega)}</p>
+                  <p>
+                    {formatDate(selectedOrder.fechaEntrega)}
+                    {selectedOrder.horaEntrega &&
+                      ` · ${selectedOrder.horaEntrega}`}
+                  </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Fecha y hora del pedido</p>

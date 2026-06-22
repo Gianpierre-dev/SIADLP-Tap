@@ -13,6 +13,7 @@ import {
   Min,
   Max,
   MaxLength,
+  Matches,
 } from 'class-validator';
 
 export class OrderLineDto {
@@ -37,6 +38,14 @@ export class CreateOrderDto {
 
   @IsDateString()
   fechaEntrega: string;
+
+  // Hora programada de entrega en formato "HH:MM" (24h). Opcional a nivel API
+  // (un pedido sigue siendo válido sin ella), pero el frontend la exige al crear.
+  @IsOptional()
+  @Matches(/^([01]\d|2[0-3]):[0-5]\d$/, {
+    message: 'La hora de entrega debe tener formato HH:MM (24 horas)',
+  })
+  horaEntrega?: string;
 
   @IsOptional()
   @IsString()

@@ -199,6 +199,7 @@ model Pedido {
   id                 Int      @id @default(autoincrement())
   clienteId          Int      @map("cliente_id")
   fechaEntrega       DateTime @map("fecha_entrega") @db.Date
+  horaEntrega        String?  @map("hora_entrega")
   estado             String   @default("REGISTERED")
   observacion        String?
   creadoPorId        Int      @map("creado_por_id")
