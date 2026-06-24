@@ -42,6 +42,8 @@ interface RoleListItem {
   descripcion: string | null;
   activo: boolean;
   permisos: Role['permisos'];
+  // El backend ya devuelve el conteo de usuarios por rol.
+  _count?: { usuarios: number };
 }
 
 interface RoleForm {
@@ -50,6 +52,8 @@ interface RoleForm {
 }
 
 const EMPTY_FORM: RoleForm = { nombre: '', descripcion: '' };
+
+const PAGE_SIZE = 10;
 
 const moduleLabels: Record<string, string> = {
   usuarios: 'Usuarios',
@@ -80,6 +84,10 @@ export default function RolesPage() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState<RoleForm>(EMPTY_FORM);
   const [selectedPermisos, setSelectedPermisos] = useState<Set<number>>(new Set());
+
+  // Búsqueda por nombre + paginación client-side.
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
 
   const fetchItems = () => {
     setLoading(true);
@@ -188,6 +196,20 @@ export default function RolesPage() {
     }
   };
 
+  // Filtrado client-side por nombre + paginación.
+  const filtrados = items.filter((r) => {
+    const q = search.trim().toLowerCase();
+    return !q || r.nombre.toLowerCase().includes(q);
+  });
+
+  const total = filtrados.length;
+  const pageData = filtrados.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  const onSearchChange = (value: string) => {
+    setSearch(value);
+    setPage(1);
+  };
+
   const columns: Column<RoleListItem>[] = [
     { key: 'id', label: 'ID', className: 'w-16' },
     { key: 'nombre', label: 'Nombre', className: 'w-40' },
@@ -202,6 +224,14 @@ export default function RolesPage() {
       className: 'w-24 text-center',
       render: (row) => (
         <Badge variant="outline">{row.permisos.length}</Badge>
+      ),
+    },
+    {
+      key: 'usuarios',
+      label: 'Usuarios',
+      className: 'w-24 text-center',
+      render: (row) => (
+        <Badge variant="secondary">{row._count?.usuarios ?? 0}</Badge>
       ),
     },
     {
@@ -240,7 +270,41 @@ export default function RolesPage() {
           </Button>
         }
       />
-      <DataTable columns={columns} data={items} loading={loading} />
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="flex flex-col gap-1">
+          <Label htmlFor="search" className="text-xs text-muted-foreground">
+            Buscar
+          </Label>
+          <Input
+            id="search"
+            value={search}
+            onChange={(e) => onSearchChange(e.target.value)}
+            placeholder="Nombre del rol"
+            className="h-9 w-64"
+          />
+        </div>
+
+        {search && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setSearch('');
+              setPage(1);
+            }}
+          >
+            Limpiar filtros
+          </Button>
+        )}
+      </div>
+
+      <DataTable
+        columns={columns}
+        data={pageData}
+        loading={loading}
+        pagination={{ page, pageSize: PAGE_SIZE, total }}
+        onPageChange={setPage}
+      />
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">

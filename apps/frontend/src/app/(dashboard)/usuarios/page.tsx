@@ -60,8 +60,14 @@ const EMPTY_EDIT: EditForm = { correo: '', nombre: '', rolId: '' };
 
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
 
+const PAGE_SIZE = 10;
+
 const SELECT_CLASS =
   'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50';
+
+// Select de filtros (sin w-full, ancho según contenido).
+const FILTER_SELECT_CLASS =
+  'flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring';
 
 export default function UsuariosPage() {
   const [items, setItems] = useState<User[]>([]);
@@ -80,6 +86,11 @@ export default function UsuariosPage() {
   const [resetting, setResetting] = useState<number | null>(null);
   const [copiado, setCopiado] = useState(false);
   const askConfirm = useConfirm();
+
+  // Búsqueda + filtro por rol + paginación client-side.
+  const [search, setSearch] = useState('');
+  const [rolFilter, setRolFilter] = useState('');
+  const [page, setPage] = useState(1);
 
   const fetchItems = () => {
     setLoading(true);
@@ -223,6 +234,43 @@ export default function UsuariosPage() {
 
   const isSelf = editingId !== null && editingId === currentUserId;
 
+  // Filtrado client-side: búsqueda por nombre/correo + filtro por rol.
+  const filtrados = items.filter((u) => {
+    const q = search.trim().toLowerCase();
+    const matchSearch =
+      !q ||
+      u.nombre.toLowerCase().includes(q) ||
+      u.correo.toLowerCase().includes(q);
+    const matchRol = !rolFilter || String(u.rolId) === rolFilter;
+    return matchSearch && matchRol;
+  });
+
+  const total = filtrados.length;
+  const pageData = filtrados.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  const onSearchChange = (value: string) => {
+    setSearch(value);
+    setPage(1);
+  };
+
+  const onRolFilterChange = (value: string) => {
+    setRolFilter(value);
+    setPage(1);
+  };
+
+  // Opciones de rol para el filtro: usa /roles si están cargados; si no,
+  // deriva de los roles presentes en la lista de usuarios.
+  const rolesFiltro =
+    roles.length > 0
+      ? roles.map((r) => ({ id: r.id, nombre: r.nombre }))
+      : Array.from(
+          new Map(
+            items
+              .filter((u) => u.rol)
+              .map((u) => [u.rolId, { id: u.rolId, nombre: u.rol.nombre }]),
+          ).values(),
+        );
+
   const columns: Column<User>[] = [
     { key: 'id', label: 'ID', className: 'w-16' },
     { key: 'nombre', label: 'Nombre' },
@@ -300,7 +348,63 @@ export default function UsuariosPage() {
           </Button>
         }
       />
-      <DataTable columns={columns} data={items} loading={loading} />
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="flex flex-col gap-1">
+          <Label htmlFor="search" className="text-xs text-muted-foreground">
+            Buscar
+          </Label>
+          <Input
+            id="search"
+            value={search}
+            onChange={(e) => onSearchChange(e.target.value)}
+            placeholder="Nombre o correo"
+            className="h-9 w-64"
+          />
+        </div>
+
+        {rolesFiltro.length > 0 && (
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="rolFilter" className="text-xs text-muted-foreground">
+              Rol
+            </Label>
+            <select
+              id="rolFilter"
+              value={rolFilter}
+              onChange={(e) => onRolFilterChange(e.target.value)}
+              className={FILTER_SELECT_CLASS}
+            >
+              <option value="">Todos</option>
+              {rolesFiltro.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.nombre}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {(search || rolFilter) && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setSearch('');
+              setRolFilter('');
+              setPage(1);
+            }}
+          >
+            Limpiar filtros
+          </Button>
+        )}
+      </div>
+
+      <DataTable
+        columns={columns}
+        data={pageData}
+        loading={loading}
+        pagination={{ page, pageSize: PAGE_SIZE, total }}
+        onPageChange={setPage}
+      />
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-md">

@@ -51,6 +51,8 @@ const ESTADO_BADGE: Record<EstadoSolicitud, string> = {
   RECHAZADA: 'bg-[#fee2e2] text-[#c62828]',
 };
 
+const PAGE_SIZE = 10;
+
 const formatearFecha = (iso: string): string =>
   new Date(iso).toLocaleString('es-PE', {
     day: '2-digit',
@@ -73,6 +75,7 @@ export default function SolicitudesResetPage() {
   const [solicitudARechazar, setSolicitudARechazar] = useState<Solicitud | null>(null);
   const [motivoRechazo, setMotivoRechazo] = useState('');
   const [rechazando, setRechazando] = useState(false);
+  const [page, setPage] = useState(1);
   const askConfirm = useConfirm();
 
   const fetchItems = (estado: EstadoSolicitud) => {
@@ -84,6 +87,7 @@ export default function SolicitudesResetPage() {
   };
 
   useEffect(() => {
+    setPage(1);
     fetchItems(filtroEstado);
   }, [filtroEstado]);
 
@@ -255,6 +259,10 @@ export default function SolicitudesResetPage() {
     c.mostrarEn.includes(filtroEstado),
   );
 
+  // Paginación client-side sobre la lista del estado seleccionado.
+  const total = items.length;
+  const pageData = items.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
   const filtros: EstadoSolicitud[] = ['PENDIENTE', 'APROBADA', 'RECHAZADA'];
 
   return (
@@ -277,7 +285,13 @@ export default function SolicitudesResetPage() {
         ))}
       </div>
 
-      <DataTable columns={columns} data={items} loading={loading} />
+      <DataTable
+        columns={columns}
+        data={pageData}
+        loading={loading}
+        pagination={{ page, pageSize: PAGE_SIZE, total }}
+        onPageChange={setPage}
+      />
 
       <Dialog open={aprobacionDialog} onOpenChange={setAprobacionDialog}>
         <DialogContent className="sm:max-w-md">

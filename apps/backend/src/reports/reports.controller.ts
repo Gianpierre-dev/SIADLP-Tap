@@ -59,4 +59,42 @@ export class ReportsController {
     );
     res.send(buffer);
   }
+
+  @Get('export/issues')
+  @RequirePermissions('reportes.exportar')
+  async exportIssues(
+    @Query('desde') desde: string,
+    @Query('hasta') hasta: string,
+    @Res() res: Response,
+  ) {
+    const buffer = await this.reportsService.exportIssues(desde, hasta);
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    );
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename=reporte-novedades.xlsx',
+    );
+    res.send(buffer);
+  }
+
+  @Get('export/by-driver')
+  @RequirePermissions('reportes.exportar')
+  async exportByDriver(
+    @Query('desde') desde: string,
+    @Query('hasta') hasta: string,
+    @Res() res: Response,
+  ) {
+    const buffer = await this.reportsService.exportByDriver(desde, hasta);
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    );
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename=reporte-por-chofer.xlsx',
+    );
+    res.send(buffer);
+  }
 }

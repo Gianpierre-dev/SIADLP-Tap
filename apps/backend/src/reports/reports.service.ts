@@ -290,6 +290,7 @@ export class ReportsService {
             entrega: {
               select: {
                 estado: true,
+                observacion: true,
                 fechaEntrega: true,
               },
             },
@@ -317,6 +318,7 @@ export class ReportsService {
       { header: 'Pedido ID', key: 'pedidoId', width: 10 },
       { header: 'Cliente', key: 'cliente', width: 35 },
       { header: 'Estado Entrega', key: 'estadoEntrega', width: 15 },
+      { header: 'Observación', key: 'observacion', width: 40 },
       { header: 'Fecha Entrega', key: 'fechaEntrega', width: 18 },
     ];
 
@@ -341,10 +343,182 @@ export class ReportsService {
           pedidoId: pedido.id,
           cliente: pedido.cliente.razonSocial,
           estadoEntrega: pedido.entrega?.estado ?? 'SIN ENTREGA',
+          observacion: pedido.entrega?.observacion ?? '',
           fechaEntrega:
             pedido.entrega?.fechaEntrega?.toISOString().split('T')[0] ?? '',
         });
       }
+    }
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    return Buffer.from(buffer);
+  }
+
+  async exportIssues(desde: string, hasta: string): Promise<Buffer> {
+    const desdeDate = desde ? new Date(desde) : this.defaultDesde();
+    const hastaDate = hasta ? new Date(hasta) : new Date();
+    hastaDate.setHours(23, 59, 59, 999);
+
+    // Entregas con NOVEDAD, filtradas por la fecha de la hoja de carga.
+    const entregas = await this.prisma.entrega.findMany({
+      where: {
+        estado: DeliveryStatus.NOVEDAD,
+        pedido: {
+          hojaCarga: { fecha: { gte: desdeDate, lte: hastaDate } },
+        },
+      },
+      include: {
+        pedido: {
+          include: {
+            cliente: { select: { razonSocial: true } },
+            hojaCarga: {
+              include: {
+                ruta: { select: { nombre: true } },
+                chofer: { select: { nombre: true, apellido: true } },
+              },
+            },
+          },
+        },
+      },
+      orderBy: { fechaEntrega: 'desc' },
+      take: 10_000,
+    });
+
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = 'SIADLP';
+    workbook.created = new Date();
+
+    const sheet = workbook.addWorksheet('Novedades');
+
+    sheet.columns = [
+      { header: 'Hoja ID', key: 'hojaId', width: 10 },
+      { header: 'Fecha', key: 'fecha', width: 15 },
+      { header: 'Ruta', key: 'ruta', width: 20 },
+      { header: 'Cliente', key: 'cliente', width: 35 },
+      { header: 'Chofer', key: 'chofer', width: 25 },
+      { header: 'Observación', key: 'observacion', width: 45 },
+      { header: 'Fecha/Hora Entrega', key: 'fechaEntrega', width: 22 },
+    ];
+
+    const headerRow = sheet.getRow(1);
+    headerRow.font = { bold: true };
+    headerRow.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFD9E1F2' },
+    };
+
+    for (const entrega of entregas) {
+      const hoja = entrega.pedido.hojaCarga;
+      sheet.addRow({
+        hojaId: hoja?.id ?? '',
+        fecha: hoja?.fecha.toISOString().split('T')[0] ?? '',
+        ruta: hoja?.ruta.nombre ?? '',
+        cliente: entrega.pedido.cliente.razonSocial,
+        chofer: hoja ? `${hoja.chofer.nombre} ${hoja.chofer.apellido}` : '',
+        observacion: entrega.observacion ?? '',
+        fechaEntrega: entrega.fechaEntrega?.toISOString().replace('T', ' ').slice(0, 19) ?? '',
+      });
+    }
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    return Buffer.from(buffer);
+  }
+
+  async exportByDriver(desde: string, hasta: string): Promise<Buffer> {
+    const desdeDate = desde ? new Date(desde) : this.defaultDesde();
+    const hastaDate = hasta ? new Date(hasta) : new Date();
+    hastaDate.setHours(23, 59, 59, 999);
+
+    // Entregas en el rango (sobre hojaCarga.fecha) con su chofer, para agregar por chofer.
+    const entregas = await this.prisma.entrega.findMany({
+      where: {
+        pedido: {
+          hojaCarga: { fecha: { gte: desdeDate, lte: hastaDate } },
+        },
+      },
+      select: {
+        estado: true,
+        pedido: {
+          select: {
+            hojaCarga: {
+              select: {
+                choferId: true,
+                chofer: { select: { nombre: true, apellido: true } },
+              },
+            },
+          },
+        },
+      },
+      take: 50_000,
+    });
+
+    // Agrega contando entregas por chofer.
+    const resumen = new Map<
+      number,
+      {
+        nombre: string;
+        total: number;
+        entregadas: number;
+        novedad: number;
+        pendientes: number;
+      }
+    >();
+
+    for (const entrega of entregas) {
+      const hoja = entrega.pedido.hojaCarga;
+      if (!hoja) continue;
+      const key = hoja.choferId;
+      let row = resumen.get(key);
+      if (!row) {
+        row = {
+          nombre: `${hoja.chofer.nombre} ${hoja.chofer.apellido}`,
+          total: 0,
+          entregadas: 0,
+          novedad: 0,
+          pendientes: 0,
+        };
+        resumen.set(key, row);
+      }
+      row.total += 1;
+      if (entrega.estado === DeliveryStatus.ENTREGADO) row.entregadas += 1;
+      else if (entrega.estado === DeliveryStatus.NOVEDAD) row.novedad += 1;
+      else if (entrega.estado === DeliveryStatus.PENDIENTE) row.pendientes += 1;
+    }
+
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = 'SIADLP';
+    workbook.created = new Date();
+
+    const sheet = workbook.addWorksheet('Por Chofer');
+
+    sheet.columns = [
+      { header: 'Chofer', key: 'chofer', width: 30 },
+      { header: 'Total Entregas', key: 'total', width: 16 },
+      { header: 'Entregadas', key: 'entregadas', width: 14 },
+      { header: 'Con Novedad', key: 'novedad', width: 14 },
+      { header: 'Pendientes', key: 'pendientes', width: 14 },
+    ];
+
+    const headerRow = sheet.getRow(1);
+    headerRow.font = { bold: true };
+    headerRow.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFD9E1F2' },
+    };
+
+    const filas = Array.from(resumen.values()).sort((a, b) =>
+      a.nombre.localeCompare(b.nombre),
+    );
+    for (const fila of filas) {
+      sheet.addRow({
+        chofer: fila.nombre,
+        total: fila.total,
+        entregadas: fila.entregadas,
+        novedad: fila.novedad,
+        pendientes: fila.pendientes,
+      });
     }
 
     const buffer = await workbook.xlsx.writeBuffer();

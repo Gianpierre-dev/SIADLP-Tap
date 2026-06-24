@@ -43,6 +43,8 @@ const EMPTY_FORM: VehicleForm = {
   capacidadKg: 0,
 };
 
+const PAGE_SIZE = 10;
+
 export default function VehiculosPage() {
   const [items, setItems] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,6 +52,9 @@ export default function VehiculosPage() {
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState<VehicleForm>(EMPTY_FORM);
+  // Busqueda + paginacion client-side
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
   const askConfirm = useConfirm();
 
   const fetchItems = () => {
@@ -127,6 +132,19 @@ export default function VehiculosPage() {
     }
   };
 
+  // Filtrado client-side por placa, marca o modelo (case-insensitive)
+  const filtradas = items.filter((v) => {
+    const q = search.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      v.placa.toLowerCase().includes(q) ||
+      (v.marca ?? '').toLowerCase().includes(q) ||
+      (v.modelo ?? '').toLowerCase().includes(q)
+    );
+  });
+  const total = filtradas.length;
+  const pageItems = filtradas.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
   const columns: Column<Vehicle>[] = [
     { key: 'id', label: 'ID', className: 'w-16' },
     { key: 'placa', label: 'Placa' },
@@ -185,7 +203,30 @@ export default function VehiculosPage() {
           </Button>
         }
       />
-      <DataTable columns={columns} data={items} loading={loading} />
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="flex flex-col gap-1">
+          <Label htmlFor="search" className="text-xs text-muted-foreground">
+            Buscar
+          </Label>
+          <Input
+            id="search"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+            placeholder="Placa, marca o modelo"
+            className="w-64"
+          />
+        </div>
+      </div>
+      <DataTable
+        columns={columns}
+        data={pageItems}
+        loading={loading}
+        pagination={{ page, pageSize: PAGE_SIZE, total }}
+        onPageChange={setPage}
+      />
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>

@@ -43,6 +43,8 @@ const EMPTY_FORM: ProductForm = {
   unidadMedida: 'kg',
 };
 
+const PAGE_SIZE = 10;
+
 export default function ProductosPage() {
   const [items, setItems] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,6 +52,9 @@ export default function ProductosPage() {
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState<ProductForm>(EMPTY_FORM);
+  // Busqueda + paginacion client-side
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
   const askConfirm = useConfirm();
 
   const fetchItems = () => {
@@ -127,10 +132,32 @@ export default function ProductosPage() {
     }
   };
 
+  // Filtrado client-side por SKU o nombre (case-insensitive)
+  const filtradas = items.filter((p) => {
+    const q = search.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      p.codigoSku.toLowerCase().includes(q) ||
+      p.nombre.toLowerCase().includes(q)
+    );
+  });
+  const total = filtradas.length;
+  const pageItems = filtradas.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
   const columns: Column<Product>[] = [
     { key: 'id', label: 'ID', className: 'w-16' },
     { key: 'codigoSku', label: 'SKU', className: 'w-32' },
     { key: 'nombre', label: 'Nombre' },
+    {
+      key: 'descripcion',
+      label: 'Descripción',
+      className: 'max-w-[16rem]',
+      render: (row) => (
+        <span className="block truncate text-xs text-muted-foreground" title={row.descripcion ?? ''}>
+          {row.descripcion ?? '—'}
+        </span>
+      ),
+    },
     { key: 'unidadMedida', label: 'Unidad', className: 'w-24' },
     {
       key: 'activo',
@@ -173,7 +200,30 @@ export default function ProductosPage() {
           </Button>
         }
       />
-      <DataTable columns={columns} data={items} loading={loading} />
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="flex flex-col gap-1">
+          <Label htmlFor="search" className="text-xs text-muted-foreground">
+            Buscar
+          </Label>
+          <Input
+            id="search"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+            placeholder="SKU o nombre"
+            className="w-64"
+          />
+        </div>
+      </div>
+      <DataTable
+        columns={columns}
+        data={pageItems}
+        loading={loading}
+        pagination={{ page, pageSize: PAGE_SIZE, total }}
+        onPageChange={setPage}
+      />
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>

@@ -26,6 +26,7 @@ interface Route {
   zona: string;
   descripcion: string | null;
   activa: boolean;
+  _count?: { clientes: number };
 }
 
 interface RouteForm {
@@ -40,6 +41,8 @@ const EMPTY_FORM: RouteForm = {
   descripcion: '',
 };
 
+const PAGE_SIZE = 10;
+
 export default function RutasPage() {
   const [items, setItems] = useState<Route[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,6 +50,9 @@ export default function RutasPage() {
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState<RouteForm>(EMPTY_FORM);
+  // Busqueda + paginacion client-side
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
   const askConfirm = useConfirm();
 
   const fetchItems = () => {
@@ -122,6 +128,18 @@ export default function RutasPage() {
     }
   };
 
+  // Filtrado client-side por nombre o zona (case-insensitive)
+  const filtradas = items.filter((r) => {
+    const q = search.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      r.nombre.toLowerCase().includes(q) ||
+      (r.zona ?? '').toLowerCase().includes(q)
+    );
+  });
+  const total = filtradas.length;
+  const pageItems = filtradas.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
   const columns: Column<Route>[] = [
     { key: 'id', label: 'ID', className: 'w-12' },
     { key: 'nombre', label: 'Nombre', className: 'w-32' },
@@ -144,6 +162,12 @@ export default function RutasPage() {
           {row.descripcion ?? '—'}
         </span>
       ),
+    },
+    {
+      key: 'clientes',
+      label: 'Clientes',
+      className: 'w-24',
+      render: (row) => row._count?.clientes ?? 0,
     },
     {
       key: 'activa',
@@ -186,7 +210,30 @@ export default function RutasPage() {
           </Button>
         }
       />
-      <DataTable columns={columns} data={items} loading={loading} />
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="flex flex-col gap-1">
+          <Label htmlFor="search" className="text-xs text-muted-foreground">
+            Buscar
+          </Label>
+          <Input
+            id="search"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+            placeholder="Nombre o zona"
+            className="w-64"
+          />
+        </div>
+      </div>
+      <DataTable
+        columns={columns}
+        data={pageItems}
+        loading={loading}
+        pagination={{ page, pageSize: PAGE_SIZE, total }}
+        onPageChange={setPage}
+      />
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>

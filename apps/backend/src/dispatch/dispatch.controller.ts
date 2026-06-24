@@ -35,11 +35,13 @@ export class DispatchController {
     @Query('fecha') fecha?: string,
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
+    @Query('estado') estado?: string,
   ) {
     return this.dispatchService.findAll(
       fecha,
       page ? Number(page) : undefined,
       pageSize ? Number(pageSize) : undefined,
+      estado,
     );
   }
 

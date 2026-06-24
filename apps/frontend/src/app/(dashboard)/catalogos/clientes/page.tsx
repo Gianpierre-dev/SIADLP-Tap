@@ -75,6 +75,8 @@ const EMPTY_FORM: ClientForm = {
   rutaId: '',
 };
 
+const PAGE_SIZE = 10;
+
 export default function ClientesPage() {
   const [items, setItems] = useState<Client[]>([]);
   const [routes, setRoutes] = useState<Route[]>([]);
@@ -86,6 +88,11 @@ export default function ClientesPage() {
   const askConfirm = useConfirm();
   const { hasPermission } = useAuthStore();
   const puedeCrear = hasPermission('clientes.crear');
+
+  // Filtros + paginación client-side (el endpoint devuelve todo el array).
+  const [busqueda, setBusqueda] = useState('');
+  const [rutaFilter, setRutaFilter] = useState('');
+  const [page, setPage] = useState(1);
 
   const [departamentos, setDepartamentos] = useState<UbigeoOption[]>([]);
   const [provinciasUbigeo, setProvinciasUbigeo] = useState<UbigeoOption[]>([]);
@@ -226,6 +233,36 @@ export default function ClientesPage() {
     }
   };
 
+  // Aplica búsqueda (Razón Social o RUC) y filtro por ruta sobre el array completo.
+  const filtradas = items.filter((c) => {
+    const q = busqueda.trim().toLowerCase();
+    const coincideBusqueda =
+      q === '' ||
+      c.razonSocial.toLowerCase().includes(q) ||
+      (c.ruc ?? '').toLowerCase().includes(q);
+    const coincideRuta = rutaFilter === '' || c.rutaId === Number(rutaFilter);
+    return coincideBusqueda && coincideRuta;
+  });
+
+  const total = filtradas.length;
+  const paginadas = filtradas.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  const onBusquedaChange = (value: string) => {
+    setBusqueda(value);
+    setPage(1);
+  };
+
+  const onRutaChange = (value: string) => {
+    setRutaFilter(value);
+    setPage(1);
+  };
+
+  const limpiarFiltros = () => {
+    setBusqueda('');
+    setRutaFilter('');
+    setPage(1);
+  };
+
   const columns: Column<Client>[] = [
     { key: 'id', label: 'ID', className: 'w-12' },
     {
@@ -305,7 +342,55 @@ export default function ClientesPage() {
           ) : undefined
         }
       />
-      <DataTable columns={columns} data={items} loading={loading} />
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="flex flex-col gap-1">
+          <Label htmlFor="busqueda" className="text-xs text-muted-foreground">
+            Buscar
+          </Label>
+          <Input
+            id="busqueda"
+            value={busqueda}
+            onChange={(e) => onBusquedaChange(e.target.value)}
+            placeholder="Razón Social o RUC"
+            className="w-64"
+          />
+        </div>
+
+        {hasPermission('rutas.leer') && routes.length > 0 && (
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="rutaFilter" className="text-xs text-muted-foreground">
+              Ruta
+            </Label>
+            <select
+              id="rutaFilter"
+              value={rutaFilter}
+              onChange={(e) => onRutaChange(e.target.value)}
+              className="flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            >
+              <option value="">Todas</option>
+              {routes.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.nombre}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {(busqueda || rutaFilter) && (
+          <Button variant="ghost" size="sm" onClick={limpiarFiltros}>
+            Limpiar filtros
+          </Button>
+        )}
+      </div>
+
+      <DataTable
+        columns={columns}
+        data={paginadas}
+        loading={loading}
+        pagination={{ page, pageSize: PAGE_SIZE, total }}
+        onPageChange={setPage}
+      />
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>

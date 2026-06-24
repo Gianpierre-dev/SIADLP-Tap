@@ -29,6 +29,29 @@ const CATEGORIAS_POR_CLASE: Record<string, string[]> = {
 const SELECT_CLASS =
   'flex h-9 w-full rounded-lg border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:opacity-50';
 
+// Select estilado para los filtros de la lista (estilo del módulo pedidos).
+const FILTER_SELECT_CLASS =
+  'flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring';
+
+const PAGE_SIZE = 10;
+
+// Estado del brevete según la fecha de revalidación comparada con hoy (Perú).
+type BreveteEstado = 'vigente' | 'porVencer' | 'vencido' | 'sinFecha';
+
+// Devuelve el estado del brevete: vencido si revalidación < hoy; por vencer si
+// está entre hoy y hoy+30 días; vigente en otro caso.
+function getBreveteEstado(fechaRevalidacion: string | null): BreveteEstado {
+  if (!fechaRevalidacion) return 'sinFecha';
+  const hoy = new Date().toLocaleDateString('en-CA');
+  const reval = fechaRevalidacion.slice(0, 10);
+  if (reval < hoy) return 'vencido';
+  const limite = new Date();
+  limite.setDate(limite.getDate() + 30);
+  const limiteStr = limite.toLocaleDateString('en-CA');
+  if (reval <= limiteStr) return 'porVencer';
+  return 'vigente';
+}
+
 interface Driver {
   id: number;
   nombre: string;
@@ -67,6 +90,9 @@ const EMPTY_FORM: DriverForm = {
 export default function ChoferesPage() {
   const [items, setItems] = useState<Driver[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [breveteFilter, setBreveteFilter] = useState('');
+  const [page, setPage] = useState(1);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -168,6 +194,34 @@ export default function ChoferesPage() {
     }
   };
 
+  // Búsqueda case-insensitive por nombre, apellido, DNI o licencia.
+  const onSearchChange = (value: string) => {
+    setSearch(value);
+    setPage(1);
+  };
+
+  const onBreveteChange = (value: string) => {
+    setBreveteFilter(value);
+    setPage(1);
+  };
+
+  // Filtrado client-side (búsqueda + estado de brevete).
+  const filtradas = items.filter((d) => {
+    const q = search.trim().toLowerCase();
+    const matchSearch =
+      !q ||
+      d.nombre.toLowerCase().includes(q) ||
+      d.apellido.toLowerCase().includes(q) ||
+      d.dni.toLowerCase().includes(q) ||
+      (d.licencia ?? '').toLowerCase().includes(q);
+    const matchBrevete =
+      !breveteFilter || getBreveteEstado(d.fechaRevalidacion) === breveteFilter;
+    return matchSearch && matchBrevete;
+  });
+
+  const total = filtradas.length;
+  const paginadas = filtradas.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
   const columns: Column<Driver>[] = [
     { key: 'id', label: 'ID', className: 'w-16' },
     {
@@ -189,12 +243,29 @@ export default function ChoferesPage() {
       ),
     },
     {
+      key: 'telefono',
+      label: 'Teléfono',
+      render: (row) => row.telefono ?? '—',
+    },
+    {
       key: 'fechaRevalidacion',
       label: 'Revalidación',
-      render: (row) =>
-        row.fechaRevalidacion
-          ? new Date(row.fechaRevalidacion).toLocaleDateString('es-PE')
-          : '—',
+      render: (row) => {
+        if (!row.fechaRevalidacion) return '—';
+        const estado = getBreveteEstado(row.fechaRevalidacion);
+        // Marca visual: rojo para vencidos, ámbar para por vencer.
+        const color =
+          estado === 'vencido'
+            ? 'text-destructive font-medium'
+            : estado === 'porVencer'
+              ? 'text-amber-600 font-medium'
+              : '';
+        return (
+          <span className={color}>
+            {new Date(row.fechaRevalidacion).toLocaleDateString('es-PE')}
+          </span>
+        );
+      },
     },
     {
       key: 'activo',
@@ -243,7 +314,56 @@ export default function ChoferesPage() {
           </Button>
         }
       />
-      <DataTable columns={columns} data={items} loading={loading} />
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="flex flex-col gap-1">
+          <Label htmlFor="search" className="text-xs text-muted-foreground">
+            Buscar
+          </Label>
+          <Input
+            id="search"
+            value={search}
+            onChange={(e) => onSearchChange(e.target.value)}
+            placeholder="Nombre, apellido, DNI o licencia"
+            className="w-64"
+          />
+        </div>
+        <div className="flex flex-col gap-1">
+          <Label htmlFor="breveteFilter" className="text-xs text-muted-foreground">
+            Brevete
+          </Label>
+          <select
+            id="breveteFilter"
+            value={breveteFilter}
+            onChange={(e) => onBreveteChange(e.target.value)}
+            className={FILTER_SELECT_CLASS}
+          >
+            <option value="">Todos</option>
+            <option value="vigente">Vigentes</option>
+            <option value="porVencer">Por vencer (≤30 días)</option>
+            <option value="vencido">Vencidos</option>
+          </select>
+        </div>
+        {(search || breveteFilter) && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setSearch('');
+              setBreveteFilter('');
+              setPage(1);
+            }}
+          >
+            Limpiar filtros
+          </Button>
+        )}
+      </div>
+      <DataTable
+        columns={columns}
+        data={paginadas}
+        loading={loading}
+        pagination={{ page, pageSize: PAGE_SIZE, total }}
+        onPageChange={setPage}
+      />
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>

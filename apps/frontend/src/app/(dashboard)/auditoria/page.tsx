@@ -3,13 +3,17 @@
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { apiGet } from '@/lib/api';
+import { useAuthStore } from '@/lib/auth';
 import { PageHeader } from '@/components/page-header';
 import { DataTable, Column } from '@/components/data-table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { SearchIcon } from 'lucide-react';
+import { DownloadIcon, SearchIcon } from 'lucide-react';
+
+// Backend local por defecto (igual que en api.ts) para la descarga via fetch directo
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4020/api';
 
 interface AuditEntry {
   id: number;
@@ -29,7 +33,16 @@ interface AuditResponse {
   pageSize: number;
 }
 
+interface UserOption {
+  id: number;
+  nombre: string;
+  correo: string;
+}
+
 const PAGE_SIZE = 20;
+
+// Acciones posibles registradas por el interceptor de auditoria
+const actions = ['crear', 'editar', 'eliminar'];
 
 const modules = [
   'autenticacion',
@@ -59,18 +72,42 @@ const actionVariant: Record<string, 'default' | 'secondary' | 'destructive'> = {
 };
 
 interface Filters {
+  usuarioId: string;
+  accion: string;
   modulo: string;
   desde: string;
   hasta: string;
 }
 
-const EMPTY_FILTERS: Filters = { modulo: '', desde: '', hasta: '' };
+const EMPTY_FILTERS: Filters = {
+  usuarioId: '',
+  accion: '',
+  modulo: '',
+  desde: '',
+  hasta: '',
+};
+
+// Arma los query params a partir de los filtros (compartido por fetch y export)
+function buildFilterParams(f: Filters): URLSearchParams {
+  const params = new URLSearchParams();
+  if (f.usuarioId) params.set('usuarioId', f.usuarioId);
+  if (f.accion) params.set('accion', f.accion);
+  if (f.modulo) params.set('modulo', f.modulo);
+  if (f.desde) params.set('desde', f.desde);
+  if (f.hasta) params.set('hasta', f.hasta);
+  return params;
+}
 
 export default function AuditoriaPage() {
+  const { hasPermission } = useAuthStore();
+
   const [data, setData] = useState<AuditEntry[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
+
+  const [users, setUsers] = useState<UserOption[]>([]);
 
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [applied, setApplied] = useState<Filters>(EMPTY_FILTERS);
@@ -78,13 +115,9 @@ export default function AuditoriaPage() {
   const fetchData = useCallback(
     (currentPage: number, currentFilters: Filters) => {
       setLoading(true);
-      const params = new URLSearchParams({
-        page: String(currentPage),
-        pageSize: String(PAGE_SIZE),
-        modulo: currentFilters.modulo,
-        desde: currentFilters.desde,
-        hasta: currentFilters.hasta,
-      });
+      const params = buildFilterParams(currentFilters);
+      params.set('page', String(currentPage));
+      params.set('pageSize', String(PAGE_SIZE));
       apiGet<AuditResponse>(`/audit?${params.toString()}`)
         .then((res) => {
           setData(res.data);
@@ -100,6 +133,38 @@ export default function AuditoriaPage() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchData(page, applied);
   }, [fetchData, page, applied]);
+
+  // Carga de usuarios para el filtro, guardada por permiso
+  useEffect(() => {
+    if (!hasPermission('usuarios.leer')) return;
+    apiGet<UserOption[]>('/users')
+      .then((res) => setUsers(res))
+      .catch(() => toast.error('Error al cargar los usuarios'));
+  }, [hasPermission]);
+
+  // Descarga el CSV respetando los filtros aplicados
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const params = buildFilterParams(applied);
+      const token = localStorage.getItem('access_token');
+      const res = await fetch(`${API_URL}/audit/export?${params.toString()}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error('Error al exportar');
+      const blob = await res.blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'auditoria.csv';
+      a.click();
+      URL.revokeObjectURL(a.href);
+      toast.success('CSV exportado correctamente');
+    } catch {
+      toast.error('Error al exportar el CSV');
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const handleApply = () => {
     setPage(1);
@@ -189,6 +254,44 @@ export default function AuditoriaPage() {
 
       {/* Filters */}
       <div className="flex flex-wrap items-end gap-4 rounded-md border bg-card p-4">
+        {hasPermission('usuarios.leer') && (
+          <div className="space-y-1.5">
+            <Label htmlFor="usuario">Usuario</Label>
+            <select
+              id="usuario"
+              className="flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              value={filters.usuarioId}
+              onChange={(e) =>
+                setFilters((f) => ({ ...f, usuarioId: e.target.value }))
+              }
+            >
+              <option value="">Todos</option>
+              {users.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.nombre}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        <div className="space-y-1.5">
+          <Label htmlFor="accion">Acción</Label>
+          <select
+            id="accion"
+            className="flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            value={filters.accion}
+            onChange={(e) => setFilters((f) => ({ ...f, accion: e.target.value }))}
+          >
+            <option value="">Todas</option>
+            {actions.map((a) => (
+              <option key={a} value={a}>
+                {actionLabels[a] ?? a}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div className="space-y-1.5">
           <Label htmlFor="modulo">Módulo</Label>
           <select
@@ -231,6 +334,11 @@ export default function AuditoriaPage() {
         <Button onClick={handleApply}>
           <SearchIcon className="mr-2 h-4 w-4" />
           Aplicar
+        </Button>
+
+        <Button variant="outline" onClick={handleExport} disabled={exporting}>
+          <DownloadIcon className="mr-2 h-4 w-4" />
+          {exporting ? 'Exportando…' : 'Exportar CSV'}
         </Button>
       </div>
 

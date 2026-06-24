@@ -206,7 +206,7 @@ export class DispatchService {
     });
   }
 
-  async findAll(fecha?: string, page = 1, pageSize = 20) {
+  async findAll(fecha?: string, page = 1, pageSize = 20, estado?: string) {
     const where: Record<string, unknown> = {};
 
     if (fecha) {
@@ -214,6 +214,11 @@ export class DispatchService {
       const nextDay = new Date(day);
       nextDay.setDate(nextDay.getDate() + 1);
       where['fecha'] = { gte: day, lt: nextDay };
+    }
+
+    // Filtro opcional por estado de la hoja. Se combina con la fecha si ambos vienen.
+    if (estado) {
+      where['estado'] = estado;
     }
 
     const skip = (page - 1) * pageSize;

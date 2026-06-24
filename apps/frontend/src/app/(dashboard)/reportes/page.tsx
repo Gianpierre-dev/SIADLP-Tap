@@ -12,6 +12,8 @@ import {
   TruckIcon,
   DownloadIcon,
   Loader2Icon,
+  AlertTriangleIcon,
+  UserIcon,
 } from 'lucide-react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4020/api';
@@ -51,6 +53,14 @@ export default function ReportesPage() {
     hasta: defaultHasta(),
   });
   const [dispatchRange, setDispatchRange] = useState<DateRange>({
+    desde: defaultDesde(),
+    hasta: defaultHasta(),
+  });
+  const [issuesRange, setIssuesRange] = useState<DateRange>({
+    desde: defaultDesde(),
+    hasta: defaultHasta(),
+  });
+  const [byDriverRange, setByDriverRange] = useState<DateRange>({
     desde: defaultDesde(),
     hasta: defaultHasta(),
   });
@@ -187,6 +197,120 @@ export default function ReportesPage() {
               }
             >
               {loading['dispatch'] ? (
+                <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <DownloadIcon className="mr-2 h-4 w-4" />
+              )}
+              Descargar Excel
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Novedades */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangleIcon className="h-5 w-5 text-muted-foreground" />
+              Novedades
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Exporta las entregas con novedad y su motivo en el rango de fechas seleccionado.
+            </p>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="issues-desde">Desde</Label>
+                <Input
+                  id="issues-desde"
+                  type="date"
+                  value={issuesRange.desde}
+                  onChange={(e) =>
+                    setIssuesRange((r) => ({ ...r, desde: e.target.value }))
+                  }
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="issues-hasta">Hasta</Label>
+                <Input
+                  id="issues-hasta"
+                  type="date"
+                  value={issuesRange.hasta}
+                  onChange={(e) =>
+                    setIssuesRange((r) => ({ ...r, hasta: e.target.value }))
+                  }
+                />
+              </div>
+            </div>
+            <Button
+              className="w-full"
+              disabled={loading['issues']}
+              onClick={() =>
+                handleDownload(
+                  'issues',
+                  `/reports/export/issues?desde=${issuesRange.desde}&hasta=${issuesRange.hasta}`,
+                  `novedades_${issuesRange.desde}_${issuesRange.hasta}.xlsx`,
+                )
+              }
+            >
+              {loading['issues'] ? (
+                <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <DownloadIcon className="mr-2 h-4 w-4" />
+              )}
+              Descargar Excel
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Por Chofer */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <UserIcon className="h-5 w-5 text-muted-foreground" />
+              Por Chofer
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Exporta un resumen de entregas por chofer en el rango de fechas seleccionado.
+            </p>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="by-driver-desde">Desde</Label>
+                <Input
+                  id="by-driver-desde"
+                  type="date"
+                  value={byDriverRange.desde}
+                  onChange={(e) =>
+                    setByDriverRange((r) => ({ ...r, desde: e.target.value }))
+                  }
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="by-driver-hasta">Hasta</Label>
+                <Input
+                  id="by-driver-hasta"
+                  type="date"
+                  value={byDriverRange.hasta}
+                  onChange={(e) =>
+                    setByDriverRange((r) => ({ ...r, hasta: e.target.value }))
+                  }
+                />
+              </div>
+            </div>
+            <Button
+              className="w-full"
+              disabled={loading['byDriver']}
+              onClick={() =>
+                handleDownload(
+                  'byDriver',
+                  `/reports/export/by-driver?desde=${byDriverRange.desde}&hasta=${byDriverRange.hasta}`,
+                  `por-chofer_${byDriverRange.desde}_${byDriverRange.hasta}.xlsx`,
+                )
+              }
+            >
+              {loading['byDriver'] ? (
                 <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
               ) : (
                 <DownloadIcon className="mr-2 h-4 w-4" />

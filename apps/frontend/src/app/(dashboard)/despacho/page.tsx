@@ -17,7 +17,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Loader2Icon, PlusIcon, TruckIcon } from 'lucide-react';
+import { Loader2Icon, PlusIcon, TruckIcon, PrinterIcon } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -63,6 +63,27 @@ interface LoadSheetFull extends LoadSheet {
       fechaEntrega: string | null;
     } | null;
   }>;
+}
+
+// Hoja de ruta imprimible que devuelve GET /dispatch/:id/route-sheet
+interface RouteSheet {
+  hoja: { id: number; fecha: string; estado: string };
+  ruta: { nombre: string; zona: string };
+  vehiculo: { placa: string; marca: string | null; modelo: string | null };
+  chofer: {
+    nombre: string;
+    apellido: string;
+    dni: string;
+    licencia: string | null;
+    telefono: string | null;
+  };
+  paradas: Array<{
+    orden: number;
+    cliente: { razonSocial: string; direccion: string; telefono: string | null };
+    pedido: { id: number };
+    productos: Array<{ nombre: string; cantidad: number }>;
+  }>;
+  totalKg: number;
 }
 
 interface Route {
@@ -560,6 +581,203 @@ function DeliveryFormDialog({ pedidoId, open, onClose, onSuccess }: DeliveryForm
   );
 }
 
+// ─── Route Sheet (printable) Dialog ───────────────────────────────────────────
+
+interface RouteSheetDialogProps {
+  sheetId: number | null;
+  open: boolean;
+  onClose: () => void;
+}
+
+// Genera el HTML de la hoja de ruta para imprimir en una ventana nueva.
+function buildPrintHtml(rs: RouteSheet): string {
+  const choferNombre = `${rs.chofer.nombre} ${rs.chofer.apellido}`;
+  const vehiculo = `${rs.vehiculo.placa}${rs.vehiculo.marca ? ` — ${rs.vehiculo.marca}` : ''}${rs.vehiculo.modelo ? ` ${rs.vehiculo.modelo}` : ''}`;
+  const paradas = rs.paradas
+    .map((p) => {
+      const productos = p.productos
+        .map((pr) => `${pr.nombre} (${pr.cantidad})`)
+        .join(', ');
+      return `<tr>
+        <td>${p.orden}</td>
+        <td>${p.cliente.razonSocial}</td>
+        <td>${p.cliente.direccion}</td>
+        <td>${p.cliente.telefono ?? '—'}</td>
+        <td>#${p.pedido.id}</td>
+        <td>${productos}</td>
+      </tr>`;
+    })
+    .join('');
+
+  return `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Hoja de Ruta #${rs.hoja.id}</title>
+  <style>
+    * { font-family: Arial, Helvetica, sans-serif; }
+    body { margin: 24px; color: #1a1a1a; }
+    h1 { font-size: 20px; margin: 0 0 4px; }
+    .meta { font-size: 13px; margin-bottom: 16px; }
+    .meta div { margin: 2px 0; }
+    .meta b { display: inline-block; min-width: 90px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th, td { border: 1px solid #999; padding: 6px 8px; text-align: left; vertical-align: top; }
+    th { background: #f0f0f0; }
+    .total { margin-top: 12px; font-size: 13px; font-weight: bold; }
+    @media print { body { margin: 0; } }
+  </style>
+</head>
+<body>
+  <h1>Hoja de Ruta #${rs.hoja.id}</h1>
+  <div class="meta">
+    <div><b>Fecha:</b> ${rs.hoja.fecha.slice(0, 10)}</div>
+    <div><b>Ruta:</b> ${rs.ruta.nombre} — ${rs.ruta.zona}</div>
+    <div><b>Vehículo:</b> ${vehiculo}</div>
+    <div><b>Chofer:</b> ${choferNombre} (DNI ${rs.chofer.dni}${rs.chofer.licencia ? `, Lic. ${rs.chofer.licencia}` : ''})</div>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Cliente</th>
+        <th>Dirección</th>
+        <th>Teléfono</th>
+        <th>Pedido</th>
+        <th>Productos</th>
+      </tr>
+    </thead>
+    <tbody>${paradas}</tbody>
+  </table>
+  <div class="total">Total: ${rs.totalKg} kg — ${rs.paradas.length} parada(s)</div>
+</body>
+</html>`;
+}
+
+function RouteSheetDialog({ sheetId, open, onClose }: RouteSheetDialogProps) {
+  const [routeSheet, setRouteSheet] = useState<RouteSheet | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!open || !sheetId) return;
+    setLoading(true);
+    setRouteSheet(null);
+    apiGet<RouteSheet>(`/dispatch/${sheetId}/route-sheet`)
+      .then(setRouteSheet)
+      .catch(() => toast.error('Error al cargar la hoja de ruta'))
+      .finally(() => setLoading(false));
+  }, [open, sheetId]);
+
+  // Abre una ventana con la vista imprimible y dispara window.print().
+  const handlePrint = () => {
+    if (!routeSheet) return;
+    const win = window.open('', '_blank', 'width=900,height=700');
+    if (!win) {
+      toast.error('No se pudo abrir la ventana de impresión');
+      return;
+    }
+    win.document.write(buildPrintHtml(routeSheet));
+    win.document.close();
+    win.focus();
+    win.print();
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>
+            {routeSheet ? `Hoja de Ruta #${routeSheet.hoja.id}` : 'Hoja de Ruta'}
+          </DialogTitle>
+        </DialogHeader>
+
+        {loading && (
+          <div className="flex items-center justify-center py-10">
+            <Loader2Icon className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        )}
+
+        {!loading && routeSheet && (
+          <div className="space-y-5">
+            {/* Cabecera */}
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-muted-foreground">Fecha</p>
+                <p>{formatDate(routeSheet.hoja.fecha)}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Ruta</p>
+                <p>{routeSheet.ruta.nombre} — {routeSheet.ruta.zona}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Vehículo</p>
+                <p>
+                  {routeSheet.vehiculo.placa}
+                  {routeSheet.vehiculo.marca ? ` — ${routeSheet.vehiculo.marca}` : ''}
+                  {routeSheet.vehiculo.modelo ? ` ${routeSheet.vehiculo.modelo}` : ''}
+                </p>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Chofer</p>
+                <p>
+                  {routeSheet.chofer.nombre} {routeSheet.chofer.apellido}{' '}
+                  <span className="text-muted-foreground">(DNI {routeSheet.chofer.dni})</span>
+                </p>
+              </div>
+            </div>
+
+            {/* Paradas */}
+            <div>
+              <p className="text-sm font-medium mb-2">
+                Paradas ({routeSheet.paradas.length})
+              </p>
+              <div className="rounded-md border overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/50">
+                    <tr>
+                      <th className="text-left px-3 py-2 w-10">#</th>
+                      <th className="text-left px-3 py-2">Cliente</th>
+                      <th className="text-left px-3 py-2">Dirección</th>
+                      <th className="text-left px-3 py-2">Productos</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {routeSheet.paradas.map((p) => (
+                      <tr key={p.pedido.id}>
+                        <td className="px-3 py-2 text-muted-foreground">{p.orden}</td>
+                        <td className="px-3 py-2">{p.cliente.razonSocial}</td>
+                        <td className="px-3 py-2 text-muted-foreground">
+                          {p.cliente.direccion}
+                        </td>
+                        <td className="px-3 py-2 text-xs">
+                          {p.productos
+                            .map((pr) => `${pr.nombre} (${pr.cantidad})`)
+                            .join(', ')}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-sm font-medium mt-2">Total: {routeSheet.totalKg} kg</p>
+            </div>
+          </div>
+        )}
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            Cerrar
+          </Button>
+          <Button onClick={handlePrint} disabled={!routeSheet}>
+            <PrinterIcon className="h-4 w-4 mr-2" />
+            Imprimir
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // ─── Detail Dialog ────────────────────────────────────────────────────────────
 
 interface DetailDialogProps {
@@ -579,6 +797,7 @@ function DetailDialog({ sheetId, open, onClose, onSuccess }: DetailDialogProps) 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deliveryPedidoId, setDeliveryPedidoId] = useState<number | null>(null);
   const [deliveryOpen, setDeliveryOpen] = useState(false);
+  const [routeSheetOpen, setRouteSheetOpen] = useState(false);
   const { hasPermission } = useAuthStore();
 
   const fetchDetail = useCallback(() => {
@@ -767,6 +986,12 @@ function DetailDialog({ sheetId, open, onClose, onSuccess }: DetailDialogProps) 
 
               {/* Action buttons */}
               <DialogFooter className="gap-2">
+                {hasPermission('despacho.leer') && (
+                  <Button variant="outline" onClick={() => setRouteSheetOpen(true)}>
+                    <PrinterIcon className="h-4 w-4 mr-2" />
+                    Imprimir hoja de ruta
+                  </Button>
+                )}
                 {sheet.estado === 'PREPARANDO' &&
                   hasPermission('despacho.editar') && (
                   <Button onClick={() => setConfirmOpen(true)}>
@@ -804,6 +1029,11 @@ function DetailDialog({ sheetId, open, onClose, onSuccess }: DetailDialogProps) 
         onClose={() => setDeliveryOpen(false)}
         onSuccess={handleSubSuccess}
       />
+      <RouteSheetDialog
+        sheetId={sheetId}
+        open={routeSheetOpen}
+        onClose={() => setRouteSheetOpen(false)}
+      />
     </>
   );
 }
@@ -816,6 +1046,7 @@ export default function DespachoPage() {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [fechaFilter, setFechaFilter] = useState('');
+  const [estadoFilter, setEstadoFilter] = useState('');
 
   // Catalogs
   const [routes, setRoutes] = useState<Route[]>([]);
@@ -838,6 +1069,7 @@ export default function DespachoPage() {
         pageSize: String(PAGE_SIZE),
       });
       if (fechaFilter) params.set('fecha', fechaFilter);
+      if (estadoFilter) params.set('estado', estadoFilter);
       apiGet<{ data: LoadSheet[]; total: number; page: number; pageSize: number }>(
         `/dispatch?${params.toString()}`
       )
@@ -848,13 +1080,13 @@ export default function DespachoPage() {
         .catch(() => toast.error('Error al cargar hojas de carga'))
         .finally(() => setLoading(false));
     },
-    [fechaFilter]
+    [fechaFilter, estadoFilter]
   );
 
   useEffect(() => {
     setPage(1); // eslint-disable-line react-hooks/set-state-in-effect
     fetchSheets(1);
-  }, [fechaFilter, fetchSheets]);
+  }, [fechaFilter, estadoFilter, fetchSheets]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -991,8 +1223,30 @@ export default function DespachoPage() {
             className="w-40"
           />
         </div>
-        {fechaFilter && (
-          <Button variant="ghost" size="sm" onClick={() => setFechaFilter('')}>
+        <div className="space-y-1.5">
+          <Label htmlFor="filter-estado">Filtrar por estado</Label>
+          <select
+            id="filter-estado"
+            className="flex h-9 w-44 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            value={estadoFilter}
+            onChange={(e) => setEstadoFilter(e.target.value)}
+          >
+            <option value="">Todos</option>
+            <option value="PREPARANDO">Preparando</option>
+            <option value="DESPACHADO">Despachado</option>
+            <option value="EN_RUTA">En Ruta</option>
+            <option value="COMPLETADO">Completado</option>
+          </select>
+        </div>
+        {(fechaFilter || estadoFilter) && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setFechaFilter('');
+              setEstadoFilter('');
+            }}
+          >
             Limpiar
           </Button>
         )}
