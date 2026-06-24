@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { apiGet, apiPost } from '@/lib/api';
 import { useAuthStore } from '@/lib/auth';
+import { useEmpresaStore } from '@/lib/empresa';
 import { PageHeader } from '@/components/page-header';
 import { DataTable, Column } from '@/components/data-table';
 import { Button } from '@/components/ui/button';
@@ -575,7 +576,10 @@ interface RouteSheetDialogProps {
 }
 
 // Genera el HTML de la hoja de ruta para imprimir en una ventana nueva.
-function buildPrintHtml(rs: RouteSheet): string {
+function buildPrintHtml(
+  rs: RouteSheet,
+  brand: { logoUrl: string; nombre: string; ruc: string | null },
+): string {
   const choferNombre = `${rs.chofer.nombre} ${rs.chofer.apellido}`;
   const vehiculo = `${rs.vehiculo.placa}${rs.vehiculo.marca ? ` — ${rs.vehiculo.marca}` : ''}${rs.vehiculo.modelo ? ` ${rs.vehiculo.modelo}` : ''}`;
   const paradas = rs.paradas
@@ -610,10 +614,21 @@ function buildPrintHtml(rs: RouteSheet): string {
     th, td { border: 1px solid #999; padding: 6px 8px; text-align: left; vertical-align: top; }
     th { background: #f0f0f0; }
     .total { margin-top: 12px; font-size: 13px; font-weight: bold; }
+    .brand { display: flex; align-items: center; gap: 16px; border-bottom: 2px solid #1a3a0e; padding-bottom: 12px; margin-bottom: 16px; }
+    .brand img { height: 56px; width: auto; }
+    .brand-name { font-size: 18px; font-weight: bold; }
+    .brand-ruc { font-size: 12px; color: #555; }
     @media print { body { margin: 0; } }
   </style>
 </head>
-<body>
+<body onload="window.print()">
+  <div class="brand">
+    <img src="${brand.logoUrl}" alt="" />
+    <div>
+      <div class="brand-name">${brand.nombre}</div>
+      ${brand.ruc ? `<div class="brand-ruc">RUC: ${brand.ruc}</div>` : ''}
+    </div>
+  </div>
   <h1>Hoja de Ruta #${rs.hoja.id}</h1>
   <div class="meta">
     <div><b>Fecha:</b> ${rs.hoja.fecha.slice(0, 10)}</div>
@@ -642,6 +657,7 @@ function buildPrintHtml(rs: RouteSheet): string {
 function RouteSheetDialog({ sheetId, open, onClose }: RouteSheetDialogProps) {
   const [routeSheet, setRouteSheet] = useState<RouteSheet | null>(null);
   const [loading, setLoading] = useState(false);
+  const { empresa } = useEmpresaStore();
 
   useEffect(() => {
     if (!open || !sheetId) return;
@@ -661,10 +677,24 @@ function RouteSheetDialog({ sheetId, open, onClose }: RouteSheetDialogProps) {
       toast.error('No se pudo abrir la ventana de impresión');
       return;
     }
-    win.document.write(buildPrintHtml(routeSheet));
+    // Logo en URL absoluta: el custom (backend /uploads) o el default del
+    // frontend. La ventana nueva no resuelve rutas relativas.
+    const apiUrl =
+      process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4020/api';
+    const baseUrl = apiUrl.replace(/\/api$/, '');
+    const logoUrl = empresa?.logoUrl
+      ? `${baseUrl}${empresa.logoUrl}`
+      : `${window.location.origin}/LogoLaCosecha.png`;
+    const brand = {
+      logoUrl,
+      nombre:
+        empresa?.nombreComercial ?? empresa?.razonSocial ?? 'La Cosecha S.A.C.',
+      ruc: empresa?.ruc ?? null,
+    };
+    win.document.write(buildPrintHtml(routeSheet, brand));
     win.document.close();
     win.focus();
-    win.print();
+    // window.print() lo dispara el onload del <body>, para esperar a que cargue el logo.
   };
 
   return (
