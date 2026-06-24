@@ -226,6 +226,12 @@ function CreateDialog({ open, onClose, onSuccess, routes, vehicles, drivers }: C
       toast.error('Completá todos los campos requeridos');
       return;
     }
+    if (fecha < new Date().toLocaleDateString('en-CA')) {
+      toast.error(
+        'No se puede programar una hoja de carga para una fecha anterior a hoy',
+      );
+      return;
+    }
     if (selectedPedidoIds.size === 0) {
       toast.error('Seleccioná al menos un pedido');
       return;
@@ -264,6 +270,7 @@ function CreateDialog({ open, onClose, onSuccess, routes, vehicles, drivers }: C
                 id="dispatch-fecha"
                 type="date"
                 value={fecha}
+                min={new Date().toLocaleDateString('en-CA')}
                 onChange={(e) => setFecha(e.target.value)}
                 required
               />

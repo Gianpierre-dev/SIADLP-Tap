@@ -99,6 +99,17 @@ export class DispatchService {
   }
 
   async create(dto: CreateLoadSheetDto, userId: number) {
+    // La hoja de carga no puede programarse para una fecha pasada. Se evalúa en
+    // zona horaria de Perú (UTC-5) porque el servidor corre en UTC.
+    const hoyPeru = new Date(Date.now() - 5 * 60 * 60 * 1000)
+      .toISOString()
+      .slice(0, 10);
+    if (dto.fecha.slice(0, 10) < hoyPeru) {
+      throw new BadRequestException(
+        'No se puede programar una hoja de carga para una fecha anterior a hoy',
+      );
+    }
+
     return this.prisma.$transaction(async (tx) => {
       // 1. Validate ruta exists and is active (immutable dependency, fail fast)
       const ruta = await tx.ruta.findUnique({ where: { id: dto.rutaId } });
