@@ -37,7 +37,7 @@ interface Order {
   estado: string;
   observacion: string | null;
   fechaCreacion: string;
-  cliente: { id: number; razonSocial: string };
+  cliente: { id: number; razonSocial: string; ruta: { nombre: string } };
   _count: { detalles: number };
 }
 
@@ -361,6 +361,18 @@ export default function PedidosPage() {
       key: 'cliente',
       label: 'Cliente',
       render: (row) => row.cliente.razonSocial,
+    },
+    {
+      key: 'ruta',
+      label: 'Ruta',
+      className: 'w-32',
+      render: (row) => row.cliente.ruta?.nombre ?? '—',
+    },
+    {
+      key: 'items',
+      label: 'Ítems',
+      className: 'w-20',
+      render: (row) => row._count.detalles,
     },
     {
       key: 'fechaEntrega',

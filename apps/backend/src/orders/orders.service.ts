@@ -177,7 +177,13 @@ export class OrdersService {
       this.prisma.pedido.findMany({
         where,
         include: {
-          cliente: { select: { id: true, razonSocial: true } },
+          cliente: {
+            select: {
+              id: true,
+              razonSocial: true,
+              ruta: { select: { nombre: true } },
+            },
+          },
           _count: { select: { detalles: true } },
         },
         orderBy: { fechaCreacion: 'desc' },
