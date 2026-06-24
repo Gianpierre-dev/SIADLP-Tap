@@ -204,6 +204,40 @@ export class ReportsService {
     };
   }
 
+  // Encabezado branded para los reportes Excel: nombre de empresa, RUC, título
+  // del reporte y período. Se inserta arriba de la tabla de datos.
+  private async addReportHeader(
+    sheet: ExcelJS.Worksheet,
+    titulo: string,
+    desde: string,
+    hasta: string,
+  ): Promise<void> {
+    const empresa = await this.prisma.empresa.findUnique({
+      where: { id: 1 },
+      select: { razonSocial: true, nombreComercial: true, ruc: true },
+    });
+    const nombre =
+      empresa?.nombreComercial ?? empresa?.razonSocial ?? 'La Cosecha S.A.C.';
+    const colCount = Math.max(sheet.columns.length, 1);
+    sheet.spliceRows(
+      1,
+      0,
+      [nombre],
+      [empresa?.ruc ? `RUC: ${empresa.ruc}` : ''],
+      [titulo],
+      [`Período: ${desde || '—'} a ${hasta || '—'}`],
+      [],
+    );
+    sheet.mergeCells(1, 1, 1, colCount);
+    sheet.mergeCells(2, 1, 2, colCount);
+    sheet.mergeCells(3, 1, 3, colCount);
+    sheet.mergeCells(4, 1, 4, colCount);
+    sheet.getRow(1).font = { bold: true, size: 14 };
+    sheet.getRow(2).font = { size: 10 };
+    sheet.getRow(3).font = { bold: true, size: 12 };
+    sheet.getRow(4).font = { italic: true, size: 10 };
+  }
+
   async exportOrders(desde: string, hasta: string): Promise<Buffer> {
     const desdeDate = desde ? new Date(desde) : this.defaultDesde();
     const hastaDate = hasta ? new Date(hasta) : new Date();
@@ -263,6 +297,8 @@ export class ReportsService {
         productos,
       });
     }
+
+    await this.addReportHeader(sheet, 'Reporte de Pedidos', desde, hasta);
 
     const buffer = await workbook.xlsx.writeBuffer();
     return Buffer.from(buffer);
@@ -350,6 +386,8 @@ export class ReportsService {
       }
     }
 
+    await this.addReportHeader(sheet, 'Reporte de Despachos', desde, hasta);
+
     const buffer = await workbook.xlsx.writeBuffer();
     return Buffer.from(buffer);
   }
@@ -420,6 +458,8 @@ export class ReportsService {
         fechaEntrega: entrega.fechaEntrega?.toISOString().replace('T', ' ').slice(0, 19) ?? '',
       });
     }
+
+    await this.addReportHeader(sheet, 'Reporte de Novedades', desde, hasta);
 
     const buffer = await workbook.xlsx.writeBuffer();
     return Buffer.from(buffer);
@@ -520,6 +560,13 @@ export class ReportsService {
         pendientes: fila.pendientes,
       });
     }
+
+    await this.addReportHeader(
+      sheet,
+      'Reporte de Entregas por Chofer',
+      desde,
+      hasta,
+    );
 
     const buffer = await workbook.xlsx.writeBuffer();
     return Buffer.from(buffer);
@@ -623,6 +670,8 @@ export class ReportsService {
       });
     }
 
+    await this.addReportHeader(sheet, 'Reporte por Ruta', desde, hasta);
+
     const buffer = await workbook.xlsx.writeBuffer();
     return Buffer.from(buffer);
   }
@@ -716,6 +765,8 @@ export class ReportsService {
         totalKg: fila.totalKg,
       });
     }
+
+    await this.addReportHeader(sheet, 'Reporte por Cliente', desde, hasta);
 
     const buffer = await workbook.xlsx.writeBuffer();
     return Buffer.from(buffer);

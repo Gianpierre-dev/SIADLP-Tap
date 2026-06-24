@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { apiGet, apiPost, apiPatch, apiDelete } from '@/lib/api';
 import { PageHeader } from '@/components/page-header';
 import { DataTable, Column } from '@/components/data-table';
+import { SearchableSelect } from '@/components/searchable-select';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -514,62 +515,54 @@ export default function ClientesPage() {
               </div>
               <div className="col-span-2 space-y-1.5">
                 <Label htmlFor="departamento">Departamento</Label>
-                <select
-                  id="departamento"
-                  className={selectClassName}
+                <SearchableSelect
+                  options={departamentos.map((d) => ({
+                    value: d.id,
+                    label: d.nombre,
+                  }))}
                   value={form.departamentoId}
-                  onChange={(e) => handleDepartamentoChange(e.target.value)}
-                >
-                  <option value="">Seleccionar departamento</option>
-                  {departamentos.map((d) => (
-                    <option key={d.id} value={d.id}>{d.nombre}</option>
-                  ))}
-                </select>
+                  onChange={handleDepartamentoChange}
+                  placeholder="Seleccionar departamento"
+                  searchPlaceholder="Buscar departamento..."
+                />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="provincia">Provincia</Label>
-                <select
-                  id="provincia"
-                  className={selectClassName}
+                <SearchableSelect
+                  options={provinciasUbigeo.map((p) => ({
+                    value: p.id,
+                    label: p.nombre,
+                  }))}
                   value={form.provinciaId}
-                  onChange={(e) => handleProvinciaChange(e.target.value)}
+                  onChange={handleProvinciaChange}
                   disabled={!form.departamentoId}
-                >
-                  <option value="">Seleccionar provincia</option>
-                  {provinciasUbigeo.map((p) => (
-                    <option key={p.id} value={p.id}>{p.nombre}</option>
-                  ))}
-                </select>
+                  placeholder="Seleccionar provincia"
+                  searchPlaceholder="Buscar provincia..."
+                />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="distrito">Distrito</Label>
-                <select
-                  id="distrito"
-                  className={selectClassName}
+                <SearchableSelect
+                  options={distritos.map((d) => ({
+                    value: d.id,
+                    label: d.nombre,
+                  }))}
                   value={form.distritoId}
-                  onChange={(e) => handleDistritoChange(e.target.value)}
+                  onChange={handleDistritoChange}
                   disabled={!form.provinciaId}
-                >
-                  <option value="">Seleccionar distrito</option>
-                  {distritos.map((d) => (
-                    <option key={d.id} value={d.id}>{d.nombre}</option>
-                  ))}
-                </select>
+                  placeholder="Seleccionar distrito"
+                  searchPlaceholder="Buscar distrito..."
+                />
               </div>
               <div className="col-span-2 space-y-1.5">
                 <Label htmlFor="rutaId">Ruta *</Label>
-                <select
-                  id="rutaId"
-                  className={selectClassName}
+                <SearchableSelect
+                  options={routes.map((r) => ({ value: r.id, label: r.nombre }))}
                   value={form.rutaId}
-                  onChange={(e) => setForm({ ...form, rutaId: e.target.value === '' ? '' : Number(e.target.value) })}
-                  required
-                >
-                  <option value="">Seleccionar ruta</option>
-                  {routes.map((r) => (
-                    <option key={r.id} value={r.id}>{r.nombre}</option>
-                  ))}
-                </select>
+                  onChange={(v) => setForm({ ...form, rutaId: v })}
+                  placeholder="Seleccionar ruta"
+                  searchPlaceholder="Buscar ruta..."
+                />
               </div>
             </div>
             <DialogFooter>

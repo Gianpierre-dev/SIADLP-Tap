@@ -4,14 +4,15 @@ import { useEffect, useRef, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { ChevronsUpDownIcon } from 'lucide-react';
 
-export interface SearchableOption {
-  value: number;
+export interface SearchableOption<T extends string | number = number> {
+  value: T;
   label: string;
 }
 
 // Select con búsqueda: reemplaza al <select> nativo, que se vuelve inusable con
 // muchas opciones. Tipeás y filtra por la etiqueta. Cierra al clickear afuera.
-export function SearchableSelect({
+// Genérico: el value puede ser number (ids autoincrement) o string (ubigeo).
+export function SearchableSelect<T extends string | number = number>({
   options,
   value,
   onChange,
@@ -19,9 +20,9 @@ export function SearchableSelect({
   searchPlaceholder = 'Buscar...',
   disabled = false,
 }: {
-  options: SearchableOption[];
-  value: number | '';
-  onChange: (value: number) => void;
+  options: SearchableOption<T>[];
+  value: T | '';
+  onChange: (value: T) => void;
   placeholder?: string;
   searchPlaceholder?: string;
   disabled?: boolean;
