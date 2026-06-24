@@ -142,7 +142,7 @@ export default function AuditoriaPage() {
       .catch(() => toast.error('Error al cargar los usuarios'));
   }, [hasPermission]);
 
-  // Descarga el CSV respetando los filtros aplicados
+  // Descarga el Excel respetando los filtros aplicados
   const handleExport = async () => {
     setExporting(true);
     try {
@@ -155,12 +155,12 @@ export default function AuditoriaPage() {
       const blob = await res.blob();
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = 'auditoria.csv';
+      a.download = 'auditoria.xlsx';
       a.click();
       URL.revokeObjectURL(a.href);
-      toast.success('CSV exportado correctamente');
+      toast.success('Excel exportado correctamente');
     } catch {
-      toast.error('Error al exportar el CSV');
+      toast.error('Error al exportar el Excel');
     } finally {
       setExporting(false);
     }
@@ -338,7 +338,7 @@ export default function AuditoriaPage() {
 
         <Button variant="outline" onClick={handleExport} disabled={exporting}>
           <DownloadIcon className="mr-2 h-4 w-4" />
-          {exporting ? 'Exportando…' : 'Exportar CSV'}
+          {exporting ? 'Exportando…' : 'Exportar Excel'}
         </Button>
       </div>
 

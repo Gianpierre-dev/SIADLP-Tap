@@ -41,18 +41,21 @@ export class AuditController {
     @Query('desde') desde?: string,
     @Query('hasta') hasta?: string,
   ) {
-    const csv = await this.auditService.exportCsv({
+    const buffer = await this.auditService.exportExcel({
       usuarioId: usuarioId ? Number(usuarioId) : undefined,
       modulo,
       accion,
       desde,
       hasta,
     });
-    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    );
     res.setHeader(
       'Content-Disposition',
-      'attachment; filename=auditoria.csv',
+      'attachment; filename=auditoria.xlsx',
     );
-    res.send(csv);
+    res.send(buffer);
   }
 }
