@@ -16,7 +16,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { PlusIcon, PencilIcon, Loader2Icon } from 'lucide-react';
+import { PlusIcon, PencilIcon, Loader2Icon, RotateCcwIcon } from 'lucide-react';
+import { useAuthStore } from '@/lib/auth';
 
 interface Permission {
   id: number;
@@ -88,13 +89,34 @@ export default function RolesPage() {
   // Búsqueda por nombre + paginación client-side.
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [verInactivos, setVerInactivos] = useState(false);
 
-  const fetchItems = () => {
+  const hasPermission = useAuthStore((s) => s.hasPermission);
+
+  const fetchItems = (incluirInactivos = verInactivos) => {
     setLoading(true);
-    apiGet<RoleListItem[]>('/roles')
+    apiGet<RoleListItem[]>(
+      `/roles${incluirInactivos ? '?incluirInactivos=true' : ''}`,
+    )
       .then(setItems)
       .catch(() => toast.error('Error al cargar roles'))
       .finally(() => setLoading(false));
+  };
+
+  const handleReactivate = async (id: number) => {
+    try {
+      await apiPatch(`/roles/${id}/reactivar`, {});
+      toast.success('Rol reactivado correctamente');
+      fetchItems();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Error al reactivar rol');
+    }
+  };
+
+  const onVerInactivosChange = (checked: boolean) => {
+    setVerInactivos(checked);
+    setPage(1);
+    fetchItems(checked);
   };
 
   useEffect(() => {
@@ -253,6 +275,17 @@ export default function RolesPage() {
           <Button variant="ghost" size="sm" onClick={() => openEdit(row)}>
             <PencilIcon className="h-4 w-4" />
           </Button>
+          {!row.activo && hasPermission('roles.editar') && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleReactivate(row.id)}
+              aria-label="Reactivar rol"
+              title="Reactivar"
+            >
+              <RotateCcwIcon className="h-4 w-4 text-[#33691e]" />
+            </Button>
+          )}
         </div>
       ),
     },
@@ -282,6 +315,19 @@ export default function RolesPage() {
             placeholder="Nombre del rol"
             className="h-9 w-64"
           />
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <Label className="text-xs text-muted-foreground">&nbsp;</Label>
+          <label className="flex h-9 items-center gap-2 cursor-pointer text-sm">
+            <input
+              type="checkbox"
+              className={CHECKBOX_CLASS}
+              checked={verInactivos}
+              onChange={(e) => onVerInactivosChange(e.target.checked)}
+            />
+            Ver inactivos
+          </label>
         </div>
 
         {search && (

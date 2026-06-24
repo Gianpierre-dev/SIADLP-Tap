@@ -23,9 +23,9 @@ export class VehiclesService {
     return this.prisma.vehiculo.create({ data: dto });
   }
 
-  async findAll() {
+  async findAll(incluirInactivos?: boolean) {
     return this.prisma.vehiculo.findMany({
-      where: { activo: true },
+      where: incluirInactivos ? undefined : { activo: true },
       orderBy: { placa: 'asc' },
     });
   }
@@ -62,6 +62,15 @@ export class VehiclesService {
     return this.prisma.vehiculo.update({
       where: { id },
       data: { activo: false },
+    });
+  }
+
+  async reactivate(id: number) {
+    await this.findOne(id);
+
+    return this.prisma.vehiculo.update({
+      where: { id },
+      data: { activo: true },
     });
   }
 }

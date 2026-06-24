@@ -16,7 +16,13 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { PlusIcon, PencilIcon, Trash2Icon, Loader2Icon } from 'lucide-react';
+import {
+  PlusIcon,
+  PencilIcon,
+  Trash2Icon,
+  Loader2Icon,
+  RotateCcwIcon,
+} from 'lucide-react';
 import { useConfirm } from '@/components/confirm-dialog';
 import { useAuthStore } from '@/lib/auth';
 
@@ -55,11 +61,14 @@ export default function VehiculosPage() {
   // Busqueda + paginacion client-side
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [verInactivos, setVerInactivos] = useState(false);
   const askConfirm = useConfirm();
 
-  const fetchItems = () => {
+  const fetchItems = (incluirInactivos = verInactivos) => {
     setLoading(true);
-    apiGet<Vehicle[]>('/catalogs/vehicles')
+    apiGet<Vehicle[]>(
+      `/catalogs/vehicles${incluirInactivos ? '?incluirInactivos=true' : ''}`,
+    )
       .then(setItems)
       .catch(() => toast.error('Error al cargar vehículos'))
       .finally(() => setLoading(false));
@@ -132,6 +141,22 @@ export default function VehiculosPage() {
     }
   };
 
+  const handleReactivate = async (id: number) => {
+    try {
+      await apiPatch(`/catalogs/vehicles/${id}/reactivar`, {});
+      toast.success('Vehículo reactivado correctamente');
+      fetchItems();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Error al reactivar');
+    }
+  };
+
+  const toggleVerInactivos = (checked: boolean) => {
+    setVerInactivos(checked);
+    setPage(1);
+    fetchItems(checked);
+  };
+
   // Filtrado client-side por placa, marca o modelo (case-insensitive)
   const filtradas = items.filter((v) => {
     const q = search.trim().toLowerCase();
@@ -181,9 +206,13 @@ export default function VehiculosPage() {
           <Button variant="ghost" size="sm" onClick={() => openEdit(row)}>
             <PencilIcon className="h-4 w-4" />
           </Button>
-          {row.activo && (
+          {row.activo ? (
             <Button variant="ghost" size="sm" onClick={() => handleDeactivate(row.id)}>
               <Trash2Icon className="h-4 w-4 text-destructive" />
+            </Button>
+          ) : (
+            <Button variant="ghost" size="sm" onClick={() => handleReactivate(row.id)}>
+              <RotateCcwIcon className="h-4 w-4 text-emerald-600" />
             </Button>
           )}
         </div>
@@ -219,6 +248,15 @@ export default function VehiculosPage() {
             className="w-64"
           />
         </div>
+        <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={verInactivos}
+            onChange={(e) => toggleVerInactivos(e.target.checked)}
+            className="h-4 w-4 rounded border-input"
+          />
+          Ver inactivos
+        </label>
       </div>
       <DataTable
         columns={columns}

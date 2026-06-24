@@ -16,7 +16,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { PlusIcon, PencilIcon, Trash2Icon, Loader2Icon } from 'lucide-react';
+import { PlusIcon, PencilIcon, Trash2Icon, RotateCcwIcon, Loader2Icon } from 'lucide-react';
 import { useConfirm } from '@/components/confirm-dialog';
 import { useAuthStore } from '@/lib/auth';
 
@@ -88,6 +88,8 @@ export default function ClientesPage() {
   const askConfirm = useConfirm();
   const { hasPermission } = useAuthStore();
   const puedeCrear = hasPermission('clientes.crear');
+  const puedeEliminar = hasPermission('clientes.eliminar');
+  const [incluirInactivos, setIncluirInactivos] = useState(false);
 
   // Filtros + paginación client-side (el endpoint devuelve todo el array).
   const [busqueda, setBusqueda] = useState('');
@@ -100,7 +102,9 @@ export default function ClientesPage() {
 
   const fetchItems = () => {
     setLoading(true);
-    apiGet<Client[]>('/catalogs/clients')
+    apiGet<Client[]>(
+      `/catalogs/clients${incluirInactivos ? '?incluirInactivos=true' : ''}`,
+    )
       .then(setItems)
       .catch(() => toast.error('Error al cargar clientes'))
       .finally(() => setLoading(false));
@@ -108,6 +112,10 @@ export default function ClientesPage() {
 
   useEffect(() => {
     fetchItems();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [incluirInactivos]);
+
+  useEffect(() => {
     // Las rutas solo se usan en el formulario de alta/edición. Un rol de solo
     // lectura (ej. Chofer) no tiene permiso sobre rutas, así que evitamos la
     // llamada que devolvería 403.
@@ -233,6 +241,16 @@ export default function ClientesPage() {
     }
   };
 
+  const handleReactivate = async (id: number) => {
+    try {
+      await apiPatch(`/catalogs/clients/${id}/reactivar`, {});
+      toast.success('Cliente reactivado correctamente');
+      fetchItems();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Error al reactivar');
+    }
+  };
+
   // Aplica búsqueda (Razón Social o RUC) y filtro por ruta sobre el array completo.
   const filtradas = items.filter((c) => {
     const q = busqueda.trim().toLowerCase();
@@ -315,10 +333,21 @@ export default function ClientesPage() {
           <Button variant="ghost" size="sm" onClick={() => openEdit(row)}>
             <PencilIcon className="h-4 w-4" />
           </Button>
-          {row.activo && (
+          {row.activo ? (
             <Button variant="ghost" size="sm" onClick={() => handleDeactivate(row.id)}>
               <Trash2Icon className="h-4 w-4 text-destructive" />
             </Button>
+          ) : (
+            puedeEliminar && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleReactivate(row.id)}
+                title="Reactivar"
+              >
+                <RotateCcwIcon className="h-4 w-4 text-primary" />
+              </Button>
+            )
           )}
         </div>
       ),
@@ -382,6 +411,19 @@ export default function ClientesPage() {
             Limpiar filtros
           </Button>
         )}
+
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={incluirInactivos}
+            onChange={(e) => {
+              setIncluirInactivos(e.target.checked);
+              setPage(1);
+            }}
+            className="h-4 w-4 rounded border-input"
+          />
+          Ver inactivos
+        </label>
       </div>
 
       <DataTable

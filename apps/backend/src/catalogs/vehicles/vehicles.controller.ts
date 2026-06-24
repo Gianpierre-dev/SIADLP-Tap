@@ -6,6 +6,7 @@ import {
   Delete,
   Body,
   Param,
+  Query,
   ParseIntPipe,
 } from '@nestjs/common';
 import { VehiclesService } from './vehicles.service';
@@ -25,8 +26,8 @@ export class VehiclesController {
 
   @Get()
   @RequirePermissions('vehiculos.leer')
-  findAll() {
-    return this.vehiclesService.findAll();
+  findAll(@Query('incluirInactivos') incluirInactivos?: string) {
+    return this.vehiclesService.findAll(incluirInactivos === 'true');
   }
 
   @Get(':id')
@@ -45,5 +46,11 @@ export class VehiclesController {
   @RequirePermissions('vehiculos.eliminar')
   deactivate(@Param('id', ParseIntPipe) id: number) {
     return this.vehiclesService.deactivate(id);
+  }
+
+  @Patch(':id/reactivar')
+  @RequirePermissions('vehiculos.eliminar')
+  reactivate(@Param('id', ParseIntPipe) id: number) {
+    return this.vehiclesService.reactivate(id);
   }
 }

@@ -48,9 +48,9 @@ export class RolesService {
     });
   }
 
-  async findAll() {
+  async findAll(incluirInactivos?: boolean) {
     return this.prisma.rol.findMany({
-      where: { activo: true },
+      where: incluirInactivos ? undefined : { activo: true },
       include: {
         permisos: {
           include: { permiso: true },
@@ -81,6 +81,23 @@ export class RolesService {
     }
 
     return rol;
+  }
+
+  async reactivate(id: number) {
+    await this.findOne(id);
+
+    return this.prisma.rol.update({
+      where: { id },
+      data: { activo: true },
+      include: {
+        permisos: {
+          include: { permiso: true },
+        },
+        _count: {
+          select: { usuarios: true },
+        },
+      },
+    });
   }
 
   async findAllPermissions() {

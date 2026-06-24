@@ -23,9 +23,9 @@ export class DriversService {
     return this.prisma.chofer.create({ data: dto });
   }
 
-  async findAll() {
+  async findAll(incluirInactivos?: boolean) {
     return this.prisma.chofer.findMany({
-      where: { activo: true },
+      where: incluirInactivos ? undefined : { activo: true },
       orderBy: { apellido: 'asc' },
     });
   }
@@ -62,6 +62,15 @@ export class DriversService {
     return this.prisma.chofer.update({
       where: { id },
       data: { activo: false },
+    });
+  }
+
+  async reactivate(id: number) {
+    await this.findOne(id);
+
+    return this.prisma.chofer.update({
+      where: { id },
+      data: { activo: true },
     });
   }
 }

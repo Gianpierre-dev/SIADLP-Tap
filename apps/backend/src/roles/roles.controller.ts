@@ -5,6 +5,7 @@ import {
   Patch,
   Body,
   Param,
+  Query,
   ParseIntPipe,
 } from '@nestjs/common';
 import { RolesService } from './roles.service';
@@ -24,8 +25,8 @@ export class RolesController {
 
   @Get()
   @RequirePermissions('roles.leer')
-  findAll() {
-    return this.rolesService.findAll();
+  findAll(@Query('incluirInactivos') incluirInactivos?: string) {
+    return this.rolesService.findAll(incluirInactivos === 'true');
   }
 
   @Get('permissions')
@@ -44,5 +45,11 @@ export class RolesController {
   @RequirePermissions('roles.editar')
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateRoleDto) {
     return this.rolesService.update(id, dto);
+  }
+
+  @Patch(':id/reactivar')
+  @RequirePermissions('roles.editar')
+  reactivate(@Param('id', ParseIntPipe) id: number) {
+    return this.rolesService.reactivate(id);
   }
 }

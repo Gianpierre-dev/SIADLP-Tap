@@ -23,9 +23,9 @@ export class ProductsService {
     return this.prisma.producto.create({ data: dto });
   }
 
-  async findAll() {
+  async findAll(incluirInactivos?: boolean) {
     return this.prisma.producto.findMany({
-      where: { activo: true },
+      where: incluirInactivos ? {} : { activo: true },
       orderBy: { nombre: 'asc' },
     });
   }
@@ -62,6 +62,15 @@ export class ProductsService {
     return this.prisma.producto.update({
       where: { id },
       data: { activo: false },
+    });
+  }
+
+  async reactivate(id: number) {
+    await this.findOne(id);
+
+    return this.prisma.producto.update({
+      where: { id },
+      data: { activo: true },
     });
   }
 }

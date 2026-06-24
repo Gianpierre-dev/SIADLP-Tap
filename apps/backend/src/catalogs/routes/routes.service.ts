@@ -23,9 +23,9 @@ export class RoutesService {
     return this.prisma.ruta.create({ data: dto });
   }
 
-  async findAll() {
+  async findAll(incluirInactivos?: boolean) {
     return this.prisma.ruta.findMany({
-      where: { activa: true },
+      where: incluirInactivos ? undefined : { activa: true },
       orderBy: { nombre: 'asc' },
       include: {
         _count: { select: { clientes: true } },
@@ -76,6 +76,18 @@ export class RoutesService {
     return this.prisma.ruta.update({
       where: { id },
       data: { activa: false },
+      include: {
+        _count: { select: { clientes: true } },
+      },
+    });
+  }
+
+  async reactivate(id: number) {
+    await this.findOne(id);
+
+    return this.prisma.ruta.update({
+      where: { id },
+      data: { activa: true },
       include: {
         _count: { select: { clientes: true } },
       },

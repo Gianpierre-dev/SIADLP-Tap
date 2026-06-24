@@ -16,7 +16,13 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { PlusIcon, PencilIcon, Trash2Icon, Loader2Icon } from 'lucide-react';
+import {
+  PlusIcon,
+  PencilIcon,
+  Trash2Icon,
+  Loader2Icon,
+  RotateCcwIcon,
+} from 'lucide-react';
 import { useConfirm } from '@/components/confirm-dialog';
 import { useAuthStore } from '@/lib/auth';
 
@@ -93,15 +99,18 @@ export default function ChoferesPage() {
   const [search, setSearch] = useState('');
   const [breveteFilter, setBreveteFilter] = useState('');
   const [page, setPage] = useState(1);
+  const [verInactivos, setVerInactivos] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState<DriverForm>(EMPTY_FORM);
   const askConfirm = useConfirm();
 
-  const fetchItems = () => {
+  const fetchItems = (incluirInactivos = verInactivos) => {
     setLoading(true);
-    apiGet<Driver[]>('/catalogs/drivers')
+    apiGet<Driver[]>(
+      `/catalogs/drivers${incluirInactivos ? '?incluirInactivos=true' : ''}`,
+    )
       .then(setItems)
       .catch(() => toast.error('Error al cargar choferes'))
       .finally(() => setLoading(false));
@@ -192,6 +201,22 @@ export default function ChoferesPage() {
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Error al desactivar');
     }
+  };
+
+  const handleReactivate = async (id: number) => {
+    try {
+      await apiPatch(`/catalogs/drivers/${id}/reactivar`, {});
+      toast.success('Chofer reactivado correctamente');
+      fetchItems();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Error al reactivar');
+    }
+  };
+
+  const toggleVerInactivos = (checked: boolean) => {
+    setVerInactivos(checked);
+    setPage(1);
+    fetchItems(checked);
   };
 
   // Búsqueda case-insensitive por nombre, apellido, DNI o licencia.
@@ -285,9 +310,13 @@ export default function ChoferesPage() {
           <Button variant="ghost" size="sm" onClick={() => openEdit(row)}>
             <PencilIcon className="h-4 w-4" />
           </Button>
-          {row.activo && (
+          {row.activo ? (
             <Button variant="ghost" size="sm" onClick={() => handleDeactivate(row.id)}>
               <Trash2Icon className="h-4 w-4 text-destructive" />
+            </Button>
+          ) : (
+            <Button variant="ghost" size="sm" onClick={() => handleReactivate(row.id)}>
+              <RotateCcwIcon className="h-4 w-4 text-emerald-600" />
             </Button>
           )}
         </div>
@@ -343,6 +372,15 @@ export default function ChoferesPage() {
             <option value="vencido">Vencidos</option>
           </select>
         </div>
+        <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={verInactivos}
+            onChange={(e) => toggleVerInactivos(e.target.checked)}
+            className="h-4 w-4 rounded border-input"
+          />
+          Ver inactivos
+        </label>
         {(search || breveteFilter) && (
           <Button
             variant="ghost"

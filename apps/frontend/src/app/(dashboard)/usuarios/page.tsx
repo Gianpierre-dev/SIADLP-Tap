@@ -24,6 +24,7 @@ import {
   KeyRoundIcon,
   CopyIcon,
   CheckIcon,
+  RotateCcwIcon,
 } from 'lucide-react';
 import { useConfirm } from '@/components/confirm-dialog';
 
@@ -91,10 +92,13 @@ export default function UsuariosPage() {
   const [search, setSearch] = useState('');
   const [rolFilter, setRolFilter] = useState('');
   const [page, setPage] = useState(1);
+  const [verInactivos, setVerInactivos] = useState(false);
 
-  const fetchItems = () => {
+  const fetchItems = (incluirInactivos = verInactivos) => {
     setLoading(true);
-    apiGet<User[]>('/users')
+    apiGet<User[]>(
+      `/users${incluirInactivos ? '?incluirInactivos=true' : ''}`,
+    )
       .then(setItems)
       .catch(() => toast.error('Error al cargar usuarios'))
       .finally(() => setLoading(false));
@@ -191,6 +195,22 @@ export default function UsuariosPage() {
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Error al desactivar usuario');
     }
+  };
+
+  const handleReactivate = async (id: number) => {
+    try {
+      await apiPatch(`/users/${id}/reactivar`, {});
+      toast.success('Usuario reactivado correctamente');
+      fetchItems();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Error al reactivar usuario');
+    }
+  };
+
+  const onVerInactivosChange = (checked: boolean) => {
+    setVerInactivos(checked);
+    setPage(1);
+    fetchItems(checked);
   };
 
   const handleResetPassword = async (user: User) => {
@@ -331,6 +351,17 @@ export default function UsuariosPage() {
               <Trash2Icon className="h-4 w-4 text-destructive" />
             </Button>
           )}
+          {!row.activo && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleReactivate(row.id)}
+              aria-label="Reactivar usuario"
+              title="Reactivar"
+            >
+              <RotateCcwIcon className="h-4 w-4 text-[#33691e]" />
+            </Button>
+          )}
         </div>
       ),
     },
@@ -382,6 +413,19 @@ export default function UsuariosPage() {
             </select>
           </div>
         )}
+
+        <div className="flex flex-col gap-1">
+          <Label className="text-xs text-muted-foreground">&nbsp;</Label>
+          <label className="flex h-9 items-center gap-2 cursor-pointer text-sm">
+            <input
+              type="checkbox"
+              className="h-4 w-4 rounded border border-input accent-primary cursor-pointer"
+              checked={verInactivos}
+              onChange={(e) => onVerInactivosChange(e.target.checked)}
+            />
+            Ver inactivos
+          </label>
+        </div>
 
         {(search || rolFilter) && (
           <Button

@@ -525,6 +525,202 @@ export class ReportsService {
     return Buffer.from(buffer);
   }
 
+  async exportByRoute(desde: string, hasta: string): Promise<Buffer> {
+    const desdeDate = desde ? new Date(desde) : this.defaultDesde();
+    const hastaDate = hasta ? new Date(hasta) : new Date();
+    hastaDate.setHours(23, 59, 59, 999);
+
+    // Pedidos en el rango (sobre fechaCreacion), con su ruta vía cliente y su entrega.
+    const pedidos = await this.prisma.pedido.findMany({
+      where: {
+        fechaCreacion: { gte: desdeDate, lte: hastaDate },
+      },
+      select: {
+        cliente: {
+          select: {
+            ruta: { select: { id: true, nombre: true, zona: true } },
+          },
+        },
+        detalles: { select: { cantidad: true } },
+        entrega: { select: { estado: true } },
+      },
+      take: 50_000,
+    });
+
+    // Agrega por ruta.
+    const resumen = new Map<
+      number,
+      {
+        ruta: string;
+        zona: string;
+        totalPedidos: number;
+        totalKg: number;
+        entregados: number;
+        conNovedad: number;
+      }
+    >();
+
+    for (const pedido of pedidos) {
+      const ruta = pedido.cliente.ruta;
+      const key = ruta.id;
+      let row = resumen.get(key);
+      if (!row) {
+        row = {
+          ruta: ruta.nombre,
+          zona: ruta.zona,
+          totalPedidos: 0,
+          totalKg: 0,
+          entregados: 0,
+          conNovedad: 0,
+        };
+        resumen.set(key, row);
+      }
+      row.totalPedidos += 1;
+      for (const d of pedido.detalles) {
+        row.totalKg += d.cantidad.toNumber();
+      }
+      if (pedido.entrega?.estado === DeliveryStatus.ENTREGADO) {
+        row.entregados += 1;
+      } else if (pedido.entrega?.estado === DeliveryStatus.NOVEDAD) {
+        row.conNovedad += 1;
+      }
+    }
+
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = 'SIADLP';
+    workbook.created = new Date();
+
+    const sheet = workbook.addWorksheet('Por Ruta');
+
+    sheet.columns = [
+      { header: 'Ruta', key: 'ruta', width: 25 },
+      { header: 'Zona', key: 'zona', width: 18 },
+      { header: 'Total Pedidos', key: 'totalPedidos', width: 16 },
+      { header: 'Total Kg', key: 'totalKg', width: 14 },
+      { header: 'Entregados', key: 'entregados', width: 14 },
+      { header: 'Con Novedad', key: 'conNovedad', width: 14 },
+    ];
+
+    const headerRow = sheet.getRow(1);
+    headerRow.font = { bold: true };
+    headerRow.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFD9E1F2' },
+    };
+
+    const filas = Array.from(resumen.values()).sort((a, b) =>
+      a.ruta.localeCompare(b.ruta),
+    );
+    for (const fila of filas) {
+      sheet.addRow({
+        ruta: fila.ruta,
+        zona: fila.zona,
+        totalPedidos: fila.totalPedidos,
+        totalKg: fila.totalKg,
+        entregados: fila.entregados,
+        conNovedad: fila.conNovedad,
+      });
+    }
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    return Buffer.from(buffer);
+  }
+
+  async exportByClient(desde: string, hasta: string): Promise<Buffer> {
+    const desdeDate = desde ? new Date(desde) : this.defaultDesde();
+    const hastaDate = hasta ? new Date(hasta) : new Date();
+    hastaDate.setHours(23, 59, 59, 999);
+
+    // Pedidos en el rango (sobre fechaCreacion), con su cliente y detalles.
+    const pedidos = await this.prisma.pedido.findMany({
+      where: {
+        fechaCreacion: { gte: desdeDate, lte: hastaDate },
+      },
+      select: {
+        clienteId: true,
+        cliente: {
+          select: {
+            razonSocial: true,
+            ruc: true,
+            ruta: { select: { nombre: true } },
+          },
+        },
+        detalles: { select: { cantidad: true } },
+      },
+      take: 50_000,
+    });
+
+    // Agrega por cliente.
+    const resumen = new Map<
+      number,
+      {
+        cliente: string;
+        ruc: string;
+        ruta: string;
+        totalPedidos: number;
+        totalKg: number;
+      }
+    >();
+
+    for (const pedido of pedidos) {
+      const key = pedido.clienteId;
+      let row = resumen.get(key);
+      if (!row) {
+        row = {
+          cliente: pedido.cliente.razonSocial,
+          ruc: pedido.cliente.ruc ?? '',
+          ruta: pedido.cliente.ruta.nombre,
+          totalPedidos: 0,
+          totalKg: 0,
+        };
+        resumen.set(key, row);
+      }
+      row.totalPedidos += 1;
+      for (const d of pedido.detalles) {
+        row.totalKg += d.cantidad.toNumber();
+      }
+    }
+
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = 'SIADLP';
+    workbook.created = new Date();
+
+    const sheet = workbook.addWorksheet('Por Cliente');
+
+    sheet.columns = [
+      { header: 'Cliente', key: 'cliente', width: 35 },
+      { header: 'RUC', key: 'ruc', width: 16 },
+      { header: 'Ruta', key: 'ruta', width: 25 },
+      { header: 'Total Pedidos', key: 'totalPedidos', width: 16 },
+      { header: 'Total Kg', key: 'totalKg', width: 14 },
+    ];
+
+    const headerRow = sheet.getRow(1);
+    headerRow.font = { bold: true };
+    headerRow.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFD9E1F2' },
+    };
+
+    const filas = Array.from(resumen.values()).sort((a, b) =>
+      a.cliente.localeCompare(b.cliente),
+    );
+    for (const fila of filas) {
+      sheet.addRow({
+        cliente: fila.cliente,
+        ruc: fila.ruc,
+        ruta: fila.ruta,
+        totalPedidos: fila.totalPedidos,
+        totalKg: fila.totalKg,
+      });
+    }
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    return Buffer.from(buffer);
+  }
+
   private defaultDesde(): Date {
     const d = new Date();
     d.setDate(d.getDate() - 30);

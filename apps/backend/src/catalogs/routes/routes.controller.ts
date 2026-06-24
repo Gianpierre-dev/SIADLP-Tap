@@ -6,6 +6,7 @@ import {
   Delete,
   Body,
   Param,
+  Query,
   ParseIntPipe,
 } from '@nestjs/common';
 import { RoutesService } from './routes.service';
@@ -25,8 +26,8 @@ export class RoutesController {
 
   @Get()
   @RequirePermissions('rutas.leer')
-  findAll() {
-    return this.routesService.findAll();
+  findAll(@Query('incluirInactivos') incluirInactivos?: string) {
+    return this.routesService.findAll(incluirInactivos === 'true');
   }
 
   @Get(':id')
@@ -45,5 +46,11 @@ export class RoutesController {
   @RequirePermissions('rutas.eliminar')
   deactivate(@Param('id', ParseIntPipe) id: number) {
     return this.routesService.deactivate(id);
+  }
+
+  @Patch(':id/reactivar')
+  @RequirePermissions('rutas.eliminar')
+  reactivate(@Param('id', ParseIntPipe) id: number) {
+    return this.routesService.reactivate(id);
   }
 }

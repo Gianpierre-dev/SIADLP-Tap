@@ -77,9 +77,9 @@ export class ClientsService {
     });
   }
 
-  async findAll() {
+  async findAll(incluirInactivos?: boolean) {
     return this.prisma.cliente.findMany({
-      where: { activo: true },
+      where: incluirInactivos ? {} : { activo: true },
       include: UBIGEO_INCLUDE,
       orderBy: { razonSocial: 'asc' },
     });
@@ -124,6 +124,16 @@ export class ClientsService {
     return this.prisma.cliente.update({
       where: { id },
       data: { activo: false },
+      include: UBIGEO_INCLUDE,
+    });
+  }
+
+  async reactivate(id: number) {
+    await this.findOne(id);
+
+    return this.prisma.cliente.update({
+      where: { id },
+      data: { activo: true },
       include: UBIGEO_INCLUDE,
     });
   }

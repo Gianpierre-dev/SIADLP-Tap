@@ -55,9 +55,9 @@ export class UsersService {
     });
   }
 
-  async findAll() {
+  async findAll(incluirInactivos?: boolean) {
     return this.prisma.usuario.findMany({
-      where: { activo: true },
+      where: incluirInactivos ? undefined : { activo: true },
       select: USER_SELECT,
       orderBy: { id: 'asc' },
     });
@@ -122,6 +122,16 @@ export class UsersService {
     return this.prisma.usuario.update({
       where: { id },
       data: { activo: false },
+      select: USER_SELECT,
+    });
+  }
+
+  async reactivate(id: number) {
+    await this.findOne(id);
+
+    return this.prisma.usuario.update({
+      where: { id },
+      data: { activo: true },
       select: USER_SELECT,
     });
   }

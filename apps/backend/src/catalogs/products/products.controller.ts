@@ -6,6 +6,7 @@ import {
   Delete,
   Body,
   Param,
+  Query,
   ParseIntPipe,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
@@ -25,8 +26,8 @@ export class ProductsController {
 
   @Get()
   @RequirePermissions('productos.leer')
-  findAll() {
-    return this.productsService.findAll();
+  findAll(@Query('incluirInactivos') incluirInactivos?: string) {
+    return this.productsService.findAll(incluirInactivos === 'true');
   }
 
   @Get(':id')
@@ -45,5 +46,11 @@ export class ProductsController {
   @RequirePermissions('productos.eliminar')
   deactivate(@Param('id', ParseIntPipe) id: number) {
     return this.productsService.deactivate(id);
+  }
+
+  @Patch(':id/reactivar')
+  @RequirePermissions('productos.eliminar')
+  reactivate(@Param('id', ParseIntPipe) id: number) {
+    return this.productsService.reactivate(id);
   }
 }

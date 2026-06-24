@@ -14,6 +14,8 @@ import {
   Loader2Icon,
   AlertTriangleIcon,
   UserIcon,
+  RouteIcon,
+  UsersIcon,
 } from 'lucide-react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4020/api';
@@ -61,6 +63,14 @@ export default function ReportesPage() {
     hasta: defaultHasta(),
   });
   const [byDriverRange, setByDriverRange] = useState<DateRange>({
+    desde: defaultDesde(),
+    hasta: defaultHasta(),
+  });
+  const [byRouteRange, setByRouteRange] = useState<DateRange>({
+    desde: defaultDesde(),
+    hasta: defaultHasta(),
+  });
+  const [byClientRange, setByClientRange] = useState<DateRange>({
     desde: defaultDesde(),
     hasta: defaultHasta(),
   });
@@ -311,6 +321,120 @@ export default function ReportesPage() {
               }
             >
               {loading['byDriver'] ? (
+                <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <DownloadIcon className="mr-2 h-4 w-4" />
+              )}
+              Descargar Excel
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Por Ruta */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <RouteIcon className="h-5 w-5 text-muted-foreground" />
+              Por Ruta
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Exporta un resumen agregado de pedidos, kilos y entregas por ruta en el rango de fechas seleccionado.
+            </p>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="by-route-desde">Desde</Label>
+                <Input
+                  id="by-route-desde"
+                  type="date"
+                  value={byRouteRange.desde}
+                  onChange={(e) =>
+                    setByRouteRange((r) => ({ ...r, desde: e.target.value }))
+                  }
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="by-route-hasta">Hasta</Label>
+                <Input
+                  id="by-route-hasta"
+                  type="date"
+                  value={byRouteRange.hasta}
+                  onChange={(e) =>
+                    setByRouteRange((r) => ({ ...r, hasta: e.target.value }))
+                  }
+                />
+              </div>
+            </div>
+            <Button
+              className="w-full"
+              disabled={loading['byRoute']}
+              onClick={() =>
+                handleDownload(
+                  'byRoute',
+                  `/reports/export/by-route?desde=${byRouteRange.desde}&hasta=${byRouteRange.hasta}`,
+                  `por-ruta_${byRouteRange.desde}_${byRouteRange.hasta}.xlsx`,
+                )
+              }
+            >
+              {loading['byRoute'] ? (
+                <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <DownloadIcon className="mr-2 h-4 w-4" />
+              )}
+              Descargar Excel
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Por Cliente */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <UsersIcon className="h-5 w-5 text-muted-foreground" />
+              Por Cliente
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Exporta un resumen agregado de pedidos y kilos por cliente en el rango de fechas seleccionado.
+            </p>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="by-client-desde">Desde</Label>
+                <Input
+                  id="by-client-desde"
+                  type="date"
+                  value={byClientRange.desde}
+                  onChange={(e) =>
+                    setByClientRange((r) => ({ ...r, desde: e.target.value }))
+                  }
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="by-client-hasta">Hasta</Label>
+                <Input
+                  id="by-client-hasta"
+                  type="date"
+                  value={byClientRange.hasta}
+                  onChange={(e) =>
+                    setByClientRange((r) => ({ ...r, hasta: e.target.value }))
+                  }
+                />
+              </div>
+            </div>
+            <Button
+              className="w-full"
+              disabled={loading['byClient']}
+              onClick={() =>
+                handleDownload(
+                  'byClient',
+                  `/reports/export/by-client?desde=${byClientRange.desde}&hasta=${byClientRange.hasta}`,
+                  `por-cliente_${byClientRange.desde}_${byClientRange.hasta}.xlsx`,
+                )
+              }
+            >
+              {loading['byClient'] ? (
                 <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
               ) : (
                 <DownloadIcon className="mr-2 h-4 w-4" />

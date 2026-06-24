@@ -6,6 +6,7 @@ import {
   Delete,
   Body,
   Param,
+  Query,
   ParseIntPipe,
 } from '@nestjs/common';
 import { ClientsService } from './clients.service';
@@ -25,8 +26,8 @@ export class ClientsController {
 
   @Get()
   @RequirePermissions('clientes.leer')
-  findAll() {
-    return this.clientsService.findAll();
+  findAll(@Query('incluirInactivos') incluirInactivos?: string) {
+    return this.clientsService.findAll(incluirInactivos === 'true');
   }
 
   @Get(':id')
@@ -45,5 +46,11 @@ export class ClientsController {
   @RequirePermissions('clientes.eliminar')
   deactivate(@Param('id', ParseIntPipe) id: number) {
     return this.clientsService.deactivate(id);
+  }
+
+  @Patch(':id/reactivar')
+  @RequirePermissions('clientes.eliminar')
+  reactivate(@Param('id', ParseIntPipe) id: number) {
+    return this.clientsService.reactivate(id);
   }
 }

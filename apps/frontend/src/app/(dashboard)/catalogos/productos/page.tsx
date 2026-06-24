@@ -16,7 +16,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { PlusIcon, PencilIcon, Trash2Icon, Loader2Icon } from 'lucide-react';
+import { PlusIcon, PencilIcon, Trash2Icon, RotateCcwIcon, Loader2Icon } from 'lucide-react';
 import { useConfirm } from '@/components/confirm-dialog';
 import { useAuthStore } from '@/lib/auth';
 
@@ -55,21 +55,26 @@ export default function ProductosPage() {
   // Busqueda + paginacion client-side
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [incluirInactivos, setIncluirInactivos] = useState(false);
   const askConfirm = useConfirm();
+
+  const { hasPermission } = useAuthStore();
+  const puedeEliminar = hasPermission('productos.eliminar');
 
   const fetchItems = () => {
     setLoading(true);
-    apiGet<Product[]>('/catalogs/products')
+    apiGet<Product[]>(
+      `/catalogs/products${incluirInactivos ? '?incluirInactivos=true' : ''}`,
+    )
       .then(setItems)
       .catch(() => toast.error('Error al cargar productos'))
       .finally(() => setLoading(false));
   };
 
-  const { hasPermission } = useAuthStore();
-
   useEffect(() => {
     if (hasPermission('productos.leer')) fetchItems();
-  }, [hasPermission]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasPermission, incluirInactivos]);
 
   const openCreate = () => {
     setEditingId(null);
@@ -132,6 +137,16 @@ export default function ProductosPage() {
     }
   };
 
+  const handleReactivate = async (id: number) => {
+    try {
+      await apiPatch(`/catalogs/products/${id}/reactivar`, {});
+      toast.success('Producto reactivado correctamente');
+      fetchItems();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Error al reactivar');
+    }
+  };
+
   // Filtrado client-side por SKU o nombre (case-insensitive)
   const filtradas = items.filter((p) => {
     const q = search.trim().toLowerCase();
@@ -178,10 +193,21 @@ export default function ProductosPage() {
           <Button variant="ghost" size="sm" onClick={() => openEdit(row)}>
             <PencilIcon className="h-4 w-4" />
           </Button>
-          {row.activo && (
+          {row.activo ? (
             <Button variant="ghost" size="sm" onClick={() => handleDeactivate(row.id)}>
               <Trash2Icon className="h-4 w-4 text-destructive" />
             </Button>
+          ) : (
+            puedeEliminar && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleReactivate(row.id)}
+                title="Reactivar"
+              >
+                <RotateCcwIcon className="h-4 w-4 text-primary" />
+              </Button>
+            )
           )}
         </div>
       ),
@@ -216,6 +242,19 @@ export default function ProductosPage() {
             className="w-64"
           />
         </div>
+
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={incluirInactivos}
+            onChange={(e) => {
+              setIncluirInactivos(e.target.checked);
+              setPage(1);
+            }}
+            className="h-4 w-4 rounded border-input"
+          />
+          Ver inactivos
+        </label>
       </div>
       <DataTable
         columns={columns}

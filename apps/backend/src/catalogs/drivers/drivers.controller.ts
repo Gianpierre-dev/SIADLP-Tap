@@ -6,6 +6,7 @@ import {
   Delete,
   Body,
   Param,
+  Query,
   ParseIntPipe,
 } from '@nestjs/common';
 import { DriversService } from './drivers.service';
@@ -25,8 +26,8 @@ export class DriversController {
 
   @Get()
   @RequirePermissions('choferes.leer')
-  findAll() {
-    return this.driversService.findAll();
+  findAll(@Query('incluirInactivos') incluirInactivos?: string) {
+    return this.driversService.findAll(incluirInactivos === 'true');
   }
 
   @Get(':id')
@@ -45,5 +46,11 @@ export class DriversController {
   @RequirePermissions('choferes.eliminar')
   deactivate(@Param('id', ParseIntPipe) id: number) {
     return this.driversService.deactivate(id);
+  }
+
+  @Patch(':id/reactivar')
+  @RequirePermissions('choferes.eliminar')
+  reactivate(@Param('id', ParseIntPipe) id: number) {
+    return this.driversService.reactivate(id);
   }
 }

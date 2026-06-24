@@ -97,4 +97,42 @@ export class ReportsController {
     );
     res.send(buffer);
   }
+
+  @Get('export/by-route')
+  @RequirePermissions('reportes.exportar')
+  async exportByRoute(
+    @Query('desde') desde: string,
+    @Query('hasta') hasta: string,
+    @Res() res: Response,
+  ) {
+    const buffer = await this.reportsService.exportByRoute(desde, hasta);
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    );
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename=reporte-por-ruta.xlsx',
+    );
+    res.send(buffer);
+  }
+
+  @Get('export/by-client')
+  @RequirePermissions('reportes.exportar')
+  async exportByClient(
+    @Query('desde') desde: string,
+    @Query('hasta') hasta: string,
+    @Res() res: Response,
+  ) {
+    const buffer = await this.reportsService.exportByClient(desde, hasta);
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    );
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename=reporte-por-cliente.xlsx',
+    );
+    res.send(buffer);
+  }
 }

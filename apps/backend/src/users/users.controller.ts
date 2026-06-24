@@ -6,6 +6,7 @@ import {
   Delete,
   Body,
   Param,
+  Query,
   ParseIntPipe,
   Request,
 } from '@nestjs/common';
@@ -26,8 +27,8 @@ export class UsersController {
 
   @Get()
   @RequirePermissions('usuarios.leer')
-  findAll() {
-    return this.usersService.findAll();
+  findAll(@Query('incluirInactivos') incluirInactivos?: string) {
+    return this.usersService.findAll(incluirInactivos === 'true');
   }
 
   @Get(':id')
@@ -50,6 +51,12 @@ export class UsersController {
   @RequirePermissions('usuarios.eliminar')
   deactivate(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.deactivate(id);
+  }
+
+  @Patch(':id/reactivar')
+  @RequirePermissions('usuarios.eliminar')
+  reactivate(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.reactivate(id);
   }
 
   @Post(':id/reset-password')
