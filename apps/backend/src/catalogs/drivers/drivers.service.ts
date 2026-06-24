@@ -20,6 +20,15 @@ export class DriversService {
       throw new ConflictException(`El DNI "${dto.dni}" ya está registrado`);
     }
 
+    const licenciaExistente = await this.prisma.chofer.findUnique({
+      where: { licencia: dto.licencia },
+    });
+    if (licenciaExistente) {
+      throw new ConflictException(
+        `La licencia "${dto.licencia}" ya está registrada`,
+      );
+    }
+
     return this.prisma.chofer.create({ data: dto });
   }
 
@@ -50,6 +59,17 @@ export class DriversService {
 
       if (existing) {
         throw new ConflictException(`El DNI "${dto.dni}" ya está en uso`);
+      }
+    }
+
+    if (dto.licencia) {
+      const licExistente = await this.prisma.chofer.findFirst({
+        where: { licencia: dto.licencia, NOT: { id } },
+      });
+      if (licExistente) {
+        throw new ConflictException(
+          `La licencia "${dto.licencia}" ya está en uso`,
+        );
       }
     }
 

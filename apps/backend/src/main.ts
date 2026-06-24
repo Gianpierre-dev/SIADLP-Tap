@@ -6,6 +6,7 @@ import { Logger } from 'nestjs-pino';
 import { json, urlencoded } from 'express';
 import { join } from 'path';
 import { AppModule } from './app.module';
+import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter';
 
 function validateEnv(): void {
   const required = [
@@ -118,6 +119,10 @@ async function bootstrap() {
       disableErrorMessages: process.env['NODE_ENV'] === 'production',
     }),
   );
+
+  // Red de seguridad: traduce errores de Prisma (duplicados, FK, etc.) a
+  // respuestas HTTP limpias en lugar de un 500 crudo.
+  app.useGlobalFilters(new PrismaExceptionFilter());
 
   const allowedOrigins = process.env['CORS_ORIGINS']!.split(',').map((o) =>
     o.trim(),
