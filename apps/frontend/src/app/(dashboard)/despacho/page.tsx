@@ -153,6 +153,13 @@ function formatDateTime(iso: string): string {
   });
 }
 
+// Kilos con separador de miles (es-PE) y hasta 2 decimales. Acepta el Decimal
+// de Prisma que llega como string.
+function formatKg(value: number | string): string {
+  const n = typeof value === 'string' ? Number(value) : value;
+  return `${n.toLocaleString('es-PE', { maximumFractionDigits: 2 })} kg`;
+}
+
 function nativeSelectClass(): string {
   return 'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring';
 }
@@ -649,7 +656,7 @@ function buildPrintHtml(
     </thead>
     <tbody>${paradas}</tbody>
   </table>
-  <div class="total">Total: ${rs.totalKg} kg — ${rs.paradas.length} parada(s)</div>
+  <div class="total">Total: ${formatKg(rs.totalKg)} — ${rs.paradas.length} parada(s)</div>
 </body>
 </html>`;
 }
@@ -774,7 +781,7 @@ function RouteSheetDialog({ sheetId, open, onClose }: RouteSheetDialogProps) {
                   </tbody>
                 </table>
               </div>
-              <p className="text-sm font-medium mt-2">Total: {routeSheet.totalKg} kg</p>
+              <p className="text-sm font-medium mt-2">Total: {formatKg(routeSheet.totalKg)}</p>
             </div>
           </div>
         )}
@@ -1192,6 +1199,12 @@ export default function DespachoPage() {
       label: 'Pedidos',
       className: 'w-16 text-center',
       render: (row) => row._count?.pedidos ?? 0,
+    },
+    {
+      key: 'peso',
+      label: 'Peso',
+      className: 'w-24',
+      render: (row) => formatKg(row.totalKg),
     },
     {
       key: 'acciones',

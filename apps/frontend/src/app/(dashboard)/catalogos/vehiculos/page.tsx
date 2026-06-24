@@ -186,7 +186,8 @@ export default function VehiculosPage() {
     {
       key: 'capacidadKg',
       label: 'Capacidad',
-      render: (row) => `${Number(row.capacidadKg).toFixed(0)} kg`,
+      render: (row) =>
+        `${Number(row.capacidadKg).toLocaleString('es-PE', { maximumFractionDigits: 0 })} kg`,
     },
     {
       key: 'activo',
