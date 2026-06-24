@@ -62,11 +62,17 @@ export class OrdersController {
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
     @Query('estado') estado?: string,
+    @Query('clienteId') clienteId?: string,
+    @Query('rutaId') rutaId?: string,
   ) {
     return this.ordersService.findAll(
       page ? Number(page) : undefined,
       pageSize ? Number(pageSize) : undefined,
-      estado,
+      {
+        estado,
+        clienteId: clienteId ? Number(clienteId) : undefined,
+        rutaId: rutaId ? Number(rutaId) : undefined,
+      },
     );
   }
 

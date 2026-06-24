@@ -170,9 +170,16 @@ export class OrdersService {
     return updated;
   }
 
-  async findAll(page = 1, pageSize = 20, estado?: string) {
+  async findAll(
+    page = 1,
+    pageSize = 20,
+    filters: { estado?: string; clienteId?: number; rutaId?: number } = {},
+  ) {
     const skip = (page - 1) * pageSize;
-    const where = estado ? { estado } : {};
+    const where: Record<string, unknown> = {};
+    if (filters.estado) where['estado'] = filters.estado;
+    if (filters.clienteId) where['clienteId'] = filters.clienteId;
+    if (filters.rutaId) where['cliente'] = { rutaId: filters.rutaId };
     const [data, total] = await Promise.all([
       this.prisma.pedido.findMany({
         where,

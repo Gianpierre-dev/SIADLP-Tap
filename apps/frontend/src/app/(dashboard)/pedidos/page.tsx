@@ -96,7 +96,7 @@ interface OrderLine {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 10;
 
 const STATE_COLORS: Record<string, string> = {
   REGISTERED: 'bg-[#e3f2fd] text-[#1565c0]',
@@ -167,6 +167,10 @@ export default function PedidosPage() {
       ? (new URLSearchParams(window.location.search).get('estado') ?? '')
       : '',
   );
+  const [rutaFilter, setRutaFilter] = useState('');
+  const [clienteFilter, setClienteFilter] = useState('');
+  const [rutas, setRutas] = useState<{ id: number; nombre: string }[]>([]);
+  const [clientesFiltro, setClientesFiltro] = useState<Client[]>([]);
 
   // Catalog data
   const [clients, setClients] = useState<Client[]>([]);
@@ -195,10 +199,13 @@ export default function PedidosPage() {
 
   const fetchOrders = (targetPage: number) => {
     setLoading(true);
-    const qs =
-      `page=${targetPage}&pageSize=${PAGE_SIZE}` +
-      (estadoFilter ? `&estado=${estadoFilter}` : '');
-    apiGet<PaginatedResponse>(`/orders?${qs}`)
+    const params = new URLSearchParams();
+    params.set('page', String(targetPage));
+    params.set('pageSize', String(PAGE_SIZE));
+    if (estadoFilter) params.set('estado', estadoFilter);
+    if (rutaFilter) params.set('rutaId', rutaFilter);
+    if (clienteFilter) params.set('clienteId', clienteFilter);
+    apiGet<PaginatedResponse>(`/orders?${params.toString()}`)
       .then((res) => {
         setOrders(res.data);
         setTotal(res.total);
@@ -211,12 +218,30 @@ export default function PedidosPage() {
   useEffect(() => {
     fetchOrders(page);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, estadoFilter]);
+  }, [page, estadoFilter, rutaFilter, clienteFilter]);
 
   const onEstadoChange = (value: string) => {
     setEstadoFilter(value);
     setPage(1);
     router.replace(`/pedidos${value ? `?estado=${value}` : ''}`);
+  };
+
+  const onRutaChange = (value: string) => {
+    setRutaFilter(value);
+    setPage(1);
+  };
+
+  const onClienteChange = (value: string) => {
+    setClienteFilter(value);
+    setPage(1);
+  };
+
+  const limpiarFiltros = () => {
+    setEstadoFilter('');
+    setRutaFilter('');
+    setClienteFilter('');
+    setPage(1);
+    router.replace('/pedidos');
   };
 
   useEffect(() => {
@@ -229,6 +254,21 @@ export default function PedidosPage() {
       .then(setProducts)
       .catch(() => toast.error('Error al cargar productos'));
   }, [puedeCrear]);
+
+  // Catálogos para los filtros de la lista (rutas y clientes), independientes
+  // del permiso de creación — un lector puede filtrar sin poder crear.
+  useEffect(() => {
+    if (hasPermission('rutas.leer')) {
+      apiGet<{ id: number; nombre: string }[]>('/catalogs/routes')
+        .then(setRutas)
+        .catch(() => {});
+    }
+    if (hasPermission('clientes.leer')) {
+      apiGet<Client[]>('/catalogs/clients')
+        .then(setClientesFiltro)
+        .catch(() => {});
+    }
+  }, [hasPermission]);
 
   // ── Create dialog ──────────────────────────────────────────────────────────
 
@@ -431,26 +471,71 @@ export default function PedidosPage() {
         }
       />
 
-      <div className="flex items-center gap-2">
-        <Label htmlFor="estadoFilter" className="text-sm text-muted-foreground">
-          Estado:
-        </Label>
-        <select
-          id="estadoFilter"
-          value={estadoFilter}
-          onChange={(e) => onEstadoChange(e.target.value)}
-          className="flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-        >
-          <option value="">Todos</option>
-          {Object.entries(STATE_LABELS).map(([key, label]) => (
-            <option key={key} value={key}>
-              {label}
-            </option>
-          ))}
-        </select>
-        {estadoFilter && (
-          <Button variant="ghost" size="sm" onClick={() => onEstadoChange('')}>
-            Limpiar
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="flex flex-col gap-1">
+          <Label htmlFor="estadoFilter" className="text-xs text-muted-foreground">
+            Estado
+          </Label>
+          <select
+            id="estadoFilter"
+            value={estadoFilter}
+            onChange={(e) => onEstadoChange(e.target.value)}
+            className="flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          >
+            <option value="">Todos</option>
+            {Object.entries(STATE_LABELS).map(([key, label]) => (
+              <option key={key} value={key}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {rutas.length > 0 && (
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="rutaFilter" className="text-xs text-muted-foreground">
+              Ruta
+            </Label>
+            <select
+              id="rutaFilter"
+              value={rutaFilter}
+              onChange={(e) => onRutaChange(e.target.value)}
+              className="flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            >
+              <option value="">Todas</option>
+              {rutas.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.nombre}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {clientesFiltro.length > 0 && (
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="clienteFilter" className="text-xs text-muted-foreground">
+              Cliente
+            </Label>
+            <select
+              id="clienteFilter"
+              value={clienteFilter}
+              onChange={(e) => onClienteChange(e.target.value)}
+              className="flex h-9 max-w-[220px] rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            >
+              <option value="">Todos</option>
+              {clientesFiltro.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.razonSocial}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {(estadoFilter || rutaFilter || clienteFilter) && (
+          <Button variant="ghost" size="sm" onClick={limpiarFiltros}>
+            Limpiar filtros
           </Button>
         )}
       </div>
