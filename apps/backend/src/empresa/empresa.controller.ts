@@ -20,7 +20,14 @@ import { RequirePermissions } from '../auth/decorators/permissions.decorator';
 export class EmpresaController {
   constructor(private readonly empresaService: EmpresaService) {}
 
+  // Endpoint PÚBLICO (sin auth) para el login: solo marca, sin datos fiscales.
   @Public()
+  @Get('public')
+  findOnePublic() {
+    return this.empresaService.findOnePublic();
+  }
+
+  // Datos completos (incluye fiscales): requiere estar autenticado.
   @Get()
   findOne() {
     return this.empresaService.findOne();

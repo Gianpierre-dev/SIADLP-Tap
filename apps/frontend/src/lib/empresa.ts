@@ -18,6 +18,7 @@ interface EmpresaState {
   empresa: Empresa | null;
   loading: boolean;
   fetchEmpresa: () => Promise<void>;
+  fetchEmpresaPublic: () => Promise<void>;
   setEmpresa: (empresa: Empresa) => void;
 }
 
@@ -29,6 +30,17 @@ export const useEmpresaStore = create<EmpresaState>((set) => ({
     set({ loading: true });
     try {
       const data = await apiGet<Empresa>('/empresa');
+      set({ empresa: data, loading: false });
+    } catch {
+      set({ loading: false });
+    }
+  },
+
+  // Versión pública (sin auth) para la pantalla de login: solo trae la marca.
+  fetchEmpresaPublic: async () => {
+    set({ loading: true });
+    try {
+      const data = await apiGet<Empresa>('/empresa/public');
       set({ empresa: data, loading: false });
     } catch {
       set({ loading: false });

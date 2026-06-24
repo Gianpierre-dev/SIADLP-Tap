@@ -37,7 +37,7 @@ interface LoginResponse {
 export default function LoginPage() {
   const router = useRouter();
   const { setUser, isAuthenticated, hydrate, user } = useAuthStore();
-  const { empresa, fetchEmpresa } = useEmpresaStore();
+  const { empresa, fetchEmpresaPublic } = useEmpresaStore();
   const [correo, setCorreo] = useState('');
   const [contrasena, setContrasena] = useState('');
   const [loading, setLoading] = useState(false);
@@ -45,8 +45,8 @@ export default function LoginPage() {
 
   useEffect(() => {
     hydrate();
-    fetchEmpresa();
-  }, [hydrate, fetchEmpresa]);
+    fetchEmpresaPublic();
+  }, [hydrate, fetchEmpresaPublic]);
 
   useEffect(() => {
     if (isAuthenticated && user) {
