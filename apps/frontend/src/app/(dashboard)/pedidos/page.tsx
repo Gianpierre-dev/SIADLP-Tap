@@ -7,6 +7,7 @@ import { apiGet, apiPost, apiPatch } from '@/lib/api';
 import { useAuthStore } from '@/lib/auth';
 import { PageHeader } from '@/components/page-header';
 import { DataTable, Column } from '@/components/data-table';
+import { SearchableSelect } from '@/components/searchable-select';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -651,24 +652,15 @@ export default function PedidosPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2 space-y-1.5">
                 <Label htmlFor="clienteId">Cliente *</Label>
-                <select
-                  id="clienteId"
-                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                  value={clienteId}
-                  onChange={(e) =>
-                    setClienteId(e.target.value === '' ? '' : Number(e.target.value))
-                  }
-                  required
-                >
-                  <option value="">Seleccionar cliente</option>
-                  {clients
+                <SearchableSelect
+                  options={clients
                     .filter((c) => c.activo)
-                    .map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.razonSocial}
-                      </option>
-                    ))}
-                </select>
+                    .map((c) => ({ value: c.id, label: c.razonSocial }))}
+                  value={clienteId}
+                  onChange={setClienteId}
+                  placeholder="Seleccionar cliente"
+                  searchPlaceholder="Buscar cliente por razón social..."
+                />
               </div>
 
               <div className="space-y-1.5">

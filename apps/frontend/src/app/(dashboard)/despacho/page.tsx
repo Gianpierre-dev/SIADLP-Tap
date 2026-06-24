@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { SearchableSelect } from '@/components/searchable-select';
 import {
   Dialog,
   DialogContent,
@@ -299,63 +300,47 @@ function CreateDialog({ open, onClose, onSuccess, routes, vehicles, drivers }: C
 
             <div className="space-y-1.5">
               <Label htmlFor="dispatch-ruta">Ruta *</Label>
-              <select
-                id="dispatch-ruta"
-                className={nativeSelectClass()}
+              <SearchableSelect
+                options={routes.map((r) => ({
+                  value: r.id,
+                  label: `${r.nombre} — ${r.zona}`,
+                }))}
                 value={rutaId}
-                onChange={(e) => {
-                  setRutaId(e.target.value === '' ? '' : Number(e.target.value));
+                onChange={(v) => {
+                  setRutaId(v);
                   setSelectedPedidoIds(new Set());
                 }}
-                required
-              >
-                <option value="">Seleccionar ruta</option>
-                {routes.map((r) => (
-                  <option key={r.id} value={r.id}>
-                    {r.nombre} — {r.zona}
-                  </option>
-                ))}
-              </select>
+                placeholder="Seleccionar ruta"
+                searchPlaceholder="Buscar ruta..."
+              />
             </div>
 
             <div className="space-y-1.5">
               <Label htmlFor="dispatch-vehiculo">Vehículo *</Label>
-              <select
-                id="dispatch-vehiculo"
-                className={nativeSelectClass()}
+              <SearchableSelect
+                options={vehicles.map((v) => ({
+                  value: v.id,
+                  label: `${v.placa} — ${v.marca}`,
+                }))}
                 value={vehiculoId}
-                onChange={(e) =>
-                  setVehiculoId(e.target.value === '' ? '' : Number(e.target.value))
-                }
-                required
-              >
-                <option value="">Seleccionar vehículo</option>
-                {vehicles.map((v) => (
-                  <option key={v.id} value={v.id}>
-                    {v.placa} — {v.marca}
-                  </option>
-                ))}
-              </select>
+                onChange={setVehiculoId}
+                placeholder="Seleccionar vehículo"
+                searchPlaceholder="Buscar por placa..."
+              />
             </div>
 
             <div className="space-y-1.5">
               <Label htmlFor="dispatch-chofer">Chofer *</Label>
-              <select
-                id="dispatch-chofer"
-                className={nativeSelectClass()}
+              <SearchableSelect
+                options={drivers.map((d) => ({
+                  value: d.id,
+                  label: `${d.nombre} ${d.apellido}`,
+                }))}
                 value={choferId}
-                onChange={(e) =>
-                  setChoferId(e.target.value === '' ? '' : Number(e.target.value))
-                }
-                required
-              >
-                <option value="">Seleccionar chofer</option>
-                {drivers.map((d) => (
-                  <option key={d.id} value={d.id}>
-                    {d.nombre} {d.apellido}
-                  </option>
-                ))}
-              </select>
+                onChange={setChoferId}
+                placeholder="Seleccionar chofer"
+                searchPlaceholder="Buscar chofer..."
+              />
             </div>
           </div>
 
