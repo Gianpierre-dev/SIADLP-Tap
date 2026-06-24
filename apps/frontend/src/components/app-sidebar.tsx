@@ -50,12 +50,12 @@ interface NavItem {
   href: string;
   icon: React.ElementType;
   permission?: string;
-  badgeKey?: 'solicitudesPendientes';
+  badgeKey?: 'solicitudesPendientes' | 'pedidosPendientes';
 }
 
 const mainNav: NavItem[] = [
   { label: 'Dashboard', href: '/', icon: LayoutDashboardIcon, permission: 'reportes.leer' },
-  { label: 'Pedidos', href: '/pedidos', icon: ShoppingCartIcon, permission: 'pedidos.leer' },
+  { label: 'Pedidos', href: '/pedidos', icon: ShoppingCartIcon, permission: 'pedidos.leer', badgeKey: 'pedidosPendientes' },
   { label: 'Despacho', href: '/despacho', icon: TruckIcon, permission: 'despacho.leer' },
 ];
 
@@ -141,8 +141,31 @@ export function AppSidebar() {
   const { user, logout, hasPermission } = useAuthStore();
   const { empresa } = useEmpresaStore();
   const [solicitudesPendientes, setSolicitudesPendientes] = useState(0);
+  const [pedidosPendientes, setPedidosPendientes] = useState(0);
 
   const puedeAdministrar = hasPermission('usuarios.editar');
+  const puedeVerPedidos = hasPermission('pedidos.leer');
+
+  // Badge de pedidos por confirmar (REGISTERED). Poll cada 30s, igual que solicitudes.
+  useEffect(() => {
+    if (!puedeVerPedidos) return;
+    let cancelado = false;
+    const cargar = () => {
+      apiGet<{ total: number }>('/orders/pendientes/contar')
+        .then((res) => {
+          if (!cancelado) setPedidosPendientes(res.total);
+        })
+        .catch(() => {
+          /* silenciar: el badge es accesorio */
+        });
+    };
+    cargar();
+    const id = setInterval(cargar, POLL_INTERVAL_MS);
+    return () => {
+      cancelado = true;
+      clearInterval(id);
+    };
+  }, [puedeVerPedidos]);
 
   useEffect(() => {
     if (!puedeAdministrar) return;
@@ -168,6 +191,7 @@ export function AppSidebar() {
   const empresaNombre = empresa?.nombreComercial ?? empresa?.razonSocial ?? 'Empresa';
   const badges: Record<string, number> = {
     solicitudesPendientes,
+    pedidosPendientes,
   };
 
   return (

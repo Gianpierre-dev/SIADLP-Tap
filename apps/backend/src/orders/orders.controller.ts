@@ -76,6 +76,13 @@ export class OrdersController {
     );
   }
 
+  @Get('pendientes/contar')
+  @RequirePermissions('pedidos.leer')
+  async contarPorConfirmar() {
+    const total = await this.ordersService.contarPorConfirmar();
+    return { total };
+  }
+
   @Get(':id')
   @RequirePermissions('pedidos.leer')
   findOne(@Param('id', ParseIntPipe) id: number) {

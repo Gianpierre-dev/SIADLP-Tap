@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { apiGet, apiPost, apiPatch } from '@/lib/api';
@@ -25,6 +25,7 @@ import {
   CheckCircleIcon,
   XCircleIcon,
   ClockIcon,
+  ChevronsUpDownIcon,
 } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -37,7 +38,7 @@ interface Order {
   estado: string;
   observacion: string | null;
   fechaCreacion: string;
-  cliente: { id: number; razonSocial: string; ruta: { nombre: string } };
+  cliente: { id: number; razonSocial: string; ruta?: { nombre: string } };
   _count: { detalles: number };
 }
 
@@ -145,6 +146,96 @@ function StateBadge({ estado }: { estado: string }) {
     <Badge className={`${colorClass} border-0`}>
       {STATE_LABELS[estado] ?? estado}
     </Badge>
+  );
+}
+
+// Combobox de productos con búsqueda — reemplaza al <select> nativo, que se
+// vuelve inusable con muchos productos. Tipeás SKU o nombre y filtra.
+function ProductCombobox({
+  products,
+  value,
+  onChange,
+}: {
+  products: Product[];
+  value: number;
+  onChange: (id: number) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onMouseDown = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+        setQuery('');
+      }
+    };
+    document.addEventListener('mousedown', onMouseDown);
+    return () => document.removeEventListener('mousedown', onMouseDown);
+  }, [open]);
+
+  const selected = products.find((p) => p.id === value);
+  const q = query.trim().toLowerCase();
+  const filtered = q
+    ? products.filter((p) =>
+        `${p.codigoSku} ${p.nombre}`.toLowerCase().includes(q),
+      )
+    : products;
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-1 text-left text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+      >
+        <span className={selected ? 'truncate' : 'truncate text-muted-foreground'}>
+          {selected
+            ? `[${selected.codigoSku}] ${selected.nombre}`
+            : 'Seleccionar producto'}
+        </span>
+        <ChevronsUpDownIcon className="h-4 w-4 shrink-0 opacity-50" />
+      </button>
+      {open && (
+        <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover text-popover-foreground shadow-md">
+          <div className="border-b p-2">
+            <Input
+              autoFocus
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Buscar por SKU o nombre..."
+              className="h-8"
+            />
+          </div>
+          <div className="max-h-48 overflow-auto p-1">
+            {filtered.length === 0 ? (
+              <div className="px-2 py-3 text-center text-sm text-muted-foreground">
+                Sin resultados
+              </div>
+            ) : (
+              filtered.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => {
+                    onChange(p.id);
+                    setOpen(false);
+                    setQuery('');
+                  }}
+                  className={`flex w-full items-center rounded px-2 py-1.5 text-left text-sm hover:bg-accent ${
+                    p.id === value ? 'bg-accent' : ''
+                  }`}
+                >
+                  [{p.codigoSku}] {p.nombre}
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -628,22 +719,11 @@ export default function PedidosPage() {
                 {lines.map((line, idx) => (
                   <div key={idx} className="flex items-center gap-3 p-3">
                     <div className="flex-1">
-                      <select
-                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                        value={line.productoId || ''}
-                        onChange={(e) =>
-                          updateLine(idx, 'productoId', Number(e.target.value))
-                        }
-                      >
-                        <option value="">Seleccionar producto</option>
-                        {products
-                          .filter((p) => p.activo)
-                          .map((p) => (
-                            <option key={p.id} value={p.id}>
-                              [{p.codigoSku}] {p.nombre}
-                            </option>
-                          ))}
-                      </select>
+                      <ProductCombobox
+                        products={products.filter((p) => p.activo)}
+                        value={line.productoId}
+                        onChange={(id) => updateLine(idx, 'productoId', id)}
+                      />
                     </div>
                     <div className="w-36 flex items-center gap-2">
                       <Input

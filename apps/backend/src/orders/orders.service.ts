@@ -170,6 +170,13 @@ export class OrdersService {
     return updated;
   }
 
+  // Conteo de pedidos por confirmar (REGISTERED) — alimenta el badge del sidebar.
+  contarPorConfirmar(): Promise<number> {
+    return this.prisma.pedido.count({
+      where: { estado: OrderStatus.REGISTERED },
+    });
+  }
+
   async findAll(
     page = 1,
     pageSize = 20,
