@@ -26,7 +26,7 @@ Sistema web que automatiza el proceso de **distribución logística** de la empr
 
 ## ✅ Requisitos Previos
 
-Antes de empezar, asegurate de tener instalado:
+Antes de empezar, asegúrese de tener instalado:
 
 | Herramienta | Versión mínima | Verificar con |
 |-------------|----------------|---------------|
@@ -35,7 +35,7 @@ Antes de empezar, asegurate de tener instalado:
 | **Docker Desktop** | reciente | `docker -v` |
 | **Git** | reciente | `git --version` |
 
-> ¿No tenés pnpm? Instalalo con: `npm install -g pnpm`
+> ¿No tiene pnpm? Instálelo con: `npm install -g pnpm`
 
 ---
 
@@ -56,7 +56,7 @@ pnpm install
 
 ### 3. Configurar variables de entorno
 
-Copiá el archivo de ejemplo y completá los valores:
+Copie el archivo de ejemplo y complete los valores:
 
 ```bash
 cp .env.example .env
@@ -68,8 +68,8 @@ Contenido del `.env` (raíz del proyecto):
 # Base de datos — la password (sql) debe coincidir con la de docker-compose.yml
 DATABASE_URL="postgresql://postgres:sql@localhost:5432/siadlp_db"
 
-# Autenticación — GENERÁ UN SECRETO PROPIO de 32+ caracteres
-JWT_SECRET="cambia-esto-por-un-secreto-seguro-de-32-o-mas-caracteres"
+# Autenticación — GENERE UN SECRETO PROPIO de 32+ caracteres
+JWT_SECRET="cambie-esto-por-un-secreto-seguro-de-32-o-mas-caracteres"
 JWT_EXPIRES_IN="2h"
 
 # Servidor
@@ -80,7 +80,7 @@ CORS_ORIGINS=http://localhost:3020
 NEXT_PUBLIC_API_URL=http://localhost:4020/api
 ```
 
-> 🔐 **Seguridad:** generá tu propio `JWT_SECRET`. En Git Bash / Linux / Mac:
+> 🔐 **Seguridad:** genere su propio `JWT_SECRET`. En Git Bash / Linux / Mac:
 > `openssl rand -hex 32`
 
 ### 4. Levantar la base de datos, migrar y poblar
@@ -114,7 +114,7 @@ pnpm --filter backend prisma:seed
 > - `pnpm --filter backend prisma:migrate` → crea las **tablas** dentro de esa base.
 > - `prisma:generate` **no** toca la base: solo genera el cliente TypeScript.
 >
-> Si NO usás Docker, necesitás un PostgreSQL propio (instalado o en la nube) con una base
+> Si NO usa Docker, necesita un PostgreSQL propio (instalado o en la nube) con una base
 > `siadlp_db` creada, y apuntar `DATABASE_URL` a él antes del paso (c).
 
 ### 5. Iniciar la aplicación (modo desarrollo)
@@ -209,23 +209,10 @@ SIADLP-Tap/
 │       └── src/app/      # rutas: /login, /pedidos, /despacho, etc.
 ├── packages/
 │   └── shared/           # Tipos y enums compartidos (máquina de estados)
-├── docs/                 # ADRs, ARCHITECTURE, TESTING, RUNBOOK, SECURITY-AUDIT
 ├── scripts/              # Datos de ubigeo del Perú (seed)
 ├── docker-compose.yml
 └── pnpm-workspace.yaml
 ```
-
----
-
-## 📚 Documentación Técnica
-
-| Documento | Contenido |
-|-----------|-----------|
-| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Arquitectura del sistema (C4, secuencia, ER, máquinas de estado) |
-| [`docs/TESTING.md`](docs/TESTING.md) | Estrategia de testing (pirámide, AAA, test doubles, mutation) |
-| [`docs/SECURITY-AUDIT.md`](docs/SECURITY-AUDIT.md) | Auditoría de seguridad |
-| [`docs/RUNBOOK.md`](docs/RUNBOOK.md) | Operación y despliegue |
-| [`docs/adr/`](docs/adr/) | Architecture Decision Records (decisiones de diseño) |
 
 ---
 

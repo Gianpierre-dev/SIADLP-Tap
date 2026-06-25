@@ -10,10 +10,6 @@ dist/
 .DS_Store
 *.log
 .turbo/
-.superpowers/
-.claude/
-docs/superpowers/
-docs/Grupo_16_*
 
 # Testing artifacts
 coverage/
@@ -21,9 +17,6 @@ playwright-report/
 test-results/
 .vitest-cache/
 .lighthouse/
-
-# Local screenshots from chat sessions (not project assets)
-docs/[0-9]*.png
 
 # Stryker mutation testing reports
 apps/backend/stryker-report/
