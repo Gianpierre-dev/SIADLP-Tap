@@ -11,16 +11,16 @@ IDAT — Lima, Perú · 2026
 | | |
 |---|---|
 | **Integrantes** | Anthony Gianpierre Terrazas Tello · Paulo Cesar Wong Diaz |
-| **Presentación** | `SIADLP_Presentacion_Defensa.pptx` (25 diapositivas) |
-| **Duración objetivo** | ~45 minutos (exposición) + preguntas del jurado |
+| **Presentación** | `SIADLP_Presentacion_Defensa_v2.pptx` (29 diapositivas, estilo ejecutivo) |
+| **Duración objetivo** | ~46 minutos (exposición) + preguntas del jurado |
 | **Modalidad** | Dos expositores alternados, correlacionados con las diapositivas |
 
 ### Roles de expositor
 
 | Rol | Integrante | Bloques que lidera |
 |-----|-----------|--------------------|
-| **Scrum Master · Backend · Líder Técnico** | **Gianpierre** | Negocio, objetivos, metodología, arquitectura, base de datos, seguridad, conclusiones |
-| **Frontend · QA** | **Paulo** | Agenda, alcance, propuesta funcional, planificación ágil, reportes, demo, pruebas, resultados |
+| **Scrum Master · Backend · Líder Técnico** | **Gianpierre** | Resumen ejecutivo, negocio, problema y proceso actual, objetivos, factibilidad, metodología, evidencias Scrum, arquitectura, base de datos, seguridad, conclusiones |
+| **Frontend · QA** | **Paulo** | Agenda, FODA, alcance, propuesta y proceso propuesto, recursos, cronograma, backlog, reportes, pruebas, resultados |
 
 ### Convenciones del guion
 
@@ -37,31 +37,35 @@ IDAT — Lima, Perú · 2026
 |---|-------------|-----------|:--------:|:---------:|
 | 1 | Portada | G | 1:30 | 1:30 |
 | 2 | Agenda | P | 0:45 | 2:15 |
-| 3 | La Empresa | G | 1:45 | 4:00 |
-| 4 | Análisis FODA | P | 2:00 | 6:00 |
-| 5 | Identificación del Problema | G | 2:15 | 8:15 |
-| 6 | Objetivo General | G | 1:15 | 9:30 |
-| 7 | Objetivos Específicos | G | 2:00 | 11:30 |
-| 8 | Alcance — Módulos | P | 1:45 | 13:15 |
-| 9 | Fuera de Alcance | P | 1:15 | 14:30 |
-| 10 | Propuesta SIADLP | P | 1:45 | 16:15 |
-| 11 | Factibilidad Económica | G | 2:15 | 18:30 |
-| 12 | Metodología Scrum | G | 2:00 | 20:30 |
-| 13 | Recursos y Equipo | P | 1:15 | 21:45 |
-| 14 | Cronograma (Gantt) | P | 1:15 | 23:00 |
-| 15 | Historias de Usuario | P | 2:00 | 25:00 |
-| 16 | Burn Down Charts | G | 1:45 | 26:45 |
-| 17 | Arquitectura de Software | G | 2:30 | 29:15 |
-| 18 | Base de Datos (20 tablas) | G | 2:15 | 31:30 |
-| 19 | Consultas y Reportes | P | 1:30 | 33:00 |
-| 20 | Seguridad del Sistema | G | 2:00 | 35:00 |
-| 21 | Demostración del Sistema | G+P | 4:00 | 39:00 |
-| 22 | Pruebas de Calidad | P | 2:00 | 41:00 |
-| 23 | Resultados e Impacto | P | 1:30 | 42:30 |
-| 24 | Conclusiones | G | 1:45 | 44:15 |
-| 25 | Recomendaciones + Cierre | G+P | 1:30 | 45:45 |
+| 3 | Resumen Ejecutivo | G | 1:30 | 3:45 |
+| 4 | La Empresa | G | 1:30 | 5:15 |
+| 5 | Análisis FODA | P | 1:45 | 7:00 |
+| 6 | Identificación del Problema | G | 1:45 | 8:45 |
+| 7 | El Proceso Actual (AS-IS) | G | 1:45 | 10:30 |
+| 8 | Objetivo General | G | 1:15 | 11:45 |
+| 9 | Objetivos Específicos | G | 1:45 | 13:30 |
+| 10 | Alcance — Módulos | P | 1:30 | 15:00 |
+| 11 | Fuera de Alcance | P | 1:00 | 16:00 |
+| 12 | Propuesta SIADLP | P | 1:30 | 17:30 |
+| 13 | El Proceso Propuesto (TO-BE) | P | 1:45 | 19:15 |
+| 14 | Factibilidad Económica | G | 2:00 | 21:15 |
+| 15 | Metodología Scrum | G | 1:45 | 23:00 |
+| 16 | Recursos y Equipo | P | 1:00 | 24:00 |
+| 17 | Cronograma (Gantt) | P | 1:15 | 25:15 |
+| 18 | Product Backlog + MoSCoW | P | 1:45 | 27:00 |
+| 19 | Scrum en Acción (tableros) | G | 1:30 | 28:30 |
+| 20 | Burn Down Charts | G | 1:30 | 30:00 |
+| 21 | Arquitectura de Software | G | 2:00 | 32:00 |
+| 22 | Base de Datos — Modelo ER | G | 2:00 | 34:00 |
+| 23 | Consultas y Reportes | P | 1:15 | 35:15 |
+| 24 | Seguridad del Sistema | G | 1:45 | 37:00 |
+| 25 | Demostración del Sistema | G+P | 4:00 | 41:00 |
+| 26 | Pruebas de Calidad | P | 1:30 | 42:30 |
+| 27 | Resultados e Impacto | P | 1:15 | 43:45 |
+| 28 | Conclusiones | G | 1:30 | 45:15 |
+| 29 | Recomendaciones + Cierre | G+P | 1:30 | 46:45 |
 
-**Total estimado: ~45 min 45 s** (sin contar el turno de preguntas).
+**Total estimado: ~46 min 45 s** (sin contar el turno de preguntas).
 
 ---
 
@@ -80,279 +84,310 @@ IDAT — Lima, Perú · 2026
 >
 > Con su venia, comenzamos.
 
-*[Transición: Paulo se ubica para presentar la agenda.]*
+*[Transición: Paulo presenta la agenda.]*
 
 ---
 
 ## Diapositiva 2 — Agenda  ⏱ 0:45 · **[P]**
 
 > **[P]** Gracias, Gianpierre. Buenos días, señores del jurado.
-> Para ordenar la exposición, seguiremos esta agenda de diez puntos: iniciaremos con **la empresa y el problema** que motivó el proyecto; luego los **objetivos** y el **alcance** de la solución; presentaremos la **propuesta SIADLP** y la **metodología Scrum** aplicada; y cerraremos con los aspectos técnicos —**arquitectura, base de datos, seguridad y pruebas de calidad**— para terminar en **conclusiones y recomendaciones**.
+> Nuestra exposición sigue diez puntos: la **empresa y el problema**; el **proceso actual y el propuesto** — el antes y el después—; los **objetivos y el alcance**; la **propuesta SIADLP**; su **factibilidad económica**; la **metodología Scrum con sus evidencias**; la **arquitectura y base de datos**; la **seguridad y calidad de software**; la **demostración del sistema en producción**; y cerramos con **resultados, conclusiones y recomendaciones**.
 >
-> Empecemos por conocer a nuestro cliente.
-
-*[Transición: Gianpierre retoma.]*
-
----
-
-## Diapositiva 3 — La Empresa  ⏱ 1:45 · **[G]**
-
-> **[G]** **La Cosecha S.A.C.** es una empresa peruana dedicada a la comercialización y **distribución mayorista de papa**, atendiendo principalmente a **pollerías y negocios gastronómicos de Lima Metropolitana**.
->
-> Como ven en las tarjetas, su operación diaria consiste en **recibir pedidos, armar la carga por ruta y repartir en unidades de transporte**. Es un negocio de alto volumen y baja tolerancia al error: si un pedido llega tarde o incompleto, la pollería se queda sin insumo en plena jornada.
->
-> Y aquí está el punto crítico —el reto—: toda esa operación se manejaba de forma **100 % manual**, en cuadernos y hojas de cálculo sueltas, **sin trazabilidad ni visibilidad** de lo que ocurría en tiempo real. Ese es el terreno sobre el que trabajamos, y del que nace el problema que Paulo y yo analizamos a fondo.
-
-*[Transición: Paulo presenta el diagnóstico estratégico.]*
-
----
-
-## Diapositiva 4 — Análisis FODA  ⏱ 2:00 · **[P]**
-
-> **[P]** Para entender el punto de partida realizamos un **análisis FODA** de la operación logística de la empresa.
->
-> En las **Fortalezas** destacamos una cartera de clientes fidelizada y experiencia en el rubro. En las **Oportunidades**, la creciente digitalización del sector y la posibilidad de diferenciarse por servicio.
->
-> Pero lo determinante está en las **Debilidades** y **Amenazas**: procesos manuales propensos a error, **ausencia total de trazabilidad**, dependencia del conocimiento de una sola persona, y el riesgo de perder clientes frente a distribuidores más ordenados.
->
-> Este cruce nos dio la estrategia: **convertir las debilidades internas en fortalezas mediante la digitalización del proceso**. El FODA no fue un ejercicio decorativo; fue el que justificó técnicamente por qué el proyecto valía la pena. Con ese diagnóstico, Gianpierre precisa cuál es el problema central.
+> Y para que conozcan el destino antes del viaje, Gianpierre abre con el resumen ejecutivo.
 
 *[Transición: Gianpierre.]*
 
 ---
 
-## Diapositiva 5 — Identificación del Problema  ⏱ 2:15 · **[G]**
+## Diapositiva 3 — Resumen Ejecutivo  ⏱ 1:30 · **[G]**
 
-> **[G]** El **problema central** lo definimos así: *la gestión manual de pedidos y distribución genera errores, re-despachos y nula visibilidad operativa en tiempo real.*
+> **[G]** Señores del jurado, este es **el proyecto en treinta segundos** — cuatro cifras que luego sustentaremos una por una:
 >
-> Y no es una frase genérica; se descompone en causas concretas:
-> - Los pedidos se anotaban en **cuadernos y hojas de cálculo dispersas**, sin control de estados.
-> - Había **errores y duplicidad en el armado de cargas**, que derivaban en re-despachos y reclamos.
-> - No existía **trazabilidad**: nadie podía decir con certeza quién hizo qué, ni en qué estado estaba cada entrega.
-> - La asignación de **vehículos y choferes** era informal, sin registro.
-> - Y, sobre todo, **la gerencia no tenía indicadores** para tomar decisiones.
+> - **Relación Beneficio/Costo de 1.25**, con recuperación de la inversión en menos de diez meses: el proyecto es económicamente viable.
+> - **75 % de reducción** en los tiempos de distribución y control.
+> - **20 historias de usuario entregadas** en 4 sprints, en solo 8 semanas.
+> - Y el dato más importante: el sistema está **EN VIVO**, en producción, en la nube.
 >
-> La consecuencia es un **riesgo operativo real**: quiebres de servicio y pérdida de imagen ante el cliente. Un problema de negocio que exige una solución de software. Por eso planteamos el siguiente objetivo.
-
-*[Transición: misma persona, siguiente diapositiva.]*
-
----
-
-## Diapositiva 6 — Objetivo General  ⏱ 1:15 · **[G]**
-
-> **[G]** Nuestro **objetivo general** fue: **desarrollar e implementar un sistema de información web para La Cosecha S.A.C. que automatice y digitalice los procesos de gestión de pedidos y distribución logística**, eliminando el uso de registros manuales y proporcionando **visibilidad en tiempo real** del estado de las operaciones diarias.
->
-> Fíjense que el objetivo es medible y verificable: no dice «mejorar»; dice **automatizar, eliminar lo manual y dar visibilidad**. Cada una de esas tres promesas la vamos a demostrar hoy. Y para lograrlo, lo desglosamos en diez objetivos específicos.
+> En una frase: SIADLP digitalizó el ciclo completo pedido → despacho → entrega de La Cosecha S.A.C., eliminando los registros manuales y dando a la gerencia visibilidad en tiempo real. Todo lo que sigue es la evidencia de estas afirmaciones. Empecemos por conocer a la empresa.
 
 *[Transición: misma persona.]*
 
 ---
 
-## Diapositiva 7 — Objetivos Específicos  ⏱ 2:00 · **[G]**
+## Diapositiva 4 — La Empresa  ⏱ 1:30 · **[G]**
 
-> **[G]** Estos son los **diez objetivos específicos**, y son importantes porque **cada uno se convirtió en un módulo verificable** del sistema:
+> **[G]** **La Cosecha S.A.C.** es una empresa peruana dedicada a la comercialización y **distribución mayorista de papa**, atendiendo a **pollerías y negocios gastronómicos de Lima Metropolitana**.
 >
-> - **OE-01 y OE-02** — seguridad de acceso: gestión de usuarios con **RBAC** y catálogos maestros.
+> Su operación diaria: recibir pedidos, armar la carga por ruta y repartir en unidades de transporte. Es un negocio de alto volumen y baja tolerancia al error: si un pedido llega tarde o incompleto, la pollería se queda sin insumo en plena jornada.
+>
+> Y noten la tarjeta resaltada en color distinto —el **reto**—: toda esa operación se manejaba de forma **100 % manual, sin trazabilidad ni visibilidad**. Ese es el terreno del que nace este proyecto. Paulo presenta el diagnóstico estratégico.
+
+*[Transición: Paulo.]*
+
+---
+
+## Diapositiva 5 — Análisis FODA  ⏱ 1:45 · **[P]**
+
+> **[P]** Para entender el punto de partida realizamos un **análisis FODA** de la operación logística.
+>
+> En las **Fortalezas**: cartera de clientes fidelizada y experiencia en el rubro. En las **Oportunidades**: la digitalización creciente del sector y la posibilidad de diferenciarse por servicio.
+>
+> Lo determinante está en las **Debilidades** y **Amenazas**: procesos manuales propensos a error, ausencia total de trazabilidad, y el riesgo de perder clientes frente a distribuidores más ordenados.
+>
+> El cruce nos dio la estrategia: **convertir las debilidades internas en fortalezas mediante la digitalización del proceso**. Con ese diagnóstico, Gianpierre precisa el problema central.
+
+*[Transición: Gianpierre.]*
+
+---
+
+## Diapositiva 6 — Identificación del Problema  ⏱ 1:45 · **[G]**
+
+> **[G]** El **problema central**: *la gestión manual de pedidos y distribución genera errores, re-despachos y nula visibilidad operativa en tiempo real.*
+>
+> Las cinco tarjetas lo descomponen en causas concretas: **registros dispersos** en cuadernos y hojas de cálculo; **errores y duplicidad** que derivan en re-despachos y reclamos; **cero trazabilidad** —nadie sabe quién hizo qué—; **asignación informal** de vehículos y choferes; y una **gerencia a ciegas**, sin indicadores para decidir.
+>
+> Y fíjense en la cifra de la esquina: este problema le cuesta a la empresa **S/ 20,400 al año**. No es un problema teórico; es un problema con precio. Para verlo con total claridad, veamos el proceso completo tal como operaba.
+
+*[Transición: misma persona.]*
+
+---
+
+## Diapositiva 7 — El Proceso Actual (AS-IS)  ⏱ 1:45 · **[G]**
+
+> **[G]** Este es el **proceso AS-IS** — el flujo real de la operación manual, de punta a punta:
+>
+> El pedido entra **por teléfono o WhatsApp y se anota en un cuaderno**; luego alguien lo **re-digita** en hojas de cálculo dispersas; la carga se arma **“de memoria”**, sin control de rutas; el reparto sale **sin registro** de entregas ni novedades; y la gerencia, al final de la cadena, queda **sin indicadores**.
+>
+> Debajo de cada paso están sus consecuencias, en rojo: errores de transcripción, duplicidad, re-despachos, cero trazabilidad y ceguera del negocio. **Cada eslabón manual agrega su propio punto de falla.** Este diagrama ES el problema. Y contra este diagrama van a comparar, en unos minutos, el proceso propuesto. Antes, formalicemos qué nos propusimos lograr.
+
+*[Transición: misma persona.]*
+
+---
+
+## Diapositiva 8 — Objetivo General  ⏱ 1:15 · **[G]**
+
+> **[G]** Nuestro **objetivo general**: **desarrollar e implementar un sistema de información web para La Cosecha S.A.C. que automatice y digitalice los procesos de gestión de pedidos y distribución logística**, eliminando los registros manuales y proporcionando **visibilidad en tiempo real**.
+>
+> Como indica la línea inferior, son **tres promesas verificables**: automatizar, eliminar lo manual y dar visibilidad. Las tres se demuestran hoy. El objetivo se desglosa en diez objetivos específicos.
+
+*[Transición: misma persona.]*
+
+---
+
+## Diapositiva 9 — Objetivos Específicos  ⏱ 1:45 · **[G]**
+
+> **[G]** Los **diez objetivos específicos**; cada uno se convirtió en un **módulo verificable** del sistema:
+>
+> - **OE-01 y OE-02** — seguridad de acceso con **RBAC** y catálogos maestros.
 > - **OE-03** — el corazón operativo: **pedidos con máquina de estados y log histórico**.
 > - **OE-04 y OE-05** — **despacho** y **registro de entregas en campo**.
 > - **OE-06 y OE-07** — **dashboard ejecutivo** y **reportes a Excel**.
 > - **OE-08** — **auditoría automática** de operaciones críticas.
-> - **OE-09 y OE-10** — **despliegue en producción sobre la nube** y **capacitación y documentación**.
+> - **OE-09 y OE-10** — **despliegue en producción** y **capacitación y documentación**.
 >
-> No dejamos ningún objetivo en el papel: los diez están implementados y desplegados. Ahora Paulo detalla qué entra —y qué no— en el alcance.
+> Ningún objetivo quedó en el papel: los diez están implementados y desplegados. Paulo detalla el alcance.
 
 *[Transición: Paulo.]*
 
 ---
 
-## Diapositiva 8 — Alcance: Módulos del Sistema  ⏱ 1:45 · **[P]**
+## Diapositiva 10 — Alcance: Módulos del Sistema  ⏱ 1:30 · **[P]**
 
-> **[P]** El alcance del sistema se materializa en **nueve módulos funcionales**:
-> **Autenticación** con JWT, cifrado y rate limiting; **Usuarios y Roles** con RBAC granular; los **Catálogos** de clientes, productos, rutas, vehículos y choferes; el módulo de **Pedidos** con estados y log; el de **Despacho** con hojas de carga; el registro de **Entregas en campo**; **Reportes y Dashboard**; **Auditoría**; y el módulo de **Empresa y Ubigeo**, con el catálogo geográfico del Perú.
+> **[P]** El alcance se materializa en **nueve módulos funcionales**: **Autenticación** con JWT y rate limiting; **Usuarios y Roles** con RBAC granular; los **Catálogos** de clientes, productos, rutas, vehículos y choferes; **Pedidos** con estados y log; **Despacho** con hojas de carga; **Entregas en campo**; **Reportes y Dashboard**; **Auditoría**; y **Empresa y Ubigeo** con el catálogo geográfico del Perú.
 >
-> Lo relevante es que estos módulos **cubren el flujo completo** del negocio, de punta a punta. No es un prototipo parcial: es el proceso operativo entero, digitalizado. Pero un buen proyecto también sabe decir «no»: veamos qué dejamos deliberadamente fuera.
+> Estos módulos cubren el **flujo completo del negocio, de punta a punta**. No es un prototipo parcial. Pero un buen proyecto también sabe decir «no»:
 
 *[Transición: misma persona.]*
 
 ---
 
-## Diapositiva 9 — Fuera de Alcance  ⏱ 1:15 · **[P]**
+## Diapositiva 11 — Fuera de Alcance  ⏱ 1:00 · **[P]**
 
-> **[P]** Delimitar es tan importante como construir. Definimos explícitamente **fuera de alcance**:
-> las **compras** a proveedores, la **producción** con rendimiento y merma, el **inventario dual y kardex**, el **cálculo de precios y cobranza**, la **facturación electrónica con SUNAT**, la **app móvil nativa**, y el **rastreo GPS** y la **pasarela de pagos**.
+> **[P]** Definimos explícitamente **fuera de alcance**: compras a proveedores, producción con rendimiento y merma, inventario y kardex, precios y cobranza, facturación electrónica con SUNAT, app móvil nativa, rastreo GPS y pasarela de pagos.
 >
-> ¿Por qué lo excluimos? Porque el objetivo era resolver el **núcleo logístico** —pedido, despacho y entrega— con calidad, y no dispersarnos. Estas exclusiones no son limitaciones; son **decisiones de alcance conscientes**, y varias de ellas reaparecerán como recomendaciones de evolución al final. Con el alcance claro, presentamos la propuesta.
+> ¿Por qué? Para resolver el **núcleo logístico con calidad**, sin dispersarnos. Son **decisiones de alcance conscientes** — y como indica la nota, varias reaparecen al final como recomendaciones de evolución. Con el alcance claro, la propuesta.
 
 *[Transición: misma persona.]*
 
 ---
 
-## Diapositiva 10 — Propuesta de Solución: SIADLP  ⏱ 1:45 · **[P]**
+## Diapositiva 12 — Propuesta de Solución: SIADLP  ⏱ 1:30 · **[P]**
 
 > **[P]** Nuestra propuesta es **SIADLP: Sistema Integrado de Administración y Distribución Logística de Papas**.
 >
-> El esquema resume su esencia: una aplicación web que digitaliza el ciclo completo **Pedido → Despacho → Asignación de vehículo y chofer → Entrega en campo → Reportes y Auditoría**. Cada flecha es una transición controlada por el sistema, no por un cuaderno.
+> El esquema resume su esencia: una aplicación web que digitaliza el ciclo completo **Pedido → Despacho → Asignación de vehículo y chofer → Entrega en campo → Reportes y Auditoría**. Cada flecha es una transición **controlada por el sistema**, no por un cuaderno.
 >
-> La idea fuerza está abajo: **una sola fuente de verdad**. Cada operación queda registrada, auditada y visible para la gerencia desde el dashboard, en cualquier momento. Eso es exactamente lo que el negocio no tenía. Y como todo proyecto profesional, antes de programar validamos que fuera **económicamente viable**; eso lo sustenta Gianpierre.
-
-*[Transición: Gianpierre.]*
-
----
-
-## Diapositiva 11 — Factibilidad Económica  ⏱ 2:15 · **[G]**
-
-> **[G]** Un sistema no se justifica solo por ser moderno; se justifica porque **conviene**. Estos son los números.
->
-> La **inversión inicial** fue de **S/ 13,600**, equivalente a 320 horas-persona de desarrollo. Frente a eso, el **ahorro anual estimado** es de **S/ 17,112**.
->
-> ¿De dónde sale ese ahorro? De la tabla: sin sistema, las pérdidas y sobrecostos anuales por errores, re-despachos y reprocesos ascendían a **S/ 20,400**; con el sistema se reducen a **S/ 3,288**. La diferencia son esos **S/ 17,112** que la empresa deja de perder cada año.
->
-> Esto arroja una **relación Beneficio/Costo de 1.25** —mayor a 1—, y una **recuperación de la inversión en menos de diez meses**. En términos simples: por cada sol invertido, la empresa obtiene **1.25 soles** de retorno. El proyecto es económicamente viable, y con esa base pasamos a **cómo lo construimos**.
+> La idea fuerza: **una sola fuente de verdad** — cada operación queda registrada, auditada y visible desde el dashboard. ¿Y cómo se ve ese proceso digitalizado, rol por rol? Exactamente así:
 
 *[Transición: misma persona.]*
 
 ---
 
-## Diapositiva 12 — Metodología: Scrum  ⏱ 2:00 · **[G]**
+## Diapositiva 13 — El Proceso Propuesto (TO-BE)  ⏱ 1:45 · **[P]**
 
-> **[G]** Adoptamos el marco ágil **Scrum**. La razón es directa: los requisitos de una operación logística evolucionan, y necesitábamos **entregar valor de forma incremental** y ajustar en cada iteración, en lugar de apostar todo a una entrega final.
+> **[P]** Este es el **proceso TO-BE** — el mismo negocio, ahora dentro de SIADLP, organizado por **carriles de responsabilidad**:
 >
-> El proyecto se organizó en **cuatro fases** —Inicio, Planificación, Ejecución y Transición y Cierre— y la ejecución se dividió en **4 sprints a lo largo de 8 semanas**, entre marzo y junio de 2026.
+> - El **Vendedor** registra el pedido con cliente y detalle → el sistema lo pone en estado **REGISTRADO**.
+> - El **Jefe de Despacho** arma la hoja de carga, agrupa por ruta y asigna vehículo y chofer → estado **DESPACHADO**.
+> - El **Chofer** confirma la entrega o registra la novedad en campo → estado **ENTREGADO**.
+> - Y la **Gerencia** decide con el dashboard en vivo y los siete reportes a Excel.
 >
-> El foco de cada sprint fue claro:
+> Comparen mentalmente este diagrama con el AS-IS de hace unos minutos: donde había cuadernos y llamadas, ahora hay **estados controlados por una máquina de estados y roles con permisos**. Esa es la transformación. Y como toda propuesta seria, se sostiene con números — Gianpierre.
+
+*[Transición: Gianpierre.]*
+
+---
+
+## Diapositiva 14 — Factibilidad Económica  ⏱ 2:00 · **[G]**
+
+> **[G]** Un sistema no se justifica por moderno; se justifica porque **conviene**. Los números:
+>
+> **Inversión inicial: S/ 13,600** — 320 horas-persona. **Ahorro anual: S/ 17,112**. ¿De dónde sale? De la tabla: sin sistema, las pérdidas anuales por errores, re-despachos y reprocesos eran **S/ 20,400**; con el sistema bajan a **S/ 3,288**.
+>
+> Esto da una **relación Beneficio/Costo de 1.25** —mayor a 1— y **recuperación en menos de diez meses**. Por cada sol invertido, la empresa recibe 1.25 soles de retorno. Con la viabilidad demostrada, veamos **cómo** lo construimos.
+
+*[Transición: misma persona.]*
+
+---
+
+## Diapositiva 15 — Metodología: Scrum  ⏱ 1:45 · **[G]**
+
+> **[G]** Adoptamos el marco ágil **Scrum**, por una razón directa: necesitábamos **entregar valor incremental** y ajustar en cada iteración, en lugar de apostar todo a una entrega final.
+>
+> El proyecto se organizó en **cuatro fases** —Inicio, Planificación, Ejecución, y Transición y Cierre— con la ejecución dividida en **4 sprints a lo largo de 8 semanas**, de marzo a junio de 2026:
+>
 > - **Sprint 1** — Autenticación, Usuarios/RBAC y Catálogos.
-> - **Sprint 2** — Gestión de Pedidos, con estados y log histórico.
+> - **Sprint 2** — Gestión de Pedidos.
 > - **Sprint 3** — Despacho, Hojas de Carga y Entregas.
 > - **Sprint 4** — Dashboard, Reportes, Auditoría y despliegue.
 >
-> Como pueden notar, **cada sprint entregó un incremento funcional utilizable**. Paulo detalla ahora el equipo y los recursos.
+> Cada sprint entregó un **incremento funcional utilizable**. Paulo presenta el equipo y los recursos.
 
 *[Transición: Paulo.]*
 
 ---
 
-## Diapositiva 13 — Recursos y Equipo  ⏱ 1:15 · **[P]**
+## Diapositiva 16 — Recursos y Equipo  ⏱ 1:00 · **[P]**
 
-> **[P]** El proyecto se ejecutó con un **equipo Scrum** organizado en los roles de **Scrum Master/Gerente de Proyecto, Desarrollador Backend, Desarrollador Frontend y QA/DevOps**.
+> **[P]** El **equipo Scrum** se organizó en cuatro roles: Scrum Master/Gerente de Proyecto, Desarrollador Backend, Desarrollador Frontend y QA/DevOps — asumidos por nosotros dos, cada uno cubriendo dos responsabilidades.
 >
-> En cuanto a **recursos tecnológicos**, trabajamos con equipos de gama media con conectividad de 900 Mbps, y un stack profesional: **VS Code, Node.js 20 LTS, Docker Desktop, PostgreSQL 15, Prisma ORM 7**, control de versiones con **Git y GitHub**, y despliegue en **Railway.app**. Es un stack **actual y de nivel de industria**, no de laboratorio. Con el equipo y las herramientas definidas, veamos el cronograma.
+> Los **recursos tecnológicos**: equipos Core i5 con Internet de 900 Mbps, VS Code, Node.js 20 LTS, Docker, **PostgreSQL 15 con Prisma ORM 7**, Git y GitHub, y despliegue en **Railway.app**. Stack **actual y de nivel de industria**. Veamos el cronograma.
 
 *[Transición: misma persona.]*
 
 ---
 
-## Diapositiva 14 — Cronograma (Diagrama de Gantt)  ⏱ 1:15 · **[P]**
+## Diapositiva 17 — Cronograma (Diagrama de Gantt)  ⏱ 1:15 · **[P]**
 
-> **[P]** Este **diagrama de Gantt** muestra la planificación temporal real del proyecto: los **cuatro sprints de dos semanas cada uno**, distribuidos a lo largo de las ocho semanas, de marzo a junio de 2026.
+> **[P]** El **diagrama de Gantt** muestra la planificación temporal real: **cuatro sprints de dos semanas**, distribuidos en ocho semanas, de marzo a junio de 2026.
 >
-> Cada barra representa el trabajo de un sprint sobre el calendario, y como ven, la secuencia respeta las **dependencias**: primero seguridad y catálogos, porque todo lo demás depende de ellos; luego pedidos; después despacho; y al final reportes y despliegue. La planificación no fue improvisada: se cumplió en los plazos previstos. Ahora presento **qué** construimos en cada sprint: las historias de usuario.
+> La secuencia respeta las **dependencias técnicas**: primero seguridad y catálogos —porque todo lo demás depende de ellos—, luego pedidos, después despacho, y al final reportes y despliegue. La planificación **se cumplió en los plazos previstos**. Ahora, el «qué»: las historias de usuario.
 
 *[Transición: misma persona.]*
 
 ---
 
-## Diapositiva 15 — Historias de Usuario (Product Backlog)  ⏱ 2:00 · **[P]**
+## Diapositiva 18 — Product Backlog + MoSCoW  ⏱ 1:45 · **[P]**
 
-> **[P]** El **Product Backlog** se compone de **20 historias de usuario**, priorizadas con la técnica **MoSCoW**: **12 Must** (imprescindibles), **6 Should** (importantes) y **2 Could** (deseables).
+> **[P]** Este es el **Product Backlog real** del proyecto: **20 historias de usuario, priorizadas y estimadas** — en total **117 story points**.
 >
-> No voy a leerlas todas, pero sí quiero mostrar la lógica: las historias **Must** —como iniciar sesión, gestionar usuarios, registrar pedidos, armar hojas de carga y registrar entregas— son el **camino crítico** del negocio, y por eso se atendieron en los primeros sprints. Las **Should**, como el log histórico o la exportación a Excel, agregan valor y control. Y las **Could**, como la consulta de ubigeo o la configuración de la empresa, son mejoras de conveniencia.
+> A la derecha ven la priorización **MoSCoW**: **12 Must** —imprescindibles—, **6 Should** —importantes— y **2 Could** —deseables. Las **Must**, como iniciar sesión, registrar pedidos, armar hojas de carga y registrar entregas, son el **camino crítico del negocio** y se atendieron primero. Cada historia tiene su código, descripción, prioridad y estimación.
 >
-> Cada historia tiene su **código, descripción, prioridad y sprint asignado**, y todas fueron gestionadas en un tablero digital. Gianpierre muestra cómo medimos el avance real de cada sprint.
+> ¿Y cómo se gestionó este backlog día a día? Gianpierre, como Scrum Master, lo muestra.
 
 *[Transición: Gianpierre.]*
 
 ---
 
-## Diapositiva 16 — Burn Down Charts (4 Sprints)  ⏱ 1:45 · **[G]**
+## Diapositiva 19 — Scrum en Acción  ⏱ 1:30 · **[G]**
 
-> **[G]** Como Scrum Master, uno de mis instrumentos de control fue el **Burn Down Chart** de cada sprint. Aquí están los cuatro.
+> **[G]** Como Scrum Master, gestioné el trabajo en **tableros digitales**. Aquí ven dos de ellos: el **Scrum Board del Sprint 1** y el del **Sprint 4**.
 >
-> La lectura es simple: la **línea ideal** marca cómo debería descender el trabajo pendiente día a día, y la **línea real** muestra cómo descendió efectivamente. Cuando la línea real está sobre la ideal, vamos retrasados; cuando está por debajo, adelantados.
+> Cada fila es una historia de usuario y sus tareas fluyen por las columnas **Por Hacer → Proceso → Pruebas → Terminado**. Lo que quiero que noten es la columna final: **todas las tareas de los cuatro sprints cerraron en «Terminado»**.
 >
-> Lo que estos cuatro gráficos evidencian es que **los cuatro sprints se completaron**, cerrando en cero el trabajo pendiente. Hubo variaciones —es normal—, pero **ningún sprint quedó inconcluso**. Esto no es una promesa: es la **medición objetiva** de que el plan se cumplió. Con el «qué» y el «cuánto» cubiertos, entramos al «cómo» técnico: la arquitectura.
+> Esto no es una diapositiva de teoría de Scrum: es la **evidencia operativa** de que el marco se aplicó de verdad, tarea por tarea. Y la medición cuantitativa de ese avance está en los Burn Down.
 
 *[Transición: misma persona.]*
 
 ---
 
-## Diapositiva 17 — Arquitectura de Software  ⏱ 2:30 · **[G]**
+## Diapositiva 20 — Burn Down Charts  ⏱ 1:30 · **[G]**
 
-> **[G]** La arquitectura de SIADLP es una **arquitectura web moderna en capas**, con separación clara de responsabilidades.
+> **[G]** Los **Burn Down Charts** de los cuatro sprints. La lectura: la **línea ideal** marca cómo debería descender el trabajo pendiente; la **línea real**, cómo descendió efectivamente.
 >
-> - En el **Frontend**: **Next.js 16 con React 19**, TypeScript, Tailwind 4 y Zustand para el estado. Es la capa con la que interactúa el usuario.
-> - En el **Backend**: **NestJS 11**, exponiendo una **API REST**, con **autenticación JWT, guards, RBAC y validación con class-validator**. Aquí vive toda la lógica de negocio y las reglas de seguridad.
-> - Entre el backend y la base usamos **Prisma ORM 7**, con **migraciones versionadas**, lo que nos da tipado fuerte y control del esquema.
-> - La **base de datos** es **PostgreSQL 15**, con **20 tablas relacionales**.
-> - Y todo se **despliega en Railway.app**, contenerizado con **Docker**, sobre un **monorepo con pnpm workspaces**.
->
-> ¿Por qué esta arquitectura? Porque **separa responsabilidades**: el frontend no toca la base directamente, todo pasa por la API, y la API valida seguridad en cada petición. Eso la hace **mantenible, segura y escalable**. Detengámonos ahora en el modelo de datos.
+> Hubo variaciones —es normal en cualquier proyecto real—, pero los cuatro gráficos terminan igual: **en cero**. Los cuatro sprints se completaron; ninguno quedó inconcluso. Es la **medición objetiva** del cumplimiento del plan. Con el «qué» y el «cuánto» cubiertos, entramos al «cómo» técnico.
 
 *[Transición: misma persona.]*
 
 ---
 
-## Diapositiva 18 — Base de Datos: 20 Tablas  ⏱ 2:15 · **[G]**
+## Diapositiva 21 — Arquitectura de Software  ⏱ 2:00 · **[G]**
 
-> **[G]** El modelo de datos es un **esquema relacional normalizado en PostgreSQL**, con **20 tablas** organizadas por **dominios**:
+> **[G]** Esta es la **arquitectura real** del sistema, en capas con separación clara de responsabilidades:
 >
-> - **Seguridad y Acceso** — Usuario, Rol, Permiso, RolPermiso y SolicitudResetContrasena.
-> - **Ubigeo** — Departamento, Provincia y Distrito, el catálogo geográfico del Perú.
-> - **Catálogos** — Cliente, Producto, Ruta, Vehículo y Chofer.
-> - **Operación** —el núcleo— Pedido, DetallePedido, EstadoPedidoLog, HojaCarga y Entrega.
-> - **Soporte** — RegistroAuditoria y Empresa.
+> - **Frontend**: Next.js 16 con React 19, TypeScript y Tailwind — la capa del usuario.
+> - **Backend**: NestJS 11 exponiendo una **API REST** con JWT, guards, RBAC y validación — aquí vive toda la lógica de negocio.
+> - **Prisma ORM 7** con migraciones versionadas conecta con la base.
+> - **PostgreSQL 15** con sus **20 tablas relacionales**.
+> - Y el despliegue en **Railway.app**, contenerizado con Docker.
 >
-> Quiero resaltar dos tablas que reflejan calidad de diseño: **EstadoPedidoLog**, que guarda el historial completo de cada cambio de estado de un pedido —esa es la trazabilidad que el negocio no tenía—; y **RegistroAuditoria**, que registra automáticamente cada operación crítica. En total, **20 tablas** con sus claves primarias, foráneas, restricciones de unicidad e índices. El esquema está normalizado para **evitar redundancia y garantizar integridad**. Sobre ese modelo, veamos las consultas y reportes que entrega al usuario.
+> ¿Por qué así? Porque el frontend **nunca toca la base directamente**: todo pasa por la API, y la API valida seguridad en cada petición. Eso hace al sistema **mantenible, seguro y escalable**. Bajemos un nivel más: el modelo de datos.
+
+*[Transición: misma persona.]*
+
+---
+
+## Diapositiva 22 — Base de Datos: Modelo ER  ⏱ 2:00 · **[G]**
+
+> **[G]** El **modelo entidad-relación completo**: **20 tablas** en PostgreSQL, con **cardinalidades en notación pata de gallo** — la leyenda está en el propio diagrama: el trazo simple es «uno», el trazo en abanico es «muchos».
+>
+> Los colores agrupan los **dominios**: seguridad y acceso —Usuario, Rol, Permiso—, el ubigeo del Perú, los catálogos, y el **núcleo operativo**: Pedido, DetallePedido, **EstadoPedidoLog**, HojaCarga y Entrega.
+>
+> Dos tablas concentran la calidad del diseño: **EstadoPedidoLog**, que guarda el historial completo de cada cambio de estado —esa es la trazabilidad que el negocio no tenía—, y **RegistroAuditoria**, que registra automáticamente toda operación crítica. Esquema **normalizado**: sin redundancia, con integridad garantizada. Paulo muestra qué información entrega este modelo.
 
 *[Transición: Paulo.]*
 
 ---
 
-## Diapositiva 19 — Consultas y Reportes  ⏱ 1:30 · **[P]**
+## Diapositiva 23 — Consultas y Reportes  ⏱ 1:15 · **[P]**
 
-> **[P]** El valor de todos esos datos se materializa en información útil para decidir. SIADLP entrega un **dashboard ejecutivo en tiempo real** más **siete reportes operativos exportables a Excel**:
+> **[P]** Todos esos datos se convierten en decisiones mediante el **dashboard ejecutivo en tiempo real** y **siete reportes exportables a Excel**: Pedidos, Despachos, Novedades, Entregas por Chofer, por Ruta, por Cliente y Auditoría — todos filtrables por rango de fechas.
 >
-> Reporte de **Pedidos**, de **Despachos**, de **Novedades**, de **Entregas por Chofer**, por **Ruta**, por **Cliente**, y el reporte de **Auditoría**.
->
-> Todos se generan **filtrados por rango de fechas** y se exportan a Excel con un clic. Esto responde directamente al problema inicial: **la gerencia pasó de no tener ningún indicador a contar con siete reportes y un tablero en vivo**. La información dejó de estar atrapada en cuadernos. Gianpierre explica cómo protegemos todo esto.
+> Esto responde directamente al problema inicial: la gerencia pasó de **cero indicadores** a **siete reportes y un tablero en vivo**. Gianpierre explica cómo protegemos todo esto.
 
 *[Transición: Gianpierre.]*
 
 ---
 
-## Diapositiva 20 — Seguridad del Sistema  ⏱ 2:00 · **[G]**
+## Diapositiva 24 — Seguridad del Sistema  ⏱ 1:45 · **[G]**
 
-> **[G]** La seguridad no fue un agregado final; fue un requisito de diseño. SIADLP implementa **varias capas**:
+> **[G]** La seguridad fue un **requisito de diseño**, no un agregado. Seis capas, como muestran las tarjetas:
 >
-> - **Autenticación con JWT** y **contraseñas cifradas con bcrypt** —nunca se guardan en texto plano.
-> - **Autorización RBAC**: permisos **granulares por módulo y acción**, validados por **guards globales** en cada petición. Un vendedor no puede acceder a lo que solo corresponde a un administrador.
-> - **Rate limiting**, para protegernos de abusos y ataques de fuerza bruta.
-> - **Recuperación de contraseña** mediante **tokens de un solo uso**.
-> - **Validación estricta de entrada** con class-validator en cada DTO —nada entra sin ser validado.
-> - Y **auditoría automática**: usuario, módulo, acción, IP y detalle de cada operación crítica.
+> **Autenticación** con JWT y contraseñas cifradas con bcrypt —nunca texto plano—; **autorización RBAC** granular por módulo y acción, validada por guards en cada petición; **rate limiting** contra fuerza bruta; **recuperación de contraseña** con tokens de un solo uso; **validación estricta** de toda entrada con class-validator; y **auditoría automática** de usuario, módulo, acción, IP y detalle.
 >
-> Estas capas trabajan juntas: **autenticar, autorizar, validar y registrar**. Con esto cubierto, pasamos a lo que más les interesa: ver el sistema funcionando.
+> Autenticar, autorizar, validar y registrar — capas que trabajan juntas. Y ahora sí: el sistema funcionando.
 
 *[Transición: ambos se ubican frente a la pantalla para la demostración.]*
 
 ---
 
-## Diapositiva 21 — Demostración del Sistema  ⏱ 4:00 · **[G+P]**
+## Diapositiva 25 — Demostración del Sistema  ⏱ 4:00 · **[G+P]**
 
-> **[G]** *(introduce)* A continuación mostraremos el **sistema en producción**, desplegado en la nube. Recorreremos el flujo completo del negocio. Paulo conduce la interfaz y yo comento la lógica que ocurre por detrás.
+> **[G]** *(introduce)* Mostraremos el **sistema en producción**, en la nube. Paulo conduce la interfaz; yo comento la lógica que ocurre por detrás.
 >
-> **1) Inicio de Sesión** — **[P]** *(muestra login)* Ingresamos con un usuario real. **[G]** Al autenticarse, el backend valida las credenciales, cifra la comparación con bcrypt y emite un **token JWT** que autoriza cada acción según el rol.
+> **1) Inicio de Sesión** — **[P]** *(muestra login)* Ingresamos con un usuario real. **[G]** El backend valida las credenciales con bcrypt y emite un **token JWT** que autoriza cada acción según el rol.
 >
-> **2) Dashboard Ejecutivo** — **[P]** Esta es la primera pantalla de la gerencia: indicadores del día en tiempo real. **[G]** Cada número que ven se calcula directamente sobre la base de datos; no hay planillas intermedias.
+> **2) Dashboard Ejecutivo** — **[P]** La primera pantalla de la gerencia: indicadores del día en tiempo real. **[G]** Cada número se calcula sobre la base de datos; no hay planillas intermedias.
 >
-> **3) Registro de un Pedido** — **[P]** *(crea un pedido)* Seleccionamos cliente, fecha de entrega y agregamos el detalle de productos. **[G]** Al guardar, el pedido nace en estado **REGISTRADO** y se crea automáticamente su primer registro en el **log histórico de estados**.
+> **3) Registro de un Pedido** — **[P]** *(crea un pedido)* Cliente, fecha de entrega y detalle de productos. **[G]** Al guardar, el pedido nace **REGISTRADO** y se crea su primer registro en el log histórico.
 >
-> **4) Armado de la Hoja de Carga** — **[P]** El Jefe de Despacho agrupa los pedidos por ruta y asigna **vehículo y chofer**. **[G]** En ese momento, los pedidos transicionan a **DESPACHADO** de forma controlada por la máquina de estados.
+> **4) Hoja de Carga** — **[P]** El Jefe de Despacho agrupa por ruta y asigna **vehículo y chofer**. **[G]** Los pedidos transicionan a **DESPACHADO**, controlados por la máquina de estados.
 >
-> **5) Registro de la Entrega** — **[P]** El chofer confirma la entrega desde su dispositivo, o registra una novedad. **[G]** El sistema cierra el ciclo y actualiza el dashboard al instante.
+> **5) Registro de la Entrega** — **[P]** El chofer confirma la entrega o registra una novedad. **[G]** El ciclo se cierra y el dashboard se actualiza al instante.
 >
-> **6) Exportación de Reporte a Excel** — **[P]** *(exporta)* Finalmente, generamos un reporte filtrado por fechas y lo descargamos en Excel. **[G]** Y cada acción que acaban de ver quedó registrada en la **auditoría**: quién, qué, cuándo y desde dónde.
+> **6) Reporte a Excel** — **[P]** *(exporta)* Un reporte filtrado por fechas, descargado en Excel. **[G]** Y todo lo que acaban de ver quedó en la **auditoría**: quién, qué, cuándo y desde dónde.
 >
-> **[G]** En menos de cuatro minutos recorrimos el proceso que antes vivía en cuadernos: **pedido, despacho, entrega y reporte**, con trazabilidad total. Paulo explica cómo garantizamos que esto funcione de forma confiable.
+> **[G]** En cuatro minutos recorrimos el proceso que antes vivía en cuadernos — exactamente el diagrama TO-BE que les mostramos, funcionando en vivo. Paulo explica cómo garantizamos su confiabilidad.
 
 *[Transición: Paulo, QA.]*
 
@@ -360,65 +395,53 @@ IDAT — Lima, Perú · 2026
 
 ---
 
-## Diapositiva 22 — Pruebas de Calidad de Software  ⏱ 2:00 · **[P]**
+## Diapositiva 26 — Pruebas de Calidad de Software  ⏱ 1:30 · **[P]**
 
-> **[P]** Como responsable de **QA**, quiero enfatizar que este sistema **no se entregó sin pruebas**. Aplicamos dos niveles complementarios.
+> **[P]** Como responsable de **QA**: este sistema **no se entregó sin pruebas**. Dos niveles complementarios:
 >
-> **Pruebas unitarias** —con **Jest**—: validan servicios y **reglas de negocio** de forma aislada; en particular, la **máquina de estados de los pedidos**, las validaciones de los DTOs y los permisos. Verifican que cada pieza, por separado, hace lo correcto.
+> **Pruebas unitarias** con **Jest**: validan servicios, reglas de negocio, la **máquina de estados de los pedidos**, DTOs y permisos — cada pieza por separado.
 >
-> **Pruebas integrales (end-to-end)**: validan el **flujo completo** —pedido, despacho y entrega— y la **autenticación y autorización de punta a punta**, además de las **pruebas de aceptación por sprint**. Verifican que las piezas, **juntas**, funcionan.
+> **Pruebas integrales end-to-end**: el flujo completo pedido → despacho → entrega, la autenticación y autorización de punta a punta, y las pruebas de aceptación por sprint — las piezas **juntas**.
 >
-> El resultado es una **suite automatizada** que se ejecuta ante cada cambio, lo que nos da confianza para evolucionar el sistema sin romper lo que ya funciona. Con la calidad asegurada, veamos el impacto.
+> Una **suite automatizada** que corre ante cada cambio: confianza para evolucionar sin romper lo que funciona. Con la calidad asegurada, el impacto.
 
 *[Transición: misma persona.]*
 
 ---
 
-## Diapositiva 23 — Resultados e Impacto  ⏱ 1:30 · **[P]**
+## Diapositiva 27 — Resultados e Impacto  ⏱ 1:15 · **[P]**
 
-> **[P]** ¿Y qué logramos, en concreto? El indicador que resume el impacto es una **reducción del 75 % en los tiempos** del proceso de distribución, seguimiento y control.
+> **[P]** El indicador que resume todo: **75 % de reducción en los tiempos** de distribución, seguimiento y control.
 >
-> Pero el impacto va más allá del tiempo:
-> - **Eliminación total** de los registros manuales en papel.
-> - **Trazabilidad completa** del ciclo pedido → despacho → entrega.
-> - **Visibilidad gerencial en tiempo real** a través del dashboard.
-> - Sistema **desplegado en producción** en la nube.
-> - Proyecto **económicamente viable**, con relación B/C de 1.25.
-> - Y los **10 objetivos específicos cumplidos al 100 %**.
+> Y la lista de la derecha: **cero registros manuales**, **trazabilidad completa del ciclo**, **visibilidad gerencial en tiempo real**, sistema **en producción**, relación **B/C de 1.25**, y los **diez objetivos cumplidos al 100 %**.
 >
-> Es decir: **cada promesa del objetivo general se cumplió y se puede verificar**. Gianpierre cierra con las conclusiones.
+> Cada promesa del objetivo general **se cumplió y es verificable**. Gianpierre cierra con las conclusiones.
 
 *[Transición: Gianpierre.]*
 
 ---
 
-## Diapositiva 24 — Conclusiones  ⏱ 1:45 · **[G]**
+## Diapositiva 28 — Conclusiones  ⏱ 1:30 · **[G]**
 
-> **[G]** A modo de conclusión, cinco afirmaciones que sostenemos con evidencia:
+> **[G]** Cinco conclusiones, cada una con su evidencia:
 >
-> 1. **SIADLP automatizó el ciclo completo** pedido → despacho → entrega, **eliminando los registros manuales**.
-> 2. La **gerencia obtuvo visibilidad en tiempo real** mediante el dashboard ejecutivo y siete reportes a Excel.
-> 3. El **control de acceso RBAC y la auditoría automática** garantizan trazabilidad y seguridad de las operaciones.
-> 4. El **sistema se desplegó en producción** en la nube, cumpliendo los **diez objetivos específicos**.
-> 5. El **marco Scrum** permitió entregar valor de forma **incremental en cuatro sprints**.
+> 1. **Automatización total** — el ciclo pedido → despacho → entrega opera sin registros manuales.
+> 2. **Visibilidad gerencial** — dashboard en tiempo real y siete reportes a Excel.
+> 3. **Trazabilidad y seguridad** — RBAC granular y auditoría automática.
+> 4. **Sistema en producción** — desplegado en la nube, con los diez objetivos cumplidos.
+> 5. **Valor incremental** — Scrum con cuatro sprints y entregas funcionales cada dos semanas.
 >
-> En síntesis: resolvimos un **problema real de negocio** con una **solución de software profesional, medible y en producción**. Paulo y yo cerramos con las recomendaciones.
+> En síntesis: un **problema real de negocio**, resuelto con una **solución profesional, medible y en producción**. Cerramos con las recomendaciones.
 
 *[Transición: ambos.]*
 
 ---
 
-## Diapositiva 25 — Recomendaciones y Cierre  ⏱ 1:30 · **[G+P]**
+## Diapositiva 29 — Recomendaciones y Cierre  ⏱ 1:30 · **[G+P]**
 
-> **[P]** Como todo sistema vivo, SIADLP tiene un camino de evolución. Recomendamos:
-> - **Escalar** hacia compras, producción e inventario con kardex.
-> - Incorporar **facturación electrónica con integración a SUNAT**.
+> **[P]** SIADLP tiene un camino natural de evolución: **escalar hacia compras, producción e inventario con kardex**, e incorporar **facturación electrónica con SUNAT**.
 >
-> **[G]** Y en el plano operativo:
-> - Desarrollar una **app móvil para choferes** con **rastreo GPS** de las unidades en ruta.
-> - Integrar una **pasarela de pagos en línea** para los clientes.
->
-> Estas recomendaciones retoman, de forma ordenada, aquello que dejamos fuera de alcance: son la **hoja de ruta natural** del producto.
+> **[G]** Y en el plano operativo: una **app móvil para choferes con rastreo GPS**, y una **pasarela de pagos en línea**. Estas recomendaciones retoman, de forma ordenada, lo que delimitamos fuera de alcance: son la **hoja de ruta del producto**.
 >
 > **[G+P]** *(juntos, mirando al jurado)* Con esto concluimos nuestra sustentación. **Agradecemos** al jurado por su tiempo y atención, y quedamos a su disposición para las preguntas que consideren pertinentes. **Muchas gracias.**
 
@@ -436,19 +459,25 @@ Porque los requisitos de una operación logística evolucionan y necesitábamos 
 **¿Cómo calcularon el ahorro de S/ 17,112 y la relación B/C de 1.25?**
 Estimamos los sobrecostos anuales de la operación manual (errores, re-despachos, reprocesos): S/ 20,400. Con el sistema se reducen a S/ 3,288. La diferencia es el ahorro (S/ 17,112). B/C = beneficio anual / costo de inversión (13,600), que da 1.25.
 
-**¿Por qué el equipo del backlog indica 4 integrantes si sustentan dos?**
+**¿Por qué el equipo indica 4 roles si sustentan dos personas?**
 Los roles Scrum (Scrum Master, Backend, Frontend, QA/DevOps) fueron asumidos por los dos integrantes, cada uno cubriendo dos responsabilidades. Gianpierre: Scrum Master, Backend y liderazgo técnico; Paulo: Frontend y QA.
+
+**¿Qué diferencia hay entre el proceso AS-IS y el TO-BE?**
+El AS-IS es el proceso manual real que encontramos (cuaderno, re-digitación, armado de memoria, reparto sin registro); el TO-BE es el proceso digitalizado dentro de SIADLP, con roles, estados controlados (REGISTRADO → DESPACHADO → ENTREGADO) y trazabilidad total.
 
 ### Sobre arquitectura y datos
 
 **¿Por qué PostgreSQL y no otra base de datos?**
-Por ser relacional, robusto, de código abierto y con integridad referencial fuerte, ideal para un modelo transaccional normalizado como el nuestro. Prisma ORM nos dio tipado y migraciones versionadas sobre él.
+Por ser relacional, robusto, de código abierto y con integridad referencial fuerte, ideal para un modelo transaccional normalizado. Prisma ORM aporta tipado y migraciones versionadas.
 
 **¿Cuántas tablas tiene el sistema y por qué esa cantidad?**
 20 tablas, organizadas en cinco dominios: seguridad, ubigeo, catálogos, operación y soporte. La cantidad responde a la normalización: separamos entidades para evitar redundancia y garantizar integridad.
 
+**¿Qué significa la notación «pata de gallo» del diagrama ER?**
+Es la notación de cardinalidades crow's foot: el trazo simple representa «uno» y el trazo en abanico (tres líneas) representa «muchos». Toda relación se lee: un padre — N hijos.
+
 **¿Cómo garantizan la trazabilidad de un pedido?**
-Con la tabla EstadoPedidoLog, que guarda cada cambio de estado con su fecha y responsable, y con RegistroAuditoria, que registra automáticamente toda operación crítica (usuario, módulo, acción, IP).
+Con la tabla EstadoPedidoLog, que guarda cada cambio de estado con fecha y responsable, y con RegistroAuditoria, que registra automáticamente toda operación crítica (usuario, módulo, acción, IP).
 
 **¿Qué es RBAC y cómo lo implementaron?**
 Control de Acceso Basado en Roles. Cada rol tiene permisos granulares por módulo y acción; guards globales en NestJS validan cada petición contra esos permisos antes de ejecutar la operación.
